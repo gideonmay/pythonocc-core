@@ -1,4 +1,5 @@
 ##Copyright (c) 2011-2014 Thomas Paviot (tpaviot@gmail.com)
+##Copyright (c) 2015 Gideon May (gideon@borges.xyz)
 ##
 ##This file is part of pythonOCC.
 ##
