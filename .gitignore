@@ -52,3 +52,6 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+export_dat.dat
+export_stl.stl
+export_unv.unv
