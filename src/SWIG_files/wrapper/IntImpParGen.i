@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include IntImpParGen_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class IntImpParGen {
 	public:
 		%feature("compactdefaultargs") DetermineTransition;
-		%feature("autodoc", "	* Template class for an implicit curve. Template class for a tool on a parameterised curve. Math function, instantiated inside the Intersector. Tool used by the package IntCurve and IntImpParGen
+		%feature("autodoc", "	* Template class for an implicit curve. Math function, instantiated inside the Intersector. Tool used by the package IntCurve and IntImpParGen
 
 	:param Pos1:
 	:type Pos1: IntRes2d_Position
@@ -108,17 +124,3 @@ class IntImpParGen {
 };
 
 
-%feature("shadow") IntImpParGen::~IntImpParGen %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend IntImpParGen {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

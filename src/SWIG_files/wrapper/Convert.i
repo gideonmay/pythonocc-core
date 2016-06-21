@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Convert_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef void Convert_CosAndSinEvalFunction ( Standard_Real , 	 	 	 	 	 const Standard_Integer , 	 	 	 	 	 const TColgp_Array1OfPnt2d & , 	 	 	 	 	 const TColStd_Array1OfReal & , 	 	 	 	 	 const TColStd_Array1OfInteger & , 	 	 	 	 	 Standard_Real Result [ 2 ] );
@@ -117,20 +133,6 @@ class Convert_CompBezierCurves2dToBSplineCurve2d {
 };
 
 
-%feature("shadow") Convert_CompBezierCurves2dToBSplineCurve2d::~Convert_CompBezierCurves2dToBSplineCurve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_CompBezierCurves2dToBSplineCurve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_CompBezierCurvesToBSplineCurve;
 class Convert_CompBezierCurvesToBSplineCurve {
 	public:
@@ -195,25 +197,11 @@ class Convert_CompBezierCurvesToBSplineCurve {
 };
 
 
-%feature("shadow") Convert_CompBezierCurvesToBSplineCurve::~Convert_CompBezierCurvesToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_CompBezierCurvesToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_CompPolynomialToPoles;
 class Convert_CompPolynomialToPoles {
 	public:
 		%feature("compactdefaultargs") Convert_CompPolynomialToPoles;
-		%feature("autodoc", "	* Warning! Continuity can be at MOST the maximum degree of the polynomial functions TrueIntervals : this is the true parameterisation for the composite curve that is : the curve has myContinuity if the nth curve is parameterized between myTrueIntervals(n) and myTrueIntervals(n+1) Coefficients have to be the implicit 'c form': Coefficients[Numcurves][MaxDegree+1][Dimension] Warning!  The NumberOfCoefficient of an polynome is his degree + 1 Example: To convert the linear function f(x) = 2*x + 1 on the  domaine [2,5] to BSpline with the bound [-1,1]. Arguments are : NumCurves = 1; Continuity = 1; Dimension = 1; MaxDegree = 1; NumCoeffPerCurve [1] = {2}; Coefficients[2] = {1, 2}; PolynomialIntervals[1,2] = {{2,5}} TrueIntervals[2] = {-1, 1}
+		%feature("autodoc", "	* Warning! Continuity can be at MOST the maximum degree of the polynomial functions TrueIntervals : this is the true parameterisation for the composite curve that is : the curve has myContinuity if the nth curve is parameterized between myTrueIntervals(n) and myTrueIntervals(n+1) //! Coefficients have to be the implicit 'c form': Coefficients[Numcurves][MaxDegree+1][Dimension] //! Warning! The NumberOfCoefficient of an polynome is his degree + 1 Example: To convert the linear function f(x) = 2*x + 1 on the domaine [2,5] to BSpline with the bound [-1,1]. Arguments are : NumCurves = 1; Continuity = 1; Dimension = 1; MaxDegree = 1; NumCoeffPerCurve [1] = {2}; Coefficients[2] = {1, 2}; PolynomialIntervals[1,2] = {{2,5}} TrueIntervals[2] = {-1, 1}
 
 	:param NumCurves:
 	:type NumCurves: int
@@ -321,20 +309,6 @@ class Convert_CompPolynomialToPoles {
 };
 
 
-%feature("shadow") Convert_CompPolynomialToPoles::~Convert_CompPolynomialToPoles %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_CompPolynomialToPoles {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_ConicToBSplineCurve;
 class Convert_ConicToBSplineCurve {
 	public:
@@ -437,20 +411,6 @@ class Convert_ConicToBSplineCurve {
 };
 
 
-%feature("shadow") Convert_ConicToBSplineCurve::~Convert_ConicToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_ConicToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_ElementarySurfaceToBSplineSurface;
 class Convert_ElementarySurfaceToBSplineSurface {
 	public:
@@ -549,25 +509,11 @@ class Convert_ElementarySurfaceToBSplineSurface {
 };
 
 
-%feature("shadow") Convert_ElementarySurfaceToBSplineSurface::~Convert_ElementarySurfaceToBSplineSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_ElementarySurfaceToBSplineSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_GridPolynomialToPoles;
 class Convert_GridPolynomialToPoles {
 	public:
 		%feature("compactdefaultargs") Convert_GridPolynomialToPoles;
-		%feature("autodoc", "	* To only one polynomial Surface. The Length of <PolynomialUIntervals> and <PolynomialVIntervals> have to be 2. This values defined the parametric domain of the Polynomial Equation.  Coefficients : The <Coefficients> have to be formated than an 'C array' [MaxUDegree+1] [MaxVDegree+1] [3]
+		%feature("autodoc", "	* To only one polynomial Surface. The Length of <PolynomialUIntervals> and <PolynomialVIntervals> have to be 2. This values defined the parametric domain of the Polynomial Equation. //! Coefficients : The <Coefficients> have to be formated than an 'C array' [MaxUDegree+1] [MaxVDegree+1] [3]
 
 	:param MaxUDegree:
 	:type MaxUDegree: int
@@ -585,7 +531,7 @@ class Convert_GridPolynomialToPoles {
 ") Convert_GridPolynomialToPoles;
 		 Convert_GridPolynomialToPoles (const Standard_Integer MaxUDegree,const Standard_Integer MaxVDegree,const Handle_TColStd_HArray1OfInteger & NumCoeff,const Handle_TColStd_HArray1OfReal & Coefficients,const Handle_TColStd_HArray1OfReal & PolynomialUIntervals,const Handle_TColStd_HArray1OfReal & PolynomialVIntervals);
 		%feature("compactdefaultargs") Convert_GridPolynomialToPoles;
-		%feature("autodoc", "	* To one grid of polynomial Surface. Warning! Continuity in each parametric direction can be at MOST the maximum degree of the polynomial functions. <TrueUIntervals>, <TrueVIntervals> : this is the true parameterisation for the composite surface Coefficients : The Coefficients have to be formated than an 'C array' [NbVSurfaces] [NBUSurfaces] [MaxUDegree+1] [MaxVDegree+1] [3] raises DomainError if <NumCoeffPerSurface> is not a [1, NbVSurfaces*NbUSurfaces, 1,2] array. if <Coefficients> is not a
+		%feature("autodoc", "	* To one grid of polynomial Surface. Warning! Continuity in each parametric direction can be at MOST the maximum degree of the polynomial functions. //! <TrueUIntervals>, <TrueVIntervals> : this is the true parameterisation for the composite surface //! Coefficients : The Coefficients have to be formated than an 'C array' [NbVSurfaces] [NBUSurfaces] [MaxUDegree+1] [MaxVDegree+1] [3] raises DomainError if <NumCoeffPerSurface> is not a [1, NbVSurfaces*NbUSurfaces, 1,2] array. if <Coefficients> is not a
 
 	:param NbUSurfaces:
 	:type NbUSurfaces: int
@@ -651,7 +597,7 @@ class Convert_GridPolynomialToPoles {
 
 	:rtype: Handle_TColgp_HArray2OfPnt
 ") Poles;
-		const Handle_TColgp_HArray2OfPnt & Poles ();
+		Handle_TColgp_HArray2OfPnt Poles ();
 		%feature("compactdefaultargs") UDegree;
 		%feature("autodoc", "	:rtype: int
 ") UDegree;
@@ -673,25 +619,25 @@ class Convert_GridPolynomialToPoles {
 
 	:rtype: Handle_TColStd_HArray1OfReal
 ") UKnots;
-		const Handle_TColStd_HArray1OfReal & UKnots ();
+		Handle_TColStd_HArray1OfReal UKnots ();
 		%feature("compactdefaultargs") VKnots;
 		%feature("autodoc", "	* Knots in the V direction
 
 	:rtype: Handle_TColStd_HArray1OfReal
 ") VKnots;
-		const Handle_TColStd_HArray1OfReal & VKnots ();
+		Handle_TColStd_HArray1OfReal VKnots ();
 		%feature("compactdefaultargs") UMultiplicities;
 		%feature("autodoc", "	* Multiplicities of the knots in the U direction
 
 	:rtype: Handle_TColStd_HArray1OfInteger
 ") UMultiplicities;
-		const Handle_TColStd_HArray1OfInteger & UMultiplicities ();
+		Handle_TColStd_HArray1OfInteger UMultiplicities ();
 		%feature("compactdefaultargs") VMultiplicities;
 		%feature("autodoc", "	* Multiplicities of the knots in the V direction
 
 	:rtype: Handle_TColStd_HArray1OfInteger
 ") VMultiplicities;
-		const Handle_TColStd_HArray1OfInteger & VMultiplicities ();
+		Handle_TColStd_HArray1OfInteger VMultiplicities ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -699,20 +645,6 @@ class Convert_GridPolynomialToPoles {
 };
 
 
-%feature("shadow") Convert_GridPolynomialToPoles::~Convert_GridPolynomialToPoles %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_GridPolynomialToPoles {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_SequenceNodeOfSequenceOfArray1OfPoles;
 class Convert_SequenceNodeOfSequenceOfArray1OfPoles : public TCollection_SeqNode {
 	public:
@@ -729,29 +661,27 @@ class Convert_SequenceNodeOfSequenceOfArray1OfPoles : public TCollection_SeqNode
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TColgp_HArray1OfPnt
 ") Value;
-		Handle_TColgp_HArray1OfPnt & Value ();
+		Handle_TColgp_HArray1OfPnt Value ();
 };
 
 
-%feature("shadow") Convert_SequenceNodeOfSequenceOfArray1OfPoles::~Convert_SequenceNodeOfSequenceOfArray1OfPoles %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Convert_SequenceNodeOfSequenceOfArray1OfPoles {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles::Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Convert_SequenceNodeOfSequenceOfArray1OfPoles {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Convert_SequenceNodeOfSequenceOfArray1OfPoles {
-	Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles GetHandle() {
-	return *(Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles;
 class Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles : public Handle_TCollection_SeqNode {
@@ -771,20 +701,6 @@ class Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles : public Handle_TColl
     return (Convert_SequenceNodeOfSequenceOfArray1OfPoles*)$self->Access();
     }
 };
-%feature("shadow") Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles::~Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Convert_SequenceNodeOfSequenceOfArray1OfPoles {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Convert_SequenceOfArray1OfPoles;
 class Convert_SequenceOfArray1OfPoles : public TCollection_BaseSequence {
@@ -793,6 +709,12 @@ class Convert_SequenceOfArray1OfPoles : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Convert_SequenceOfArray1OfPoles;
 		 Convert_SequenceOfArray1OfPoles ();
+		%feature("compactdefaultargs") Convert_SequenceOfArray1OfPoles;
+		%feature("autodoc", "	:param Other:
+	:type Other: Convert_SequenceOfArray1OfPoles &
+	:rtype: None
+") Convert_SequenceOfArray1OfPoles;
+		 Convert_SequenceOfArray1OfPoles (const Convert_SequenceOfArray1OfPoles & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -868,11 +790,11 @@ class Convert_SequenceOfArray1OfPoles : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TColgp_HArray1OfPnt
 ") First;
-		const Handle_TColgp_HArray1OfPnt & First ();
+		Handle_TColgp_HArray1OfPnt First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TColgp_HArray1OfPnt
 ") Last;
-		const Handle_TColgp_HArray1OfPnt & Last ();
+		Handle_TColgp_HArray1OfPnt Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -886,7 +808,7 @@ class Convert_SequenceOfArray1OfPoles : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TColgp_HArray1OfPnt
 ") Value;
-		const Handle_TColgp_HArray1OfPnt & Value (const Standard_Integer Index);
+		Handle_TColgp_HArray1OfPnt Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -900,7 +822,7 @@ class Convert_SequenceOfArray1OfPoles : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TColgp_HArray1OfPnt
 ") ChangeValue;
-		Handle_TColgp_HArray1OfPnt & ChangeValue (const Standard_Integer Index);
+		Handle_TColgp_HArray1OfPnt ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -918,20 +840,6 @@ class Convert_SequenceOfArray1OfPoles : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Convert_SequenceOfArray1OfPoles::~Convert_SequenceOfArray1OfPoles %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_SequenceOfArray1OfPoles {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_CircleToBSplineCurve;
 class Convert_CircleToBSplineCurve : public Convert_ConicToBSplineCurve {
 	public:
@@ -946,7 +854,7 @@ class Convert_CircleToBSplineCurve : public Convert_ConicToBSplineCurve {
 ") Convert_CircleToBSplineCurve;
 		 Convert_CircleToBSplineCurve (const gp_Circ2d & C,const Convert_ParameterisationType Parameterisation = Convert_TgtThetaOver2);
 		%feature("compactdefaultargs") Convert_CircleToBSplineCurve;
-		%feature("autodoc", "	* The circle C is limited between the parametric values U1, U2 in radians. U1 and U2 [0.0, 2*Pi] . The equivalent B-spline curve is oriented from U1 to U2 and has the same orientation as the circle C. Raised if U1 = U2 or U1 = U2 + 2.0 * Pi
+		%feature("autodoc", "	* The circle C is limited between the parametric values U1, U2 in radians. U1 and U2 [0.0, 2*Pi] . The equivalent B-spline curve is oriented from U1 to U2 and has the same orientation as the circle C. //! Raised if U1 = U2 or U1 = U2 + 2.0 * Pi
 
 	:param C:
 	:type C: gp_Circ2d
@@ -962,25 +870,11 @@ class Convert_CircleToBSplineCurve : public Convert_ConicToBSplineCurve {
 };
 
 
-%feature("shadow") Convert_CircleToBSplineCurve::~Convert_CircleToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_CircleToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_ConeToBSplineSurface;
 class Convert_ConeToBSplineSurface : public Convert_ElementarySurfaceToBSplineSurface {
 	public:
 		%feature("compactdefaultargs") Convert_ConeToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the Cone in the U and V parametric directions. Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2.
+		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the Cone in the U and V parametric directions. //! Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2.
 
 	:param C:
 	:type C: gp_Cone
@@ -996,7 +890,7 @@ class Convert_ConeToBSplineSurface : public Convert_ElementarySurfaceToBSplineSu
 ") Convert_ConeToBSplineSurface;
 		 Convert_ConeToBSplineSurface (const gp_Cone & C,const Standard_Real U1,const Standard_Real U2,const Standard_Real V1,const Standard_Real V2);
 		%feature("compactdefaultargs") Convert_ConeToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the Cone in the U and V parametric directions. Raised if V1 = V2.
+		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the Cone in the U and V parametric directions. //! Raised if V1 = V2.
 
 	:param C:
 	:type C: gp_Cone
@@ -1010,25 +904,11 @@ class Convert_ConeToBSplineSurface : public Convert_ElementarySurfaceToBSplineSu
 };
 
 
-%feature("shadow") Convert_ConeToBSplineSurface::~Convert_ConeToBSplineSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_ConeToBSplineSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_CylinderToBSplineSurface;
 class Convert_CylinderToBSplineSurface : public Convert_ElementarySurfaceToBSplineSurface {
 	public:
 		%feature("compactdefaultargs") Convert_CylinderToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-splineSurface as the same orientation as the cylinder in the U and V parametric directions. Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2.
+		%feature("autodoc", "	* The equivalent B-splineSurface as the same orientation as the cylinder in the U and V parametric directions. //! Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2.
 
 	:param Cyl:
 	:type Cyl: gp_Cylinder
@@ -1044,7 +924,7 @@ class Convert_CylinderToBSplineSurface : public Convert_ElementarySurfaceToBSpli
 ") Convert_CylinderToBSplineSurface;
 		 Convert_CylinderToBSplineSurface (const gp_Cylinder & Cyl,const Standard_Real U1,const Standard_Real U2,const Standard_Real V1,const Standard_Real V2);
 		%feature("compactdefaultargs") Convert_CylinderToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-splineSurface as the same orientation as the cylinder in the U and V parametric directions. Raised if V1 = V2.
+		%feature("autodoc", "	* The equivalent B-splineSurface as the same orientation as the cylinder in the U and V parametric directions. //! Raised if V1 = V2.
 
 	:param Cyl:
 	:type Cyl: gp_Cylinder
@@ -1058,20 +938,6 @@ class Convert_CylinderToBSplineSurface : public Convert_ElementarySurfaceToBSpli
 };
 
 
-%feature("shadow") Convert_CylinderToBSplineSurface::~Convert_CylinderToBSplineSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_CylinderToBSplineSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_EllipseToBSplineCurve;
 class Convert_EllipseToBSplineCurve : public Convert_ConicToBSplineCurve {
 	public:
@@ -1086,7 +952,7 @@ class Convert_EllipseToBSplineCurve : public Convert_ConicToBSplineCurve {
 ") Convert_EllipseToBSplineCurve;
 		 Convert_EllipseToBSplineCurve (const gp_Elips2d & E,const Convert_ParameterisationType Parameterisation = Convert_TgtThetaOver2);
 		%feature("compactdefaultargs") Convert_EllipseToBSplineCurve;
-		%feature("autodoc", "	* The ellipse E is limited between the parametric values U1, U2. The equivalent B-spline curve is oriented from U1 to U2 and has the same orientation as E. Raised if U1 = U2 or U1 = U2 + 2.0 * Pi
+		%feature("autodoc", "	* The ellipse E is limited between the parametric values U1, U2. The equivalent B-spline curve is oriented from U1 to U2 and has the same orientation as E. //! Raised if U1 = U2 or U1 = U2 + 2.0 * Pi
 
 	:param E:
 	:type E: gp_Elips2d
@@ -1102,20 +968,6 @@ class Convert_EllipseToBSplineCurve : public Convert_ConicToBSplineCurve {
 };
 
 
-%feature("shadow") Convert_EllipseToBSplineCurve::~Convert_EllipseToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_EllipseToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_HyperbolaToBSplineCurve;
 class Convert_HyperbolaToBSplineCurve : public Convert_ConicToBSplineCurve {
 	public:
@@ -1134,20 +986,6 @@ class Convert_HyperbolaToBSplineCurve : public Convert_ConicToBSplineCurve {
 };
 
 
-%feature("shadow") Convert_HyperbolaToBSplineCurve::~Convert_HyperbolaToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_HyperbolaToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_ParabolaToBSplineCurve;
 class Convert_ParabolaToBSplineCurve : public Convert_ConicToBSplineCurve {
 	public:
@@ -1166,25 +1004,11 @@ class Convert_ParabolaToBSplineCurve : public Convert_ConicToBSplineCurve {
 };
 
 
-%feature("shadow") Convert_ParabolaToBSplineCurve::~Convert_ParabolaToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_ParabolaToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_SphereToBSplineSurface;
 class Convert_SphereToBSplineSurface : public Convert_ElementarySurfaceToBSplineSurface {
 	public:
 		%feature("compactdefaultargs") Convert_SphereToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the sphere in the U and V parametric directions. Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2.
+		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the sphere in the U and V parametric directions. //! Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2.
 
 	:param Sph:
 	:type Sph: gp_Sphere
@@ -1200,7 +1024,7 @@ class Convert_SphereToBSplineSurface : public Convert_ElementarySurfaceToBSpline
 ") Convert_SphereToBSplineSurface;
 		 Convert_SphereToBSplineSurface (const gp_Sphere & Sph,const Standard_Real U1,const Standard_Real U2,const Standard_Real V1,const Standard_Real V2);
 		%feature("compactdefaultargs") Convert_SphereToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the sphere in the U and V parametric directions. Raised if UTrim = True and Param1 = Param2 or  Param1 = Param2 + 2.0 * Pi Raised if UTrim = False and Param1 = Param2
+		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the sphere in the U and V parametric directions. //! Raised if UTrim = True and Param1 = Param2 or Param1 = Param2 + 2.0 * Pi Raised if UTrim = False and Param1 = Param2
 
 	:param Sph:
 	:type Sph: gp_Sphere
@@ -1224,25 +1048,11 @@ class Convert_SphereToBSplineSurface : public Convert_ElementarySurfaceToBSpline
 };
 
 
-%feature("shadow") Convert_SphereToBSplineSurface::~Convert_SphereToBSplineSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_SphereToBSplineSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Convert_TorusToBSplineSurface;
 class Convert_TorusToBSplineSurface : public Convert_ElementarySurfaceToBSplineSurface {
 	public:
 		%feature("compactdefaultargs") Convert_TorusToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the torus in the U and V parametric directions. Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2 or V1 = V2 + 2.0 * Pi
+		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the torus in the U and V parametric directions. //! Raised if U1 = U2 or U1 = U2 + 2.0 * Pi Raised if V1 = V2 or V1 = V2 + 2.0 * Pi
 
 	:param T:
 	:type T: gp_Torus
@@ -1258,7 +1068,7 @@ class Convert_TorusToBSplineSurface : public Convert_ElementarySurfaceToBSplineS
 ") Convert_TorusToBSplineSurface;
 		 Convert_TorusToBSplineSurface (const gp_Torus & T,const Standard_Real U1,const Standard_Real U2,const Standard_Real V1,const Standard_Real V2);
 		%feature("compactdefaultargs") Convert_TorusToBSplineSurface;
-		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the torus in the U and V parametric directions. Raised if Param1 = Param2 or Param1 = Param2 + 2.0 * Pi
+		%feature("autodoc", "	* The equivalent B-spline surface as the same orientation as the torus in the U and V parametric directions. //! Raised if Param1 = Param2 or Param1 = Param2 + 2.0 * Pi
 
 	:param T:
 	:type T: gp_Torus
@@ -1282,17 +1092,3 @@ class Convert_TorusToBSplineSurface : public Convert_ElementarySurfaceToBSplineS
 };
 
 
-%feature("shadow") Convert_TorusToBSplineSurface::~Convert_TorusToBSplineSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Convert_TorusToBSplineSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

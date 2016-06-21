@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Geom2dAPI_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -140,20 +156,6 @@ class Geom2dAPI_ExtremaCurveCurve {
 };
 
 
-%feature("shadow") Geom2dAPI_ExtremaCurveCurve::~Geom2dAPI_ExtremaCurveCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Geom2dAPI_ExtremaCurveCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Geom2dAPI_InterCurveCurve;
 class Geom2dAPI_InterCurveCurve {
 	public:
@@ -258,20 +260,6 @@ class Geom2dAPI_InterCurveCurve {
 };
 
 
-%feature("shadow") Geom2dAPI_InterCurveCurve::~Geom2dAPI_InterCurveCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Geom2dAPI_InterCurveCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Geom2dAPI_Interpolate;
 class Geom2dAPI_Interpolate {
 	public:
@@ -332,7 +320,7 @@ class Geom2dAPI_Interpolate {
 
 	:rtype: Handle_Geom2d_BSplineCurve
 ") Curve;
-		const Handle_Geom2d_BSplineCurve & Curve ();
+		Handle_Geom2d_BSplineCurve Curve ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	* Returns true if the constrained BSpline curve is successfully constructed. Note: in this case, the result is given by the function Curve.
 
@@ -342,20 +330,6 @@ class Geom2dAPI_Interpolate {
 };
 
 
-%feature("shadow") Geom2dAPI_Interpolate::~Geom2dAPI_Interpolate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Geom2dAPI_Interpolate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Geom2dAPI_PointsToBSpline;
 class Geom2dAPI_PointsToBSpline {
 	public:
@@ -382,7 +356,7 @@ class Geom2dAPI_PointsToBSpline {
 ") Geom2dAPI_PointsToBSpline;
 		 Geom2dAPI_PointsToBSpline (const TColgp_Array1OfPnt2d & Points,const Standard_Integer DegMin = 3,const Standard_Integer DegMax = 8,const GeomAbs_Shape Continuity = GeomAbs_C2,const Standard_Real Tol2D = 1.0e-6);
 		%feature("compactdefaultargs") Geom2dAPI_PointsToBSpline;
-		%feature("autodoc", "	* Approximate a BSpline Curve passing through an array of Point. Of coordinates :  X = X0 + DX * (i-YValues.Lower()) Y = YValues(i)  With i in the range YValues.Lower(), YValues.Upper()  The BSpline will be parametrized from t = X0 to X0 + DX * (YValues.Upper() - YValues.Lower())  And will satisfy X(t) = t  The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol2D
+		%feature("autodoc", "	* Approximate a BSpline Curve passing through an array of Point. Of coordinates : //! X = X0 + DX * (i-YValues.Lower()) Y = YValues(i) //! With i in the range YValues.Lower(), YValues.Upper() //! The BSpline will be parametrized from t = X0 to X0 + DX * (YValues.Upper() - YValues.Lower()) //! And will satisfy X(t) = t //! The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol2D
 
 	:param YValues:
 	:type YValues: TColStd_Array1OfReal &
@@ -474,7 +448,7 @@ class Geom2dAPI_PointsToBSpline {
 ") Init;
 		void Init (const TColgp_Array1OfPnt2d & Points,const Standard_Integer DegMin = 3,const Standard_Integer DegMax = 8,const GeomAbs_Shape Continuity = GeomAbs_C2,const Standard_Real Tol2D = 1.0e-6);
 		%feature("compactdefaultargs") Init;
-		%feature("autodoc", "	* Approximate a BSpline Curve passing through an array of Point. Of coordinates :  X = X0 + DX * (i-YValues.Lower()) Y = YValues(i)  With i in the range YValues.Lower(), YValues.Upper()  The BSpline will be parametrized from t = X0 to X0 + DX * (YValues.Upper() - YValues.Lower())  And will satisfy X(t) = t  The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol2D
+		%feature("autodoc", "	* Approximate a BSpline Curve passing through an array of Point. Of coordinates : //! X = X0 + DX * (i-YValues.Lower()) Y = YValues(i) //! With i in the range YValues.Lower(), YValues.Upper() //! The BSpline will be parametrized from t = X0 to X0 + DX * (YValues.Upper() - YValues.Lower()) //! And will satisfy X(t) = t //! The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol2D
 
 	:param YValues:
 	:type YValues: TColStd_Array1OfReal &
@@ -554,7 +528,7 @@ class Geom2dAPI_PointsToBSpline {
 
 	:rtype: Handle_Geom2d_BSplineCurve
 ") Curve;
-		const Handle_Geom2d_BSplineCurve & Curve ();
+		Handle_Geom2d_BSplineCurve Curve ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -562,20 +536,6 @@ class Geom2dAPI_PointsToBSpline {
 };
 
 
-%feature("shadow") Geom2dAPI_PointsToBSpline::~Geom2dAPI_PointsToBSpline %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Geom2dAPI_PointsToBSpline {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Geom2dAPI_ProjectPointOnCurve;
 class Geom2dAPI_ProjectPointOnCurve {
 	public:
@@ -712,17 +672,3 @@ class Geom2dAPI_ProjectPointOnCurve {
 };
 
 
-%feature("shadow") Geom2dAPI_ProjectPointOnCurve::~Geom2dAPI_ProjectPointOnCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Geom2dAPI_ProjectPointOnCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

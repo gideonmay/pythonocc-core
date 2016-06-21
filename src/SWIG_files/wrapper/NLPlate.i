@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include NLPlate_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -156,25 +172,23 @@ class NLPlate_HGPPConstraint : public MMgt_TShared {
 };
 
 
-%feature("shadow") NLPlate_HGPPConstraint::~NLPlate_HGPPConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HGPPConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HGPPConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HGPPConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HGPPConstraint {
-	Handle_NLPlate_HGPPConstraint GetHandle() {
-	return *(Handle_NLPlate_HGPPConstraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HGPPConstraint::Handle_NLPlate_HGPPConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HGPPConstraint;
 class Handle_NLPlate_HGPPConstraint : public Handle_MMgt_TShared {
@@ -194,18 +208,93 @@ class Handle_NLPlate_HGPPConstraint : public Handle_MMgt_TShared {
     return (NLPlate_HGPPConstraint*)$self->Access();
     }
 };
-%feature("shadow") Handle_NLPlate_HGPPConstraint::~Handle_NLPlate_HGPPConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
+
+%nodefaultctor NLPlate_ListIteratorOfStackOfPlate;
+class NLPlate_ListIteratorOfStackOfPlate {
+	public:
+		%feature("compactdefaultargs") NLPlate_ListIteratorOfStackOfPlate;
+		%feature("autodoc", "	:rtype: None
+") NLPlate_ListIteratorOfStackOfPlate;
+		 NLPlate_ListIteratorOfStackOfPlate ();
+		%feature("compactdefaultargs") NLPlate_ListIteratorOfStackOfPlate;
+		%feature("autodoc", "	:param L:
+	:type L: NLPlate_StackOfPlate &
+	:rtype: None
+") NLPlate_ListIteratorOfStackOfPlate;
+		 NLPlate_ListIteratorOfStackOfPlate (const NLPlate_StackOfPlate & L);
+		%feature("compactdefaultargs") Initialize;
+		%feature("autodoc", "	:param L:
+	:type L: NLPlate_StackOfPlate &
+	:rtype: None
+") Initialize;
+		void Initialize (const NLPlate_StackOfPlate & L);
+		%feature("compactdefaultargs") More;
+		%feature("autodoc", "	:rtype: bool
+") More;
+		Standard_Boolean More ();
+		%feature("compactdefaultargs") Next;
+		%feature("autodoc", "	:rtype: None
+") Next;
+		void Next ();
+		%feature("compactdefaultargs") Value;
+		%feature("autodoc", "	:rtype: Plate_Plate
+") Value;
+		Plate_Plate & Value ();
+};
+
+
+%nodefaultctor NLPlate_ListNodeOfStackOfPlate;
+class NLPlate_ListNodeOfStackOfPlate : public TCollection_MapNode {
+	public:
+		%feature("compactdefaultargs") NLPlate_ListNodeOfStackOfPlate;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:param n:
+	:type n: TCollection_MapNodePtr &
+	:rtype: None
+") NLPlate_ListNodeOfStackOfPlate;
+		 NLPlate_ListNodeOfStackOfPlate (const Plate_Plate & I,const TCollection_MapNodePtr & n);
+		%feature("compactdefaultargs") Value;
+		%feature("autodoc", "	:rtype: Plate_Plate
+") Value;
+		Plate_Plate & Value ();
+};
+
+
+%extend NLPlate_ListNodeOfStackOfPlate {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_ListNodeOfStackOfPlate(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_NLPlate_ListNodeOfStackOfPlate::Handle_NLPlate_ListNodeOfStackOfPlate %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
 
-%extend Handle_NLPlate_HGPPConstraint {
-    void _kill_pointed() {
-        delete $self;
+%nodefaultctor Handle_NLPlate_ListNodeOfStackOfPlate;
+class Handle_NLPlate_ListNodeOfStackOfPlate : public Handle_TCollection_MapNode {
+
+    public:
+        // constructors
+        Handle_NLPlate_ListNodeOfStackOfPlate();
+        Handle_NLPlate_ListNodeOfStackOfPlate(const Handle_NLPlate_ListNodeOfStackOfPlate &aHandle);
+        Handle_NLPlate_ListNodeOfStackOfPlate(const NLPlate_ListNodeOfStackOfPlate *anItem);
+        void Nullify();
+        Standard_Boolean IsNull() const;
+        static const Handle_NLPlate_ListNodeOfStackOfPlate DownCast(const Handle_Standard_Transient &AnObject);
+
+};
+%extend Handle_NLPlate_ListNodeOfStackOfPlate {
+    NLPlate_ListNodeOfStackOfPlate* GetObject() {
+    return (NLPlate_ListNodeOfStackOfPlate*)$self->Access();
     }
 };
 
@@ -301,20 +390,6 @@ class NLPlate_NLPlate {
 };
 
 
-%feature("shadow") NLPlate_NLPlate::~NLPlate_NLPlate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend NLPlate_NLPlate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor NLPlate_SequenceNodeOfSequenceOfHGPPConstraint;
 class NLPlate_SequenceNodeOfSequenceOfHGPPConstraint : public TCollection_SeqNode {
 	public:
@@ -331,29 +406,27 @@ class NLPlate_SequenceNodeOfSequenceOfHGPPConstraint : public TCollection_SeqNod
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_NLPlate_HGPPConstraint
 ") Value;
-		Handle_NLPlate_HGPPConstraint & Value ();
+		Handle_NLPlate_HGPPConstraint Value ();
 };
 
 
-%feature("shadow") NLPlate_SequenceNodeOfSequenceOfHGPPConstraint::~NLPlate_SequenceNodeOfSequenceOfHGPPConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend NLPlate_SequenceNodeOfSequenceOfHGPPConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint::Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend NLPlate_SequenceNodeOfSequenceOfHGPPConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_SequenceNodeOfSequenceOfHGPPConstraint {
-	Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint GetHandle() {
-	return *(Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint*) &$self;
-	}
-};
 
 %nodefaultctor Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint;
 class Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint : public Handle_TCollection_SeqNode {
@@ -373,20 +446,6 @@ class Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint : public Handle_TCol
     return (NLPlate_SequenceNodeOfSequenceOfHGPPConstraint*)$self->Access();
     }
 };
-%feature("shadow") Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint::~Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_SequenceNodeOfSequenceOfHGPPConstraint {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor NLPlate_SequenceOfHGPPConstraint;
 class NLPlate_SequenceOfHGPPConstraint : public TCollection_BaseSequence {
@@ -395,6 +454,12 @@ class NLPlate_SequenceOfHGPPConstraint : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") NLPlate_SequenceOfHGPPConstraint;
 		 NLPlate_SequenceOfHGPPConstraint ();
+		%feature("compactdefaultargs") NLPlate_SequenceOfHGPPConstraint;
+		%feature("autodoc", "	:param Other:
+	:type Other: NLPlate_SequenceOfHGPPConstraint &
+	:rtype: None
+") NLPlate_SequenceOfHGPPConstraint;
+		 NLPlate_SequenceOfHGPPConstraint (const NLPlate_SequenceOfHGPPConstraint & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -470,11 +535,11 @@ class NLPlate_SequenceOfHGPPConstraint : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_NLPlate_HGPPConstraint
 ") First;
-		const Handle_NLPlate_HGPPConstraint & First ();
+		Handle_NLPlate_HGPPConstraint First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_NLPlate_HGPPConstraint
 ") Last;
-		const Handle_NLPlate_HGPPConstraint & Last ();
+		Handle_NLPlate_HGPPConstraint Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -488,7 +553,7 @@ class NLPlate_SequenceOfHGPPConstraint : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_NLPlate_HGPPConstraint
 ") Value;
-		const Handle_NLPlate_HGPPConstraint & Value (const Standard_Integer Index);
+		Handle_NLPlate_HGPPConstraint Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -502,7 +567,7 @@ class NLPlate_SequenceOfHGPPConstraint : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_NLPlate_HGPPConstraint
 ") ChangeValue;
-		Handle_NLPlate_HGPPConstraint & ChangeValue (const Standard_Integer Index);
+		Handle_NLPlate_HGPPConstraint ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -520,139 +585,6 @@ class NLPlate_SequenceOfHGPPConstraint : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") NLPlate_SequenceOfHGPPConstraint::~NLPlate_SequenceOfHGPPConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend NLPlate_SequenceOfHGPPConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor NLPlate_StackIteratorOfStackOfPlate;
-class NLPlate_StackIteratorOfStackOfPlate {
-	public:
-		%feature("compactdefaultargs") NLPlate_StackIteratorOfStackOfPlate;
-		%feature("autodoc", "	:rtype: None
-") NLPlate_StackIteratorOfStackOfPlate;
-		 NLPlate_StackIteratorOfStackOfPlate ();
-		%feature("compactdefaultargs") NLPlate_StackIteratorOfStackOfPlate;
-		%feature("autodoc", "	:param S:
-	:type S: NLPlate_StackOfPlate &
-	:rtype: None
-") NLPlate_StackIteratorOfStackOfPlate;
-		 NLPlate_StackIteratorOfStackOfPlate (const NLPlate_StackOfPlate & S);
-		%feature("compactdefaultargs") Initialize;
-		%feature("autodoc", "	:param S:
-	:type S: NLPlate_StackOfPlate &
-	:rtype: None
-") Initialize;
-		void Initialize (const NLPlate_StackOfPlate & S);
-		%feature("compactdefaultargs") More;
-		%feature("autodoc", "	:rtype: bool
-") More;
-		Standard_Boolean More ();
-		%feature("compactdefaultargs") Next;
-		%feature("autodoc", "	:rtype: None
-") Next;
-		void Next ();
-		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: Plate_Plate
-") Value;
-		const Plate_Plate & Value ();
-};
-
-
-%feature("shadow") NLPlate_StackIteratorOfStackOfPlate::~NLPlate_StackIteratorOfStackOfPlate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend NLPlate_StackIteratorOfStackOfPlate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor NLPlate_StackNodeOfStackOfPlate;
-class NLPlate_StackNodeOfStackOfPlate : public TCollection_MapNode {
-	public:
-		%feature("compactdefaultargs") NLPlate_StackNodeOfStackOfPlate;
-		%feature("autodoc", "	:param I:
-	:type I: Plate_Plate &
-	:param n:
-	:type n: TCollection_MapNodePtr &
-	:rtype: None
-") NLPlate_StackNodeOfStackOfPlate;
-		 NLPlate_StackNodeOfStackOfPlate (const Plate_Plate & I,const TCollection_MapNodePtr & n);
-		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: Plate_Plate
-") Value;
-		Plate_Plate & Value ();
-};
-
-
-%feature("shadow") NLPlate_StackNodeOfStackOfPlate::~NLPlate_StackNodeOfStackOfPlate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend NLPlate_StackNodeOfStackOfPlate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_StackNodeOfStackOfPlate {
-	Handle_NLPlate_StackNodeOfStackOfPlate GetHandle() {
-	return *(Handle_NLPlate_StackNodeOfStackOfPlate*) &$self;
-	}
-};
-
-%nodefaultctor Handle_NLPlate_StackNodeOfStackOfPlate;
-class Handle_NLPlate_StackNodeOfStackOfPlate : public Handle_TCollection_MapNode {
-
-    public:
-        // constructors
-        Handle_NLPlate_StackNodeOfStackOfPlate();
-        Handle_NLPlate_StackNodeOfStackOfPlate(const Handle_NLPlate_StackNodeOfStackOfPlate &aHandle);
-        Handle_NLPlate_StackNodeOfStackOfPlate(const NLPlate_StackNodeOfStackOfPlate *anItem);
-        void Nullify();
-        Standard_Boolean IsNull() const;
-        static const Handle_NLPlate_StackNodeOfStackOfPlate DownCast(const Handle_Standard_Transient &AnObject);
-
-};
-%extend Handle_NLPlate_StackNodeOfStackOfPlate {
-    NLPlate_StackNodeOfStackOfPlate* GetObject() {
-    return (NLPlate_StackNodeOfStackOfPlate*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_StackNodeOfStackOfPlate::~Handle_NLPlate_StackNodeOfStackOfPlate %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_StackNodeOfStackOfPlate {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
-
 %nodefaultctor NLPlate_StackOfPlate;
 class NLPlate_StackOfPlate {
 	public:
@@ -660,65 +592,129 @@ class NLPlate_StackOfPlate {
 		%feature("autodoc", "	:rtype: None
 ") NLPlate_StackOfPlate;
 		 NLPlate_StackOfPlate ();
+		%feature("compactdefaultargs") NLPlate_StackOfPlate;
+		%feature("autodoc", "	:param Other:
+	:type Other: NLPlate_StackOfPlate &
+	:rtype: None
+") NLPlate_StackOfPlate;
+		 NLPlate_StackOfPlate (const NLPlate_StackOfPlate & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: NLPlate_StackOfPlate &
-	:rtype: NLPlate_StackOfPlate
+	:rtype: None
 ") Assign;
-		const NLPlate_StackOfPlate & Assign (const NLPlate_StackOfPlate & Other);
+		void Assign (const NLPlate_StackOfPlate & Other);
 		%feature("compactdefaultargs") operator =;
 		%feature("autodoc", "	:param Other:
 	:type Other: NLPlate_StackOfPlate &
-	:rtype: NLPlate_StackOfPlate
-") operator=;
-		const NLPlate_StackOfPlate & operator = (const NLPlate_StackOfPlate & Other);
-		%feature("compactdefaultargs") IsEmpty;
-		%feature("autodoc", "	:rtype: bool
-") IsEmpty;
-		Standard_Boolean IsEmpty ();
-		%feature("compactdefaultargs") Depth;
-		%feature("autodoc", "	:rtype: int
-") Depth;
-		Standard_Integer Depth ();
-		%feature("compactdefaultargs") Top;
-		%feature("autodoc", "	:rtype: Plate_Plate
-") Top;
-		const Plate_Plate & Top ();
-		%feature("compactdefaultargs") Push;
-		%feature("autodoc", "	:param I:
-	:type I: Plate_Plate &
 	:rtype: None
-") Push;
-		void Push (const Plate_Plate & I);
-		%feature("compactdefaultargs") Pop;
-		%feature("autodoc", "	:rtype: None
-") Pop;
-		void Pop ();
+") operator=;
+		void operator = (const NLPlate_StackOfPlate & Other);
+		%feature("compactdefaultargs") Extent;
+		%feature("autodoc", "	:rtype: int
+") Extent;
+		Standard_Integer Extent ();
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
 		void Clear ();
-		%feature("compactdefaultargs") ChangeTop;
+		%feature("compactdefaultargs") IsEmpty;
+		%feature("autodoc", "	:rtype: bool
+") IsEmpty;
+		Standard_Boolean IsEmpty ();
+		%feature("compactdefaultargs") Prepend;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:rtype: None
+") Prepend;
+		void Prepend (const Plate_Plate & I);
+		%feature("compactdefaultargs") Prepend;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:param theIt:
+	:type theIt: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") Prepend;
+		void Prepend (const Plate_Plate & I,NLPlate_ListIteratorOfStackOfPlate & theIt);
+		%feature("compactdefaultargs") Prepend;
+		%feature("autodoc", "	:param Other:
+	:type Other: NLPlate_StackOfPlate &
+	:rtype: None
+") Prepend;
+		void Prepend (NLPlate_StackOfPlate & Other);
+		%feature("compactdefaultargs") Append;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:rtype: None
+") Append;
+		void Append (const Plate_Plate & I);
+		%feature("compactdefaultargs") Append;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:param theIt:
+	:type theIt: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") Append;
+		void Append (const Plate_Plate & I,NLPlate_ListIteratorOfStackOfPlate & theIt);
+		%feature("compactdefaultargs") Append;
+		%feature("autodoc", "	:param Other:
+	:type Other: NLPlate_StackOfPlate &
+	:rtype: None
+") Append;
+		void Append (NLPlate_StackOfPlate & Other);
+		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Plate_Plate
-") ChangeTop;
-		Plate_Plate & ChangeTop ();
+") First;
+		Plate_Plate & First ();
+		%feature("compactdefaultargs") Last;
+		%feature("autodoc", "	:rtype: Plate_Plate
+") Last;
+		Plate_Plate & Last ();
+		%feature("compactdefaultargs") RemoveFirst;
+		%feature("autodoc", "	:rtype: None
+") RemoveFirst;
+		void RemoveFirst ();
+		%feature("compactdefaultargs") Remove;
+		%feature("autodoc", "	:param It:
+	:type It: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") Remove;
+		void Remove (NLPlate_ListIteratorOfStackOfPlate & It);
+		%feature("compactdefaultargs") InsertBefore;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:param It:
+	:type It: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") InsertBefore;
+		void InsertBefore (const Plate_Plate & I,NLPlate_ListIteratorOfStackOfPlate & It);
+		%feature("compactdefaultargs") InsertBefore;
+		%feature("autodoc", "	:param Other:
+	:type Other: NLPlate_StackOfPlate &
+	:param It:
+	:type It: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") InsertBefore;
+		void InsertBefore (NLPlate_StackOfPlate & Other,NLPlate_ListIteratorOfStackOfPlate & It);
+		%feature("compactdefaultargs") InsertAfter;
+		%feature("autodoc", "	:param I:
+	:type I: Plate_Plate &
+	:param It:
+	:type It: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") InsertAfter;
+		void InsertAfter (const Plate_Plate & I,NLPlate_ListIteratorOfStackOfPlate & It);
+		%feature("compactdefaultargs") InsertAfter;
+		%feature("autodoc", "	:param Other:
+	:type Other: NLPlate_StackOfPlate &
+	:param It:
+	:type It: NLPlate_ListIteratorOfStackOfPlate &
+	:rtype: None
+") InsertAfter;
+		void InsertAfter (NLPlate_StackOfPlate & Other,NLPlate_ListIteratorOfStackOfPlate & It);
 };
 
 
-%feature("shadow") NLPlate_StackOfPlate::~NLPlate_StackOfPlate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend NLPlate_StackOfPlate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor NLPlate_HPG0Constraint;
 class NLPlate_HPG0Constraint : public NLPlate_HGPPConstraint {
 	public:
@@ -765,25 +761,23 @@ class NLPlate_HPG0Constraint : public NLPlate_HGPPConstraint {
 };
 
 
-%feature("shadow") NLPlate_HPG0Constraint::~NLPlate_HPG0Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG0Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG0Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG0Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG0Constraint {
-	Handle_NLPlate_HPG0Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG0Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG0Constraint::Handle_NLPlate_HPG0Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG0Constraint;
 class Handle_NLPlate_HPG0Constraint : public Handle_NLPlate_HGPPConstraint {
@@ -801,20 +795,6 @@ class Handle_NLPlate_HPG0Constraint : public Handle_NLPlate_HGPPConstraint {
 %extend Handle_NLPlate_HPG0Constraint {
     NLPlate_HPG0Constraint* GetObject() {
     return (NLPlate_HPG0Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG0Constraint::~Handle_NLPlate_HPG0Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG0Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -864,25 +844,23 @@ class NLPlate_HPG1Constraint : public NLPlate_HGPPConstraint {
 };
 
 
-%feature("shadow") NLPlate_HPG1Constraint::~NLPlate_HPG1Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG1Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG1Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG1Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG1Constraint {
-	Handle_NLPlate_HPG1Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG1Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG1Constraint::Handle_NLPlate_HPG1Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG1Constraint;
 class Handle_NLPlate_HPG1Constraint : public Handle_NLPlate_HGPPConstraint {
@@ -900,20 +878,6 @@ class Handle_NLPlate_HPG1Constraint : public Handle_NLPlate_HGPPConstraint {
 %extend Handle_NLPlate_HPG1Constraint {
     NLPlate_HPG1Constraint* GetObject() {
     return (NLPlate_HPG1Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG1Constraint::~Handle_NLPlate_HPG1Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG1Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -951,25 +915,23 @@ class NLPlate_HPG0G1Constraint : public NLPlate_HPG0Constraint {
 };
 
 
-%feature("shadow") NLPlate_HPG0G1Constraint::~NLPlate_HPG0G1Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG0G1Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG0G1Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG0G1Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG0G1Constraint {
-	Handle_NLPlate_HPG0G1Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG0G1Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG0G1Constraint::Handle_NLPlate_HPG0G1Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG0G1Constraint;
 class Handle_NLPlate_HPG0G1Constraint : public Handle_NLPlate_HPG0Constraint {
@@ -987,20 +949,6 @@ class Handle_NLPlate_HPG0G1Constraint : public Handle_NLPlate_HPG0Constraint {
 %extend Handle_NLPlate_HPG0G1Constraint {
     NLPlate_HPG0G1Constraint* GetObject() {
     return (NLPlate_HPG0G1Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG0G1Constraint::~Handle_NLPlate_HPG0G1Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG0G1Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1028,25 +976,23 @@ class NLPlate_HPG2Constraint : public NLPlate_HPG1Constraint {
 };
 
 
-%feature("shadow") NLPlate_HPG2Constraint::~NLPlate_HPG2Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG2Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG2Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG2Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG2Constraint {
-	Handle_NLPlate_HPG2Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG2Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG2Constraint::Handle_NLPlate_HPG2Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG2Constraint;
 class Handle_NLPlate_HPG2Constraint : public Handle_NLPlate_HPG1Constraint {
@@ -1064,20 +1010,6 @@ class Handle_NLPlate_HPG2Constraint : public Handle_NLPlate_HPG1Constraint {
 %extend Handle_NLPlate_HPG2Constraint {
     NLPlate_HPG2Constraint* GetObject() {
     return (NLPlate_HPG2Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG2Constraint::~Handle_NLPlate_HPG2Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG2Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1107,25 +1039,23 @@ class NLPlate_HPG0G2Constraint : public NLPlate_HPG0G1Constraint {
 };
 
 
-%feature("shadow") NLPlate_HPG0G2Constraint::~NLPlate_HPG0G2Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG0G2Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG0G2Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG0G2Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG0G2Constraint {
-	Handle_NLPlate_HPG0G2Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG0G2Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG0G2Constraint::Handle_NLPlate_HPG0G2Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG0G2Constraint;
 class Handle_NLPlate_HPG0G2Constraint : public Handle_NLPlate_HPG0G1Constraint {
@@ -1143,20 +1073,6 @@ class Handle_NLPlate_HPG0G2Constraint : public Handle_NLPlate_HPG0G1Constraint {
 %extend Handle_NLPlate_HPG0G2Constraint {
     NLPlate_HPG0G2Constraint* GetObject() {
     return (NLPlate_HPG0G2Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG0G2Constraint::~Handle_NLPlate_HPG0G2Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG0G2Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1186,25 +1102,23 @@ class NLPlate_HPG3Constraint : public NLPlate_HPG2Constraint {
 };
 
 
-%feature("shadow") NLPlate_HPG3Constraint::~NLPlate_HPG3Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG3Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG3Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG3Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG3Constraint {
-	Handle_NLPlate_HPG3Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG3Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG3Constraint::Handle_NLPlate_HPG3Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG3Constraint;
 class Handle_NLPlate_HPG3Constraint : public Handle_NLPlate_HPG2Constraint {
@@ -1222,20 +1136,6 @@ class Handle_NLPlate_HPG3Constraint : public Handle_NLPlate_HPG2Constraint {
 %extend Handle_NLPlate_HPG3Constraint {
     NLPlate_HPG3Constraint* GetObject() {
     return (NLPlate_HPG3Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG3Constraint::~Handle_NLPlate_HPG3Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG3Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1267,25 +1167,23 @@ class NLPlate_HPG0G3Constraint : public NLPlate_HPG0G2Constraint {
 };
 
 
-%feature("shadow") NLPlate_HPG0G3Constraint::~NLPlate_HPG0G3Constraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend NLPlate_HPG0G3Constraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_NLPlate_HPG0G3Constraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend NLPlate_HPG0G3Constraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend NLPlate_HPG0G3Constraint {
-	Handle_NLPlate_HPG0G3Constraint GetHandle() {
-	return *(Handle_NLPlate_HPG0G3Constraint*) &$self;
-	}
-};
+%pythonappend Handle_NLPlate_HPG0G3Constraint::Handle_NLPlate_HPG0G3Constraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_NLPlate_HPG0G3Constraint;
 class Handle_NLPlate_HPG0G3Constraint : public Handle_NLPlate_HPG0G2Constraint {
@@ -1303,20 +1201,6 @@ class Handle_NLPlate_HPG0G3Constraint : public Handle_NLPlate_HPG0G2Constraint {
 %extend Handle_NLPlate_HPG0G3Constraint {
     NLPlate_HPG0G3Constraint* GetObject() {
     return (NLPlate_HPG0G3Constraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_NLPlate_HPG0G3Constraint::~Handle_NLPlate_HPG0G3Constraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_NLPlate_HPG0G3Constraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include STEPControl_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -93,7 +109,7 @@ class STEPControl_ActorRead : public Transfer_ActorOfTransientProcess {
 ") PrepareUnits;
 		void PrepareUnits (const Handle_StepRepr_Representation & rep,const Handle_Transfer_TransientProcess & TP);
 		%feature("compactdefaultargs") ResetUnits;
-		%feature("autodoc", "	* reset units and tolerances context to default  (mm, radians, read.precision.val, etc.)
+		%feature("autodoc", "	* reset units and tolerances context to default (mm, radians, read.precision.val, etc.)
 
 	:rtype: None
 ") ResetUnits;
@@ -131,25 +147,23 @@ class STEPControl_ActorRead : public Transfer_ActorOfTransientProcess {
 };
 
 
-%feature("shadow") STEPControl_ActorRead::~STEPControl_ActorRead %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend STEPControl_ActorRead {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_STEPControl_ActorRead(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend STEPControl_ActorRead {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend STEPControl_ActorRead {
-	Handle_STEPControl_ActorRead GetHandle() {
-	return *(Handle_STEPControl_ActorRead*) &$self;
-	}
-};
+%pythonappend Handle_STEPControl_ActorRead::Handle_STEPControl_ActorRead %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_STEPControl_ActorRead;
 class Handle_STEPControl_ActorRead : public Handle_Transfer_ActorOfTransientProcess {
@@ -167,20 +181,6 @@ class Handle_STEPControl_ActorRead : public Handle_Transfer_ActorOfTransientProc
 %extend Handle_STEPControl_ActorRead {
     STEPControl_ActorRead* GetObject() {
     return (STEPControl_ActorRead*)$self->Access();
-    }
-};
-%feature("shadow") Handle_STEPControl_ActorRead::~Handle_STEPControl_ActorRead %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_STEPControl_ActorRead {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -282,25 +282,23 @@ class STEPControl_ActorWrite : public Transfer_ActorOfFinderProcess {
 };
 
 
-%feature("shadow") STEPControl_ActorWrite::~STEPControl_ActorWrite %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend STEPControl_ActorWrite {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_STEPControl_ActorWrite(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend STEPControl_ActorWrite {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend STEPControl_ActorWrite {
-	Handle_STEPControl_ActorWrite GetHandle() {
-	return *(Handle_STEPControl_ActorWrite*) &$self;
-	}
-};
+%pythonappend Handle_STEPControl_ActorWrite::Handle_STEPControl_ActorWrite %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_STEPControl_ActorWrite;
 class Handle_STEPControl_ActorWrite : public Handle_Transfer_ActorOfFinderProcess {
@@ -318,20 +316,6 @@ class Handle_STEPControl_ActorWrite : public Handle_Transfer_ActorOfFinderProces
 %extend Handle_STEPControl_ActorWrite {
     STEPControl_ActorWrite* GetObject() {
     return (STEPControl_ActorWrite*)$self->Access();
-    }
-};
-%feature("shadow") Handle_STEPControl_ActorWrite::~Handle_STEPControl_ActorWrite %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_STEPControl_ActorWrite {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -365,7 +349,7 @@ class STEPControl_Controller : public XSControl_Controller {
 ") Customise;
 		virtual void Customise (Handle_XSControl_WorkSession & WS);
 		%feature("compactdefaultargs") TransferWriteShape;
-		%feature("autodoc", "	* Takes one Shape and transfers it to the InterfaceModel (already created by NewModel for instance) <modeshape> is to be interpreted by each kind of XstepAdaptor Returns a status : 0 OK 1 No result 2 Fail -1 bad modeshape  -2 bad model (requires a StepModel) modeshape : 1 Facetted BRep, 2 Shell, 3 Manifold Solid
+		%feature("autodoc", "	* Takes one Shape and transfers it to the InterfaceModel (already created by NewModel for instance) <modeshape> is to be interpreted by each kind of XstepAdaptor Returns a status : 0 OK 1 No result 2 Fail -1 bad modeshape -2 bad model (requires a StepModel) modeshape : 1 Facetted BRep, 2 Shell, 3 Manifold Solid
 
 	:param shape:
 	:type shape: TopoDS_Shape &
@@ -387,25 +371,23 @@ class STEPControl_Controller : public XSControl_Controller {
 };
 
 
-%feature("shadow") STEPControl_Controller::~STEPControl_Controller %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend STEPControl_Controller {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_STEPControl_Controller(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend STEPControl_Controller {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend STEPControl_Controller {
-	Handle_STEPControl_Controller GetHandle() {
-	return *(Handle_STEPControl_Controller*) &$self;
-	}
-};
+%pythonappend Handle_STEPControl_Controller::Handle_STEPControl_Controller %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_STEPControl_Controller;
 class Handle_STEPControl_Controller : public Handle_XSControl_Controller {
@@ -423,20 +405,6 @@ class Handle_STEPControl_Controller : public Handle_XSControl_Controller {
 %extend Handle_STEPControl_Controller {
     STEPControl_Controller* GetObject() {
     return (STEPControl_Controller*)$self->Access();
-    }
-};
-%feature("shadow") Handle_STEPControl_Controller::~Handle_STEPControl_Controller %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_STEPControl_Controller {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -494,20 +462,6 @@ class STEPControl_Reader : public XSControl_Reader {
 };
 
 
-%feature("shadow") STEPControl_Reader::~STEPControl_Reader %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend STEPControl_Reader {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor STEPControl_Writer;
 class STEPControl_Writer {
 	public:
@@ -598,17 +552,3 @@ class STEPControl_Writer {
 };
 
 
-%feature("shadow") STEPControl_Writer::~STEPControl_Writer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend STEPControl_Writer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

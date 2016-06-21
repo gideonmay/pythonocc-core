@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Adaptor3d_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef Adaptor3d_Surface * Adaptor3d_SurfacePtr;
@@ -70,7 +86,7 @@ class Adaptor3d_Curve {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -174,7 +190,7 @@ class Adaptor3d_Curve {
 ") DN;
 		virtual gp_Vec DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -234,20 +250,6 @@ class Adaptor3d_Curve {
 };
 
 
-%feature("shadow") Adaptor3d_Curve::~Adaptor3d_Curve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_Curve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_HCurve;
 class Adaptor3d_HCurve : public MMgt_TShared {
 	public:
@@ -282,7 +284,7 @@ class Adaptor3d_HCurve : public MMgt_TShared {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -292,7 +294,7 @@ class Adaptor3d_HCurve : public MMgt_TShared {
 ") Intervals;
 		void Intervals (TColStd_Array1OfReal & T,const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Trim;
-		%feature("autodoc", "	* Returns a curve equivalent of <self> between parameters <First> and <Last>. <Tol> is used to test for 3d points confusion. If <First> >= <Last>
+		%feature("autodoc", "	* Returns a curve equivalent of <self> between parameters <First> and <Last>. <Tol> is used to test for 3d points confusion. //! If <First> >= <Last>
 
 	:param First:
 	:type First: float
@@ -430,25 +432,23 @@ class Adaptor3d_HCurve : public MMgt_TShared {
 };
 
 
-%feature("shadow") Adaptor3d_HCurve::~Adaptor3d_HCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HCurve {
-	Handle_Adaptor3d_HCurve GetHandle() {
-	return *(Handle_Adaptor3d_HCurve*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HCurve::Handle_Adaptor3d_HCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HCurve;
 class Handle_Adaptor3d_HCurve : public Handle_MMgt_TShared {
@@ -466,20 +466,6 @@ class Handle_Adaptor3d_HCurve : public Handle_MMgt_TShared {
 %extend Handle_Adaptor3d_HCurve {
     Adaptor3d_HCurve* GetObject() {
     return (Adaptor3d_HCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HCurve::~Handle_Adaptor3d_HCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -513,25 +499,23 @@ class Adaptor3d_HOffsetCurve : public Adaptor2d_HCurve2d {
 };
 
 
-%feature("shadow") Adaptor3d_HOffsetCurve::~Adaptor3d_HOffsetCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HOffsetCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HOffsetCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HOffsetCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HOffsetCurve {
-	Handle_Adaptor3d_HOffsetCurve GetHandle() {
-	return *(Handle_Adaptor3d_HOffsetCurve*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HOffsetCurve::Handle_Adaptor3d_HOffsetCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HOffsetCurve;
 class Handle_Adaptor3d_HOffsetCurve : public Handle_Adaptor2d_HCurve2d {
@@ -549,20 +533,6 @@ class Handle_Adaptor3d_HOffsetCurve : public Handle_Adaptor2d_HCurve2d {
 %extend Handle_Adaptor3d_HOffsetCurve {
     Adaptor3d_HOffsetCurve* GetObject() {
     return (Adaptor3d_HOffsetCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HOffsetCurve::~Handle_Adaptor3d_HOffsetCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HOffsetCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -862,25 +832,23 @@ class Adaptor3d_HSurface : public MMgt_TShared {
 };
 
 
-%feature("shadow") Adaptor3d_HSurface::~Adaptor3d_HSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HSurface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HSurface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HSurface {
-	Handle_Adaptor3d_HSurface GetHandle() {
-	return *(Handle_Adaptor3d_HSurface*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HSurface::Handle_Adaptor3d_HSurface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HSurface;
 class Handle_Adaptor3d_HSurface : public Handle_MMgt_TShared {
@@ -898,20 +866,6 @@ class Handle_Adaptor3d_HSurface : public Handle_MMgt_TShared {
 %extend Handle_Adaptor3d_HSurface {
     Adaptor3d_HSurface* GetObject() {
     return (Adaptor3d_HSurface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HSurface::~Handle_Adaptor3d_HSurface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HSurface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1274,20 +1228,6 @@ class Adaptor3d_HSurfaceTool {
 };
 
 
-%feature("shadow") Adaptor3d_HSurfaceTool::~Adaptor3d_HSurfaceTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_HSurfaceTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_HVertex;
 class Adaptor3d_HVertex : public MMgt_TShared {
 	public:
@@ -1336,25 +1276,23 @@ class Adaptor3d_HVertex : public MMgt_TShared {
 };
 
 
-%feature("shadow") Adaptor3d_HVertex::~Adaptor3d_HVertex %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HVertex {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HVertex(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HVertex {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HVertex {
-	Handle_Adaptor3d_HVertex GetHandle() {
-	return *(Handle_Adaptor3d_HVertex*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HVertex::Handle_Adaptor3d_HVertex %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HVertex;
 class Handle_Adaptor3d_HVertex : public Handle_MMgt_TShared {
@@ -1374,26 +1312,12 @@ class Handle_Adaptor3d_HVertex : public Handle_MMgt_TShared {
     return (Adaptor3d_HVertex*)$self->Access();
     }
 };
-%feature("shadow") Handle_Adaptor3d_HVertex::~Handle_Adaptor3d_HVertex %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HVertex {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Adaptor3d_InterFunc;
 class Adaptor3d_InterFunc : public math_FunctionWithDerivative {
 	public:
 		%feature("compactdefaultargs") Adaptor3d_InterFunc;
-		%feature("autodoc", "	* build the function U(t)=FixVal if Fix =1 or  V(t)=FixVal if Fix=2
+		%feature("autodoc", "	* build the function U(t)=FixVal if Fix =1 or V(t)=FixVal if Fix=2
 
 	:param C:
 	:type C: Handle_Adaptor2d_HCurve2d &
@@ -1405,7 +1329,7 @@ class Adaptor3d_InterFunc : public math_FunctionWithDerivative {
 ") Adaptor3d_InterFunc;
 		 Adaptor3d_InterFunc (const Handle_Adaptor2d_HCurve2d & C,const Standard_Real FixVal,const Standard_Integer Fix);
 		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	* computes the value <F>of the function for the variable <X>.  Returns True if the calculation were successfully done, False otherwise.
+		%feature("autodoc", "	* computes the value <F>of the function for the variable <X>. Returns True if the calculation were successfully done, False otherwise.
 
 	:param X:
 	:type X: float
@@ -1439,20 +1363,6 @@ class Adaptor3d_InterFunc : public math_FunctionWithDerivative {
 };
 
 
-%feature("shadow") Adaptor3d_InterFunc::~Adaptor3d_InterFunc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_InterFunc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_OffsetCurve;
 class Adaptor3d_OffsetCurve : public Adaptor2d_Curve2d {
 	public:
@@ -1525,7 +1435,7 @@ class Adaptor3d_OffsetCurve : public Adaptor2d_Curve2d {
 		%feature("compactdefaultargs") Curve;
 		%feature("autodoc", "	:rtype: Handle_Adaptor2d_HCurve2d
 ") Curve;
-		const Handle_Adaptor2d_HCurve2d & Curve ();
+		Handle_Adaptor2d_HCurve2d Curve ();
 		%feature("compactdefaultargs") Offset;
 		%feature("autodoc", "	:rtype: float
 ") Offset;
@@ -1551,7 +1461,7 @@ class Adaptor3d_OffsetCurve : public Adaptor2d_Curve2d {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -1655,7 +1565,7 @@ class Adaptor3d_OffsetCurve : public Adaptor2d_Curve2d {
 ") DN;
 		gp_Vec2d DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -1715,20 +1625,6 @@ class Adaptor3d_OffsetCurve : public Adaptor2d_Curve2d {
 };
 
 
-%feature("shadow") Adaptor3d_OffsetCurve::~Adaptor3d_OffsetCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_OffsetCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class Adaptor3d_Surface {
 	public:
 		%feature("compactdefaultargs") Delete;
@@ -1948,7 +1844,7 @@ class Adaptor3d_Surface {
 ") DN;
 		virtual gp_Vec DN (const Standard_Real U,const Standard_Real V,const Standard_Integer Nu,const Standard_Integer Nv);
 		%feature("compactdefaultargs") UResolution;
-		%feature("autodoc", "	* Returns the parametric U resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric U resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -1956,7 +1852,7 @@ class Adaptor3d_Surface {
 ") UResolution;
 		virtual Standard_Real UResolution (const Standard_Real R3d);
 		%feature("compactdefaultargs") VResolution;
-		%feature("autodoc", "	* Returns the parametric V resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric V resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -2052,20 +1948,6 @@ class Adaptor3d_Surface {
 };
 
 
-%feature("shadow") Adaptor3d_Surface::~Adaptor3d_Surface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_Surface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_TopolTool;
 class Adaptor3d_TopolTool : public MMgt_TShared {
 	public:
@@ -2292,25 +2174,23 @@ class Adaptor3d_TopolTool : public MMgt_TShared {
 };
 
 
-%feature("shadow") Adaptor3d_TopolTool::~Adaptor3d_TopolTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_TopolTool {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_TopolTool(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_TopolTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_TopolTool {
-	Handle_Adaptor3d_TopolTool GetHandle() {
-	return *(Handle_Adaptor3d_TopolTool*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_TopolTool::Handle_Adaptor3d_TopolTool %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_TopolTool;
 class Handle_Adaptor3d_TopolTool : public Handle_MMgt_TShared {
@@ -2328,20 +2208,6 @@ class Handle_Adaptor3d_TopolTool : public Handle_MMgt_TShared {
 %extend Handle_Adaptor3d_TopolTool {
     Adaptor3d_TopolTool* GetObject() {
     return (Adaptor3d_TopolTool*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_TopolTool::~Handle_Adaptor3d_TopolTool %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_TopolTool {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2387,19 +2253,19 @@ class Adaptor3d_CurveOnSurface : public Adaptor3d_Curve {
 		%feature("compactdefaultargs") GetCurve;
 		%feature("autodoc", "	:rtype: Handle_Adaptor2d_HCurve2d
 ") GetCurve;
-		const Handle_Adaptor2d_HCurve2d & GetCurve ();
+		Handle_Adaptor2d_HCurve2d GetCurve ();
 		%feature("compactdefaultargs") GetSurface;
 		%feature("autodoc", "	:rtype: Handle_Adaptor3d_HSurface
 ") GetSurface;
-		const Handle_Adaptor3d_HSurface & GetSurface ();
+		Handle_Adaptor3d_HSurface GetSurface ();
 		%feature("compactdefaultargs") ChangeCurve;
 		%feature("autodoc", "	:rtype: Handle_Adaptor2d_HCurve2d
 ") ChangeCurve;
-		Handle_Adaptor2d_HCurve2d & ChangeCurve ();
+		Handle_Adaptor2d_HCurve2d ChangeCurve ();
 		%feature("compactdefaultargs") ChangeSurface;
 		%feature("autodoc", "	:rtype: Handle_Adaptor3d_HSurface
 ") ChangeSurface;
-		Handle_Adaptor3d_HSurface & ChangeSurface ();
+		Handle_Adaptor3d_HSurface ChangeSurface ();
 		%feature("compactdefaultargs") FirstParameter;
 		%feature("autodoc", "	:rtype: float
 ") FirstParameter;
@@ -2421,7 +2287,7 @@ class Adaptor3d_CurveOnSurface : public Adaptor3d_Curve {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -2525,7 +2391,7 @@ class Adaptor3d_CurveOnSurface : public Adaptor3d_Curve {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -2585,20 +2451,6 @@ class Adaptor3d_CurveOnSurface : public Adaptor3d_Curve {
 };
 
 
-%feature("shadow") Adaptor3d_CurveOnSurface::~Adaptor3d_CurveOnSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_CurveOnSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_HCurveOnSurface;
 class Adaptor3d_HCurveOnSurface : public Adaptor3d_HCurve {
 	public:
@@ -2633,25 +2485,23 @@ class Adaptor3d_HCurveOnSurface : public Adaptor3d_HCurve {
 };
 
 
-%feature("shadow") Adaptor3d_HCurveOnSurface::~Adaptor3d_HCurveOnSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HCurveOnSurface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HCurveOnSurface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HCurveOnSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HCurveOnSurface {
-	Handle_Adaptor3d_HCurveOnSurface GetHandle() {
-	return *(Handle_Adaptor3d_HCurveOnSurface*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HCurveOnSurface::Handle_Adaptor3d_HCurveOnSurface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HCurveOnSurface;
 class Handle_Adaptor3d_HCurveOnSurface : public Handle_Adaptor3d_HCurve {
@@ -2669,20 +2519,6 @@ class Handle_Adaptor3d_HCurveOnSurface : public Handle_Adaptor3d_HCurve {
 %extend Handle_Adaptor3d_HCurveOnSurface {
     Adaptor3d_HCurveOnSurface* GetObject() {
     return (Adaptor3d_HCurveOnSurface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HCurveOnSurface::~Handle_Adaptor3d_HCurveOnSurface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HCurveOnSurface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2720,25 +2556,23 @@ class Adaptor3d_HIsoCurve : public Adaptor3d_HCurve {
 };
 
 
-%feature("shadow") Adaptor3d_HIsoCurve::~Adaptor3d_HIsoCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HIsoCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HIsoCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HIsoCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HIsoCurve {
-	Handle_Adaptor3d_HIsoCurve GetHandle() {
-	return *(Handle_Adaptor3d_HIsoCurve*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HIsoCurve::Handle_Adaptor3d_HIsoCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HIsoCurve;
 class Handle_Adaptor3d_HIsoCurve : public Handle_Adaptor3d_HCurve {
@@ -2756,20 +2590,6 @@ class Handle_Adaptor3d_HIsoCurve : public Handle_Adaptor3d_HCurve {
 %extend Handle_Adaptor3d_HIsoCurve {
     Adaptor3d_HIsoCurve* GetObject() {
     return (Adaptor3d_HIsoCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HIsoCurve::~Handle_Adaptor3d_HIsoCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HIsoCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2803,25 +2623,23 @@ class Adaptor3d_HSurfaceOfLinearExtrusion : public Adaptor3d_HSurface {
 };
 
 
-%feature("shadow") Adaptor3d_HSurfaceOfLinearExtrusion::~Adaptor3d_HSurfaceOfLinearExtrusion %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HSurfaceOfLinearExtrusion {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HSurfaceOfLinearExtrusion(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HSurfaceOfLinearExtrusion {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HSurfaceOfLinearExtrusion {
-	Handle_Adaptor3d_HSurfaceOfLinearExtrusion GetHandle() {
-	return *(Handle_Adaptor3d_HSurfaceOfLinearExtrusion*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HSurfaceOfLinearExtrusion::Handle_Adaptor3d_HSurfaceOfLinearExtrusion %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HSurfaceOfLinearExtrusion;
 class Handle_Adaptor3d_HSurfaceOfLinearExtrusion : public Handle_Adaptor3d_HSurface {
@@ -2839,20 +2657,6 @@ class Handle_Adaptor3d_HSurfaceOfLinearExtrusion : public Handle_Adaptor3d_HSurf
 %extend Handle_Adaptor3d_HSurfaceOfLinearExtrusion {
     Adaptor3d_HSurfaceOfLinearExtrusion* GetObject() {
     return (Adaptor3d_HSurfaceOfLinearExtrusion*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HSurfaceOfLinearExtrusion::~Handle_Adaptor3d_HSurfaceOfLinearExtrusion %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HSurfaceOfLinearExtrusion {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2886,25 +2690,23 @@ class Adaptor3d_HSurfaceOfRevolution : public Adaptor3d_HSurface {
 };
 
 
-%feature("shadow") Adaptor3d_HSurfaceOfRevolution::~Adaptor3d_HSurfaceOfRevolution %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor3d_HSurfaceOfRevolution {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor3d_HSurfaceOfRevolution(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor3d_HSurfaceOfRevolution {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor3d_HSurfaceOfRevolution {
-	Handle_Adaptor3d_HSurfaceOfRevolution GetHandle() {
-	return *(Handle_Adaptor3d_HSurfaceOfRevolution*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor3d_HSurfaceOfRevolution::Handle_Adaptor3d_HSurfaceOfRevolution %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor3d_HSurfaceOfRevolution;
 class Handle_Adaptor3d_HSurfaceOfRevolution : public Handle_Adaptor3d_HSurface {
@@ -2922,20 +2724,6 @@ class Handle_Adaptor3d_HSurfaceOfRevolution : public Handle_Adaptor3d_HSurface {
 %extend Handle_Adaptor3d_HSurfaceOfRevolution {
     Adaptor3d_HSurfaceOfRevolution* GetObject() {
     return (Adaptor3d_HSurfaceOfRevolution*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor3d_HSurfaceOfRevolution::~Handle_Adaptor3d_HSurfaceOfRevolution %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor3d_HSurfaceOfRevolution {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3019,7 +2807,7 @@ class Adaptor3d_IsoCurve : public Adaptor3d_Curve {
 		%feature("compactdefaultargs") Surface;
 		%feature("autodoc", "	:rtype: Handle_Adaptor3d_HSurface
 ") Surface;
-		const Handle_Adaptor3d_HSurface & Surface ();
+		Handle_Adaptor3d_HSurface Surface ();
 		%feature("compactdefaultargs") Iso;
 		%feature("autodoc", "	:rtype: GeomAbs_IsoType
 ") Iso;
@@ -3049,7 +2837,7 @@ class Adaptor3d_IsoCurve : public Adaptor3d_Curve {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -3153,7 +2941,7 @@ class Adaptor3d_IsoCurve : public Adaptor3d_Curve {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -3213,20 +3001,6 @@ class Adaptor3d_IsoCurve : public Adaptor3d_Curve {
 };
 
 
-%feature("shadow") Adaptor3d_IsoCurve::~Adaptor3d_IsoCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_IsoCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_SurfaceOfLinearExtrusion;
 class Adaptor3d_SurfaceOfLinearExtrusion : public Adaptor3d_Surface {
 	public:
@@ -3483,7 +3257,7 @@ class Adaptor3d_SurfaceOfLinearExtrusion : public Adaptor3d_Surface {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Real V,const Standard_Integer Nu,const Standard_Integer Nv);
 		%feature("compactdefaultargs") UResolution;
-		%feature("autodoc", "	* Returns the parametric U resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric U resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -3491,7 +3265,7 @@ class Adaptor3d_SurfaceOfLinearExtrusion : public Adaptor3d_Surface {
 ") UResolution;
 		Standard_Real UResolution (const Standard_Real R3d);
 		%feature("compactdefaultargs") VResolution;
-		%feature("autodoc", "	* Returns the parametric V resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric V resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -3579,20 +3353,6 @@ class Adaptor3d_SurfaceOfLinearExtrusion : public Adaptor3d_Surface {
 };
 
 
-%feature("shadow") Adaptor3d_SurfaceOfLinearExtrusion::~Adaptor3d_SurfaceOfLinearExtrusion %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_SurfaceOfLinearExtrusion {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor3d_SurfaceOfRevolution;
 class Adaptor3d_SurfaceOfRevolution : public Adaptor3d_Surface {
 	public:
@@ -3853,7 +3613,7 @@ class Adaptor3d_SurfaceOfRevolution : public Adaptor3d_Surface {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Real V,const Standard_Integer Nu,const Standard_Integer Nv);
 		%feature("compactdefaultargs") UResolution;
-		%feature("autodoc", "	* Returns the parametric U resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric U resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -3861,7 +3621,7 @@ class Adaptor3d_SurfaceOfRevolution : public Adaptor3d_Surface {
 ") UResolution;
 		Standard_Real UResolution (const Standard_Real R3d);
 		%feature("compactdefaultargs") VResolution;
-		%feature("autodoc", "	* Returns the parametric V resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric V resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -3951,17 +3711,3 @@ class Adaptor3d_SurfaceOfRevolution : public Adaptor3d_Surface {
 };
 
 
-%feature("shadow") Adaptor3d_SurfaceOfRevolution::~Adaptor3d_SurfaceOfRevolution %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor3d_SurfaceOfRevolution {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

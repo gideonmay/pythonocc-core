@@ -32,14 +32,30 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BOPDS_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef NCollection_Map <BOPDS_PassKey , BOPDS_PassKeyMapHasher> BOPDS_MapOfPassKey;
 typedef BOPCol_Array1 <BOPDS_InterfVZ> BOPDS_VectorOfInterfVZ;
 typedef NCollection_DataMap <Handle_BOPDS_PaveBlock , BOPCol_ListOfInteger , TColStd_MapTransientHasher> BOPDS_DataMapOfPaveBlockListOfInteger;
 typedef NCollection_List <BOPDS_Pave> BOPDS_ListOfPave;
-typedef BOPDS_DataMapOfPaveBlockListOfPaveBlock::Iterator BOPDS_DataMapIteratorOfDataMapOfPaveBlockListOfPaveBlock;
+typedef BOPDS_Iterator * BOPDS_PIterator;
 typedef BOPCol_Array1 <BOPDS_InterfEZ> BOPDS_VectorOfInterfEZ;
 typedef NCollection_IndexedDataMap <Handle_BOPDS_PaveBlock , BOPCol_ListOfInteger , TColStd_MapTransientHasher> BOPDS_IndexedDataMapOfPaveBlockListOfInteger;
 typedef BOPCol_Array1 <BOPDS_InterfEE> BOPDS_VectorOfInterfEE;
@@ -55,18 +71,18 @@ typedef BOPCol_Array1 <BOPDS_ShapeInfo> BOPDS_VectorOfShapeInfo;
 typedef NCollection_Map <Handle_BOPDS_PaveBlock , TColStd_MapTransientHasher> BOPDS_MapOfPaveBlock;
 typedef BOPCol_Array1 <BOPDS_IndexRange> BOPDS_VectorOfIndexRange;
 typedef BOPCol_Array1 <BOPDS_InterfFF> BOPDS_VectorOfInterfFF;
+typedef NCollection_Array1 <BOPDS_Pave> BOPDS_VectorOfPave;
 typedef BOPCol_Array1 <BOPDS_InterfFZ> BOPDS_VectorOfInterfFZ;
-typedef BOPDS_MapOfPave::Iterator BOPDS_MapIteratorMapOfPave;
 typedef NCollection_DataMap <Standard_Integer , BOPDS_ListOfPaveBlock , TColStd_MapIntegerHasher> BOPDS_DataMapOfIntegerListOfPaveBlock;
 typedef BOPDS_DataMapOfPassKeyListOfPaveBlock::Iterator BOPDS_DataMapIteratorOfDataMapOfPassKeyListOfPaveBlock;
 typedef BOPDS_MapOfPassKeyBoolean::Iterator BOPDS_MapIteratorMapOfPassKeyBoolean;
 typedef NCollection_Map <BOPDS_PassKeyBoolean , BOPDS_PassKeyMapHasher> BOPDS_MapOfPassKeyBoolean;
 typedef BOPDS_DS * BOPDS_PDS;
 typedef BOPDS_ListOfPassKeyBoolean::Iterator BOPDS_ListIteratorOfListOfPassKeyBoolean;
-typedef NCollection_IndexedMap <Handle_BOPDS_PaveBlock , TColStd_MapTransientHasher> BOPDS_IndexedMapOfPaveBlock;
-typedef BOPDS_Iterator * BOPDS_PIterator;
-typedef BOPDS_DataMapOfPaveBlockCommonBlock::Iterator BOPDS_DataMapIteratorOfDataMapOfPaveBlockCommonBlock;
 typedef BOPDS_MapOfPassKey::Iterator BOPDS_MapIteratorMapOfPassKey;
+typedef BOPDS_DataMapOfPaveBlockListOfPaveBlock::Iterator BOPDS_DataMapIteratorOfDataMapOfPaveBlockListOfPaveBlock;
+typedef BOPDS_DataMapOfPaveBlockCommonBlock::Iterator BOPDS_DataMapIteratorOfDataMapOfPaveBlockCommonBlock;
+typedef NCollection_IndexedMap <Handle_BOPDS_PaveBlock , TColStd_MapTransientHasher> BOPDS_IndexedMapOfPaveBlock;
 typedef BOPDS_MapOfCommonBlock::Iterator BOPDS_MapIteratorOfMapOfCommonBlock;
 typedef NCollection_DataMap <BOPDS_PassKey , BOPDS_ListOfPaveBlock , BOPDS_PassKeyMapHasher> BOPDS_DataMapOfPassKeyListOfPaveBlock;
 typedef NCollection_Map <Handle_BOPDS_CommonBlock , TColStd_MapTransientHasher> BOPDS_MapOfCommonBlock;
@@ -84,6 +100,7 @@ typedef NCollection_IndexedDataMap <TopoDS_Shape , BOPDS_CoupleOfPaveBlocks , To
 typedef BOPCol_Array1 <BOPDS_FaceInfo> BOPDS_VectorOfFaceInfo;
 typedef NCollection_IndexedDataMap <Handle_BOPDS_PaveBlock , BOPDS_ListOfPaveBlock , TColStd_MapTransientHasher> BOPDS_IndexedDataMapOfPaveBlockListOfPaveBlock;
 typedef BOPCol_Array1 <BOPDS_ListOfPassKeyBoolean> BOPDS_VectorOfListOfPassKeyBoolean;
+typedef BOPDS_MapOfPave::Iterator BOPDS_MapIteratorOfMapOfPave;
 typedef NCollection_List <BOPDS_PassKeyBoolean> BOPDS_ListOfPassKeyBoolean;
 /* end typedefs declaration */
 
@@ -156,7 +173,7 @@ class BOPDS_CommonBlock : public MMgt_TShared {
 
 	:rtype: Handle_BOPDS_PaveBlock
 ") PaveBlock1;
-		const Handle_BOPDS_PaveBlock & PaveBlock1 ();
+		Handle_BOPDS_PaveBlock PaveBlock1 ();
 		%feature("compactdefaultargs") PaveBlockOnEdge;
 		%feature("autodoc", "	* Selector Returns the pave block that belongs to the edge with index <theIx>
 
@@ -164,7 +181,7 @@ class BOPDS_CommonBlock : public MMgt_TShared {
 	:type theIndex: int
 	:rtype: Handle_BOPDS_PaveBlock
 ") PaveBlockOnEdge;
-		Handle_BOPDS_PaveBlock & PaveBlockOnEdge (const Standard_Integer theIndex);
+		Handle_BOPDS_PaveBlock PaveBlockOnEdge (const Standard_Integer theIndex);
 		%feature("compactdefaultargs") IsPaveBlockOnFace;
 		%feature("autodoc", "	* Query Returns true if the common block contains a pave block that belongs to the face with index <theIx>
 
@@ -218,25 +235,23 @@ class BOPDS_CommonBlock : public MMgt_TShared {
 };
 
 
-%feature("shadow") BOPDS_CommonBlock::~BOPDS_CommonBlock %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BOPDS_CommonBlock {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BOPDS_CommonBlock(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BOPDS_CommonBlock {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BOPDS_CommonBlock {
-	Handle_BOPDS_CommonBlock GetHandle() {
-	return *(Handle_BOPDS_CommonBlock*) &$self;
-	}
-};
+%pythonappend Handle_BOPDS_CommonBlock::Handle_BOPDS_CommonBlock %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BOPDS_CommonBlock;
 class Handle_BOPDS_CommonBlock : public Handle_MMgt_TShared {
@@ -254,20 +269,6 @@ class Handle_BOPDS_CommonBlock : public Handle_MMgt_TShared {
 %extend Handle_BOPDS_CommonBlock {
     BOPDS_CommonBlock* GetObject() {
     return (BOPDS_CommonBlock*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BOPDS_CommonBlock::~Handle_BOPDS_CommonBlock %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BOPDS_CommonBlock {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -351,7 +352,7 @@ class BOPDS_CoupleOfPaveBlocks {
 
 	:rtype: Handle_BOPDS_PaveBlock
 ") PaveBlock1;
-		const Handle_BOPDS_PaveBlock & PaveBlock1 ();
+		Handle_BOPDS_PaveBlock PaveBlock1 ();
 		%feature("compactdefaultargs") SetPaveBlock2;
 		%feature("autodoc", "	* /** * Sets the second pave block * @param thePB * the second pave block */
 
@@ -365,24 +366,10 @@ class BOPDS_CoupleOfPaveBlocks {
 
 	:rtype: Handle_BOPDS_PaveBlock
 ") PaveBlock2;
-		const Handle_BOPDS_PaveBlock & PaveBlock2 ();
+		Handle_BOPDS_PaveBlock PaveBlock2 ();
 };
 
 
-%feature("shadow") BOPDS_CoupleOfPaveBlocks::~BOPDS_CoupleOfPaveBlocks %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_CoupleOfPaveBlocks {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_Curve;
 class BOPDS_Curve {
 	public:
@@ -463,7 +450,7 @@ class BOPDS_Curve {
 
 	:rtype: Handle_BOPDS_PaveBlock
 ") ChangePaveBlock1;
-		Handle_BOPDS_PaveBlock & ChangePaveBlock1 ();
+		Handle_BOPDS_PaveBlock ChangePaveBlock1 ();
 		%feature("compactdefaultargs") TechnoVertices;
 		%feature("autodoc", "	* Selector Returns list of indices of technologic vertices of the curve
 
@@ -485,20 +472,6 @@ class BOPDS_Curve {
 };
 
 
-%feature("shadow") BOPDS_Curve::~BOPDS_Curve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_Curve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_DS;
 class BOPDS_DS {
 	public:
@@ -819,7 +792,7 @@ class BOPDS_DS {
 ") AloneVertices;
 		void AloneVertices (const Standard_Integer theF,BOPCol_ListOfInteger & theLI);
 		%feature("compactdefaultargs") RefineFaceInfoOn;
-		%feature("autodoc", "	* Refine the state On for the all faces having state information ++
+		%feature("autodoc", "	* Refine the state On for the all faces having state information //! ++
 
 	:rtype: None
 ") RefineFaceInfoOn;
@@ -839,7 +812,7 @@ class BOPDS_DS {
 ") VerticesOnIn;
 		void VerticesOnIn (const Standard_Integer theF1,const Standard_Integer theF2,BOPCol_MapOfInteger & theMI,BOPDS_IndexedMapOfPaveBlock & aMPB);
 		%feature("compactdefaultargs") SharedEdges;
-		%feature("autodoc", "	* Returns the indices of edges that are shared for the faces with indices theF1, theF2 same domain shapes
+		%feature("autodoc", "	* Returns the indices of edges that are shared for the faces with indices theF1, theF2 //! same domain shapes
 
 	:param theF1:
 	:type theF1: int
@@ -869,7 +842,7 @@ class BOPDS_DS {
 ") AddShapeSD;
 		void AddShapeSD (const Standard_Integer theIndex,const Standard_Integer theIndexSD);
 		%feature("compactdefaultargs") HasShapeSD;
-		%feature("autodoc", "	* Query Returns true if the shape with index theIndex has the same domain shape. In this case theIndexSD will contain the index of same domain shape found interferences
+		%feature("autodoc", "	* Query Returns true if the shape with index theIndex has the same domain shape. In this case theIndexSD will contain the index of same domain shape found //! interferences
 
 	:param theIndex:
 	:type theIndex: int
@@ -995,7 +968,7 @@ class BOPDS_DS {
 ") HasInterfSubShapes;
 		Standard_Boolean HasInterfSubShapes (const Standard_Integer theI1,const Standard_Integer theI2);
 		%feature("compactdefaultargs") Interferences;
-		%feature("autodoc", "	* Selector Returns the table of interferences debug
+		%feature("autodoc", "	* Selector Returns the table of interferences //! debug
 
 	:rtype: BOPDS_MapOfPassKey
 ") Interferences;
@@ -1049,20 +1022,6 @@ class BOPDS_DS {
 };
 
 
-%feature("shadow") BOPDS_DS::~BOPDS_DS %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_DS {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_FaceInfo;
 class BOPDS_FaceInfo {
 	public:
@@ -1095,7 +1054,7 @@ class BOPDS_FaceInfo {
 ") SetIndex;
 		void SetIndex (const Standard_Integer theI);
 		%feature("compactdefaultargs") Index;
-		%feature("autodoc", "	* Selector Returns the index of the face In
+		%feature("autodoc", "	* Selector Returns the index of the face //! In
 
 	:rtype: int
 ") Index;
@@ -1119,7 +1078,7 @@ class BOPDS_FaceInfo {
 ") VerticesIn;
 		const BOPCol_MapOfInteger & VerticesIn ();
 		%feature("compactdefaultargs") ChangeVerticesIn;
-		%feature("autodoc", "	* Selector/Modifier Returns the list of indices for vertices of the face that have state In On
+		%feature("autodoc", "	* Selector/Modifier Returns the list of indices for vertices of the face that have state In //! On
 
 	:rtype: BOPCol_MapOfInteger
 ") ChangeVerticesIn;
@@ -1143,7 +1102,7 @@ class BOPDS_FaceInfo {
 ") VerticesOn;
 		const BOPCol_MapOfInteger & VerticesOn ();
 		%feature("compactdefaultargs") ChangeVerticesOn;
-		%feature("autodoc", "	* Selector/Modifier Returns the list of indices for vertices of the face that have state On Sections
+		%feature("autodoc", "	* Selector/Modifier Returns the list of indices for vertices of the face that have state On //! Sections
 
 	:rtype: BOPCol_MapOfInteger
 ") ChangeVerticesOn;
@@ -1165,7 +1124,7 @@ class BOPDS_FaceInfo {
 ") VerticesSc;
 		const BOPCol_MapOfInteger & VerticesSc ();
 		%feature("compactdefaultargs") ChangeVerticesSc;
-		%feature("autodoc", "	* Selector/Modifier Returns the list of indices for section vertices of the face Others
+		%feature("autodoc", "	* Selector/Modifier Returns the list of indices for section vertices of the face //! Others
 
 	:rtype: BOPCol_MapOfInteger
 ") ChangeVerticesSc;
@@ -1173,20 +1132,6 @@ class BOPDS_FaceInfo {
 };
 
 
-%feature("shadow") BOPDS_FaceInfo::~BOPDS_FaceInfo %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_FaceInfo {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_IndexRange;
 class BOPDS_IndexRange {
 	public:
@@ -1259,20 +1204,6 @@ class BOPDS_IndexRange {
 };
 
 
-%feature("shadow") BOPDS_IndexRange::~BOPDS_IndexRange %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_IndexRange {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_Iterator;
 class BOPDS_Iterator {
 	public:
@@ -1356,23 +1287,23 @@ class BOPDS_Iterator {
 	:rtype: int
 ") BlockLength;
 		Standard_Integer BlockLength ();
+		%feature("compactdefaultargs") SetRunParallel;
+		%feature("autodoc", "	* Set the flag of parallel processing if <theFlag> is true the parallel processing is switched on if <theFlag> is false the parallel processing is switched off
+
+	:param theFlag:
+	:type theFlag: bool
+	:rtype: None
+") SetRunParallel;
+		void SetRunParallel (const Standard_Boolean theFlag);
+		%feature("compactdefaultargs") RunParallel;
+		%feature("autodoc", "	* Returns the flag of parallel processing
+
+	:rtype: bool
+") RunParallel;
+		Standard_Boolean RunParallel ();
 };
 
 
-%feature("shadow") BOPDS_Iterator::~BOPDS_Iterator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_Iterator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_PassKey;
 class BOPDS_PassKey {
 	public:
@@ -1517,20 +1448,6 @@ class BOPDS_PassKey {
 };
 
 
-%feature("shadow") BOPDS_PassKey::~BOPDS_PassKey %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_PassKey {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BOPDS_PassKeyMapHasher {
 	public:
 		%feature("compactdefaultargs") HashCode;
@@ -1552,20 +1469,6 @@ class BOPDS_PassKeyMapHasher {
 };
 
 
-%feature("shadow") BOPDS_PassKeyMapHasher::~BOPDS_PassKeyMapHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_PassKeyMapHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_Pave;
 class BOPDS_Pave {
 	public:
@@ -1656,20 +1559,6 @@ class BOPDS_Pave {
 };
 
 
-%feature("shadow") BOPDS_Pave::~BOPDS_Pave %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_Pave {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_PaveBlock;
 class BOPDS_PaveBlock : public MMgt_TShared {
 	public:
@@ -1882,25 +1771,23 @@ class BOPDS_PaveBlock : public MMgt_TShared {
 };
 
 
-%feature("shadow") BOPDS_PaveBlock::~BOPDS_PaveBlock %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BOPDS_PaveBlock {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BOPDS_PaveBlock(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BOPDS_PaveBlock {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BOPDS_PaveBlock {
-	Handle_BOPDS_PaveBlock GetHandle() {
-	return *(Handle_BOPDS_PaveBlock*) &$self;
-	}
-};
+%pythonappend Handle_BOPDS_PaveBlock::Handle_BOPDS_PaveBlock %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BOPDS_PaveBlock;
 class Handle_BOPDS_PaveBlock : public Handle_MMgt_TShared {
@@ -1918,20 +1805,6 @@ class Handle_BOPDS_PaveBlock : public Handle_MMgt_TShared {
 %extend Handle_BOPDS_PaveBlock {
     BOPDS_PaveBlock* GetObject() {
     return (BOPDS_PaveBlock*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BOPDS_PaveBlock::~Handle_BOPDS_PaveBlock %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BOPDS_PaveBlock {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1956,20 +1829,6 @@ class BOPDS_PaveMapHasher {
 };
 
 
-%feature("shadow") BOPDS_PaveMapHasher::~BOPDS_PaveMapHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_PaveMapHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_Point;
 class BOPDS_Point {
 	public:
@@ -2038,20 +1897,6 @@ class BOPDS_Point {
 };
 
 
-%feature("shadow") BOPDS_Point::~BOPDS_Point %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_Point {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_ShapeInfo;
 class BOPDS_ShapeInfo {
 	public:
@@ -2162,7 +2007,7 @@ class BOPDS_ShapeInfo {
 ") HasBRep;
 		Standard_Boolean HasBRep ();
 		%feature("compactdefaultargs") IsInterfering;
-		%feature("autodoc", "	* Returns true if the shape can be participant of an interference Flag
+		%feature("autodoc", "	* Returns true if the shape can be participant of an interference //! Flag
 
 	:rtype: bool
 ") IsInterfering;
@@ -2202,20 +2047,6 @@ class BOPDS_ShapeInfo {
 };
 
 
-%feature("shadow") BOPDS_ShapeInfo::~BOPDS_ShapeInfo %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_ShapeInfo {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_SubIterator;
 class BOPDS_SubIterator {
 	public:
@@ -2312,20 +2143,6 @@ class BOPDS_SubIterator {
 };
 
 
-%feature("shadow") BOPDS_SubIterator::~BOPDS_SubIterator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_SubIterator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BOPDS_Tools {
 	public:
 		%feature("compactdefaultargs") TypeToInteger;
@@ -2365,20 +2182,6 @@ class BOPDS_Tools {
 };
 
 
-%feature("shadow") BOPDS_Tools::~BOPDS_Tools %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_Tools {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfEE;
 class BOPDS_InterfEE : public BOPDS_Interf {
 	public:
@@ -2413,20 +2216,6 @@ class BOPDS_InterfEE : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfEE::~BOPDS_InterfEE %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfEE {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfEF;
 class BOPDS_InterfEF : public BOPDS_Interf {
 	public:
@@ -2461,20 +2250,6 @@ class BOPDS_InterfEF : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfEF::~BOPDS_InterfEF %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfEF {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfEZ;
 class BOPDS_InterfEZ : public BOPDS_Interf {
 	public:
@@ -2495,20 +2270,6 @@ class BOPDS_InterfEZ : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfEZ::~BOPDS_InterfEZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfEZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfFF;
 class BOPDS_InterfFF : public BOPDS_Interf {
 	public:
@@ -2597,20 +2358,6 @@ class BOPDS_InterfFF : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfFF::~BOPDS_InterfFF %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfFF {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfFZ;
 class BOPDS_InterfFZ : public BOPDS_Interf {
 	public:
@@ -2631,20 +2378,6 @@ class BOPDS_InterfFZ : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfFZ::~BOPDS_InterfFZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfFZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfVE;
 class BOPDS_InterfVE : public BOPDS_Interf {
 	public:
@@ -2679,20 +2412,6 @@ class BOPDS_InterfVE : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfVE::~BOPDS_InterfVE %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfVE {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfVF;
 class BOPDS_InterfVF : public BOPDS_Interf {
 	public:
@@ -2733,20 +2452,6 @@ class BOPDS_InterfVF : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfVF::~BOPDS_InterfVF %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfVF {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfVV;
 class BOPDS_InterfVV : public BOPDS_Interf {
 	public:
@@ -2767,20 +2472,6 @@ class BOPDS_InterfVV : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfVV::~BOPDS_InterfVV %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfVV {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfVZ;
 class BOPDS_InterfVZ : public BOPDS_Interf {
 	public:
@@ -2801,20 +2492,6 @@ class BOPDS_InterfVZ : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfVZ::~BOPDS_InterfVZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfVZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_InterfZZ;
 class BOPDS_InterfZZ : public BOPDS_Interf {
 	public:
@@ -2835,20 +2512,6 @@ class BOPDS_InterfZZ : public BOPDS_Interf {
 };
 
 
-%feature("shadow") BOPDS_InterfZZ::~BOPDS_InterfZZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_InterfZZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_IteratorSI;
 class BOPDS_IteratorSI : public BOPDS_Iterator {
 	public:
@@ -2877,20 +2540,6 @@ class BOPDS_IteratorSI : public BOPDS_Iterator {
 };
 
 
-%feature("shadow") BOPDS_IteratorSI::~BOPDS_IteratorSI %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_IteratorSI {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BOPDS_PassKeyBoolean;
 class BOPDS_PassKeyBoolean : public BOPDS_PassKey {
 	public:
@@ -2929,17 +2578,3 @@ class BOPDS_PassKeyBoolean : public BOPDS_PassKey {
 };
 
 
-%feature("shadow") BOPDS_PassKeyBoolean::~BOPDS_PassKeyBoolean %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BOPDS_PassKeyBoolean {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

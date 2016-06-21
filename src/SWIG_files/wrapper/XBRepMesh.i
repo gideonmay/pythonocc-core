@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include XBRepMesh_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -51,24 +67,10 @@ class XBRepMesh {
 	:param theAngle:
 	:type theAngle: float
 	:param theAlgo:
-	:type theAlgo: BRepMesh_PDiscretRoot &
+	:type theAlgo: BRepMesh_DiscretRoot * &
 	:rtype: int
 ") Discret;
-		static Standard_Integer Discret (const TopoDS_Shape & theShape,const Standard_Real theDeflection,const Standard_Real theAngle,BRepMesh_PDiscretRoot & theAlgo);
+		static Standard_Integer Discret (const TopoDS_Shape & theShape,const Standard_Real theDeflection,const Standard_Real theAngle,BRepMesh_DiscretRoot * & theAlgo);
 };
 
 
-%feature("shadow") XBRepMesh::~XBRepMesh %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend XBRepMesh {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

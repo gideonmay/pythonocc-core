@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include TColgp_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -122,20 +138,6 @@ class TColgp_Array1OfCirc2d {
 };
 
 
-%feature("shadow") TColgp_Array1OfCirc2d::~TColgp_Array1OfCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfDir;
 class TColgp_Array1OfDir {
 	public:
@@ -218,20 +220,6 @@ class TColgp_Array1OfDir {
 };
 
 
-%feature("shadow") TColgp_Array1OfDir::~TColgp_Array1OfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfDir2d;
 class TColgp_Array1OfDir2d {
 	public:
@@ -314,20 +302,6 @@ class TColgp_Array1OfDir2d {
 };
 
 
-%feature("shadow") TColgp_Array1OfDir2d::~TColgp_Array1OfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfLin2d;
 class TColgp_Array1OfLin2d {
 	public:
@@ -410,20 +384,6 @@ class TColgp_Array1OfLin2d {
 };
 
 
-%feature("shadow") TColgp_Array1OfLin2d::~TColgp_Array1OfLin2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfLin2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfPnt;
 class TColgp_Array1OfPnt {
 	public:
@@ -506,20 +466,6 @@ class TColgp_Array1OfPnt {
 };
 
 
-%feature("shadow") TColgp_Array1OfPnt::~TColgp_Array1OfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfPnt2d;
 class TColgp_Array1OfPnt2d {
 	public:
@@ -602,20 +548,6 @@ class TColgp_Array1OfPnt2d {
 };
 
 
-%feature("shadow") TColgp_Array1OfPnt2d::~TColgp_Array1OfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfVec;
 class TColgp_Array1OfVec {
 	public:
@@ -698,20 +630,6 @@ class TColgp_Array1OfVec {
 };
 
 
-%feature("shadow") TColgp_Array1OfVec::~TColgp_Array1OfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfVec2d;
 class TColgp_Array1OfVec2d {
 	public:
@@ -794,20 +712,6 @@ class TColgp_Array1OfVec2d {
 };
 
 
-%feature("shadow") TColgp_Array1OfVec2d::~TColgp_Array1OfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfXY;
 class TColgp_Array1OfXY {
 	public:
@@ -890,20 +794,6 @@ class TColgp_Array1OfXY {
 };
 
 
-%feature("shadow") TColgp_Array1OfXY::~TColgp_Array1OfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array1OfXYZ;
 class TColgp_Array1OfXYZ {
 	public:
@@ -986,20 +876,6 @@ class TColgp_Array1OfXYZ {
 };
 
 
-%feature("shadow") TColgp_Array1OfXYZ::~TColgp_Array1OfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array1OfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfCirc2d;
 class TColgp_Array2OfCirc2d {
 	public:
@@ -1104,20 +980,6 @@ class TColgp_Array2OfCirc2d {
 };
 
 
-%feature("shadow") TColgp_Array2OfCirc2d::~TColgp_Array2OfCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfDir;
 class TColgp_Array2OfDir {
 	public:
@@ -1222,20 +1084,6 @@ class TColgp_Array2OfDir {
 };
 
 
-%feature("shadow") TColgp_Array2OfDir::~TColgp_Array2OfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfDir2d;
 class TColgp_Array2OfDir2d {
 	public:
@@ -1340,20 +1188,6 @@ class TColgp_Array2OfDir2d {
 };
 
 
-%feature("shadow") TColgp_Array2OfDir2d::~TColgp_Array2OfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfLin2d;
 class TColgp_Array2OfLin2d {
 	public:
@@ -1458,20 +1292,6 @@ class TColgp_Array2OfLin2d {
 };
 
 
-%feature("shadow") TColgp_Array2OfLin2d::~TColgp_Array2OfLin2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfLin2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfPnt;
 class TColgp_Array2OfPnt {
 	public:
@@ -1576,20 +1396,6 @@ class TColgp_Array2OfPnt {
 };
 
 
-%feature("shadow") TColgp_Array2OfPnt::~TColgp_Array2OfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfPnt2d;
 class TColgp_Array2OfPnt2d {
 	public:
@@ -1694,20 +1500,6 @@ class TColgp_Array2OfPnt2d {
 };
 
 
-%feature("shadow") TColgp_Array2OfPnt2d::~TColgp_Array2OfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfVec;
 class TColgp_Array2OfVec {
 	public:
@@ -1812,20 +1604,6 @@ class TColgp_Array2OfVec {
 };
 
 
-%feature("shadow") TColgp_Array2OfVec::~TColgp_Array2OfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfVec2d;
 class TColgp_Array2OfVec2d {
 	public:
@@ -1930,20 +1708,6 @@ class TColgp_Array2OfVec2d {
 };
 
 
-%feature("shadow") TColgp_Array2OfVec2d::~TColgp_Array2OfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfXY;
 class TColgp_Array2OfXY {
 	public:
@@ -2048,20 +1812,6 @@ class TColgp_Array2OfXY {
 };
 
 
-%feature("shadow") TColgp_Array2OfXY::~TColgp_Array2OfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_Array2OfXYZ;
 class TColgp_Array2OfXYZ {
 	public:
@@ -2166,242 +1916,6 @@ class TColgp_Array2OfXYZ {
 };
 
 
-%feature("shadow") TColgp_Array2OfXYZ::~TColgp_Array2OfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_Array2OfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d;
-class TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d : public TCollection_BasicMapIterator {
-	public:
-		%feature("compactdefaultargs") TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d;
-		%feature("autodoc", "	:rtype: None
-") TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d;
-		 TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d ();
-		%feature("compactdefaultargs") TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d;
-		%feature("autodoc", "	:param aMap:
-	:type aMap: TColgp_DataMapOfIntegerCirc2d
-	:rtype: None
-") TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d;
-		 TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d (const TColgp_DataMapOfIntegerCirc2d & aMap);
-		%feature("compactdefaultargs") Initialize;
-		%feature("autodoc", "	:param aMap:
-	:type aMap: TColgp_DataMapOfIntegerCirc2d
-	:rtype: None
-") Initialize;
-		void Initialize (const TColgp_DataMapOfIntegerCirc2d & aMap);
-		%feature("compactdefaultargs") Key;
-		%feature("autodoc", "	:rtype: int
-") Key;
-		const Standard_Integer & Key ();
-		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: gp_Circ2d
-") Value;
-		const gp_Circ2d  Value ();
-};
-
-
-%feature("shadow") TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d::~TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_DataMapIteratorOfDataMapOfIntegerCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TColgp_DataMapNodeOfDataMapOfIntegerCirc2d;
-class TColgp_DataMapNodeOfDataMapOfIntegerCirc2d : public TCollection_MapNode {
-	public:
-		%feature("compactdefaultargs") TColgp_DataMapNodeOfDataMapOfIntegerCirc2d;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:param I:
-	:type I: gp_Circ2d
-	:param n:
-	:type n: TCollection_MapNodePtr &
-	:rtype: None
-") TColgp_DataMapNodeOfDataMapOfIntegerCirc2d;
-		 TColgp_DataMapNodeOfDataMapOfIntegerCirc2d (const Standard_Integer & K,const gp_Circ2d & I,const TCollection_MapNodePtr & n);
-
-            %feature("autodoc","1");
-            %extend {
-                Standard_Integer GetKey() {
-                return (Standard_Integer) $self->Key();
-                }
-            };
-            %feature("autodoc","1");
-            %extend {
-                void SetKey(Standard_Integer value ) {
-                $self->Key()=value;
-                }
-            };
-            		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: gp_Circ2d
-") Value;
-		gp_Circ2d  Value ();
-};
-
-
-%feature("shadow") TColgp_DataMapNodeOfDataMapOfIntegerCirc2d::~TColgp_DataMapNodeOfDataMapOfIntegerCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_DataMapNodeOfDataMapOfIntegerCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_DataMapNodeOfDataMapOfIntegerCirc2d {
-	Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d GetHandle() {
-	return *(Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d*) &$self;
-	}
-};
-
-%nodefaultctor Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d;
-class Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d : public Handle_TCollection_MapNode {
-
-    public:
-        // constructors
-        Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d();
-        Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d(const Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d &aHandle);
-        Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d(const TColgp_DataMapNodeOfDataMapOfIntegerCirc2d *anItem);
-        void Nullify();
-        Standard_Boolean IsNull() const;
-        static const Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d DownCast(const Handle_Standard_Transient &AnObject);
-
-};
-%extend Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d {
-    TColgp_DataMapNodeOfDataMapOfIntegerCirc2d* GetObject() {
-    return (TColgp_DataMapNodeOfDataMapOfIntegerCirc2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d::~Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_DataMapNodeOfDataMapOfIntegerCirc2d {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
-
-%nodefaultctor TColgp_DataMapOfIntegerCirc2d;
-class TColgp_DataMapOfIntegerCirc2d : public TCollection_BasicMap {
-	public:
-		%feature("compactdefaultargs") TColgp_DataMapOfIntegerCirc2d;
-		%feature("autodoc", "	:param NbBuckets: default value is 1
-	:type NbBuckets: int
-	:rtype: None
-") TColgp_DataMapOfIntegerCirc2d;
-		 TColgp_DataMapOfIntegerCirc2d (const Standard_Integer NbBuckets = 1);
-		%feature("compactdefaultargs") Assign;
-		%feature("autodoc", "	:param Other:
-	:type Other: TColgp_DataMapOfIntegerCirc2d
-	:rtype: TColgp_DataMapOfIntegerCirc2d
-") Assign;
-		TColgp_DataMapOfIntegerCirc2d & Assign (const TColgp_DataMapOfIntegerCirc2d & Other);
-		%feature("compactdefaultargs") operator =;
-		%feature("autodoc", "	:param Other:
-	:type Other: TColgp_DataMapOfIntegerCirc2d
-	:rtype: TColgp_DataMapOfIntegerCirc2d
-") operator=;
-		TColgp_DataMapOfIntegerCirc2d & operator = (const TColgp_DataMapOfIntegerCirc2d & Other);
-		%feature("compactdefaultargs") ReSize;
-		%feature("autodoc", "	:param NbBuckets:
-	:type NbBuckets: int
-	:rtype: None
-") ReSize;
-		void ReSize (const Standard_Integer NbBuckets);
-		%feature("compactdefaultargs") Clear;
-		%feature("autodoc", "	:rtype: None
-") Clear;
-		void Clear ();
-		%feature("compactdefaultargs") Bind;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:param I:
-	:type I: gp_Circ2d
-	:rtype: bool
-") Bind;
-		Standard_Boolean Bind (const Standard_Integer & K,const gp_Circ2d & I);
-		%feature("compactdefaultargs") IsBound;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:rtype: bool
-") IsBound;
-		Standard_Boolean IsBound (const Standard_Integer & K);
-		%feature("compactdefaultargs") UnBind;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:rtype: bool
-") UnBind;
-		Standard_Boolean UnBind (const Standard_Integer & K);
-		%feature("compactdefaultargs") Find;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:rtype: gp_Circ2d
-") Find;
-		const gp_Circ2d  Find (const Standard_Integer & K);
-		%feature("compactdefaultargs") ChangeFind;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:rtype: gp_Circ2d
-") ChangeFind;
-		gp_Circ2d  ChangeFind (const Standard_Integer & K);
-		%feature("compactdefaultargs") Find1;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:rtype: Standard_Address
-") Find1;
-		Standard_Address Find1 (const Standard_Integer & K);
-		%feature("compactdefaultargs") ChangeFind1;
-		%feature("autodoc", "	:param K:
-	:type K: int &
-	:rtype: Standard_Address
-") ChangeFind1;
-		Standard_Address ChangeFind1 (const Standard_Integer & K);
-};
-
-
-%feature("shadow") TColgp_DataMapOfIntegerCirc2d::~TColgp_DataMapOfIntegerCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_DataMapOfIntegerCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_HArray1OfCirc2d;
 class TColgp_HArray1OfCirc2d : public MMgt_TShared {
 	public:
@@ -2472,25 +1986,23 @@ class TColgp_HArray1OfCirc2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfCirc2d::~TColgp_HArray1OfCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfCirc2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfCirc2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfCirc2d {
-	Handle_TColgp_HArray1OfCirc2d GetHandle() {
-	return *(Handle_TColgp_HArray1OfCirc2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfCirc2d::Handle_TColgp_HArray1OfCirc2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfCirc2d;
 class Handle_TColgp_HArray1OfCirc2d : public Handle_MMgt_TShared {
@@ -2508,20 +2020,6 @@ class Handle_TColgp_HArray1OfCirc2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfCirc2d {
     TColgp_HArray1OfCirc2d* GetObject() {
     return (TColgp_HArray1OfCirc2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfCirc2d::~Handle_TColgp_HArray1OfCirc2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfCirc2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2595,25 +2093,23 @@ class TColgp_HArray1OfDir : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfDir::~TColgp_HArray1OfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfDir {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfDir(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfDir {
-	Handle_TColgp_HArray1OfDir GetHandle() {
-	return *(Handle_TColgp_HArray1OfDir*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfDir::Handle_TColgp_HArray1OfDir %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfDir;
 class Handle_TColgp_HArray1OfDir : public Handle_MMgt_TShared {
@@ -2631,20 +2127,6 @@ class Handle_TColgp_HArray1OfDir : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfDir {
     TColgp_HArray1OfDir* GetObject() {
     return (TColgp_HArray1OfDir*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfDir::~Handle_TColgp_HArray1OfDir %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfDir {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2718,25 +2200,23 @@ class TColgp_HArray1OfDir2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfDir2d::~TColgp_HArray1OfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfDir2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfDir2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfDir2d {
-	Handle_TColgp_HArray1OfDir2d GetHandle() {
-	return *(Handle_TColgp_HArray1OfDir2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfDir2d::Handle_TColgp_HArray1OfDir2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfDir2d;
 class Handle_TColgp_HArray1OfDir2d : public Handle_MMgt_TShared {
@@ -2754,20 +2234,6 @@ class Handle_TColgp_HArray1OfDir2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfDir2d {
     TColgp_HArray1OfDir2d* GetObject() {
     return (TColgp_HArray1OfDir2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfDir2d::~Handle_TColgp_HArray1OfDir2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfDir2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2841,25 +2307,23 @@ class TColgp_HArray1OfLin2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfLin2d::~TColgp_HArray1OfLin2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfLin2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfLin2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfLin2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfLin2d {
-	Handle_TColgp_HArray1OfLin2d GetHandle() {
-	return *(Handle_TColgp_HArray1OfLin2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfLin2d::Handle_TColgp_HArray1OfLin2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfLin2d;
 class Handle_TColgp_HArray1OfLin2d : public Handle_MMgt_TShared {
@@ -2877,20 +2341,6 @@ class Handle_TColgp_HArray1OfLin2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfLin2d {
     TColgp_HArray1OfLin2d* GetObject() {
     return (TColgp_HArray1OfLin2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfLin2d::~Handle_TColgp_HArray1OfLin2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfLin2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2964,25 +2414,23 @@ class TColgp_HArray1OfPnt : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfPnt::~TColgp_HArray1OfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfPnt {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfPnt(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfPnt {
-	Handle_TColgp_HArray1OfPnt GetHandle() {
-	return *(Handle_TColgp_HArray1OfPnt*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfPnt::Handle_TColgp_HArray1OfPnt %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfPnt;
 class Handle_TColgp_HArray1OfPnt : public Handle_MMgt_TShared {
@@ -3000,20 +2448,6 @@ class Handle_TColgp_HArray1OfPnt : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfPnt {
     TColgp_HArray1OfPnt* GetObject() {
     return (TColgp_HArray1OfPnt*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfPnt::~Handle_TColgp_HArray1OfPnt %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfPnt {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3087,25 +2521,23 @@ class TColgp_HArray1OfPnt2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfPnt2d::~TColgp_HArray1OfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfPnt2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfPnt2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfPnt2d {
-	Handle_TColgp_HArray1OfPnt2d GetHandle() {
-	return *(Handle_TColgp_HArray1OfPnt2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfPnt2d::Handle_TColgp_HArray1OfPnt2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfPnt2d;
 class Handle_TColgp_HArray1OfPnt2d : public Handle_MMgt_TShared {
@@ -3123,20 +2555,6 @@ class Handle_TColgp_HArray1OfPnt2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfPnt2d {
     TColgp_HArray1OfPnt2d* GetObject() {
     return (TColgp_HArray1OfPnt2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfPnt2d::~Handle_TColgp_HArray1OfPnt2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfPnt2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3210,25 +2628,23 @@ class TColgp_HArray1OfVec : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfVec::~TColgp_HArray1OfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfVec {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfVec(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfVec {
-	Handle_TColgp_HArray1OfVec GetHandle() {
-	return *(Handle_TColgp_HArray1OfVec*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfVec::Handle_TColgp_HArray1OfVec %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfVec;
 class Handle_TColgp_HArray1OfVec : public Handle_MMgt_TShared {
@@ -3246,20 +2662,6 @@ class Handle_TColgp_HArray1OfVec : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfVec {
     TColgp_HArray1OfVec* GetObject() {
     return (TColgp_HArray1OfVec*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfVec::~Handle_TColgp_HArray1OfVec %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfVec {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3333,25 +2735,23 @@ class TColgp_HArray1OfVec2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfVec2d::~TColgp_HArray1OfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfVec2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfVec2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfVec2d {
-	Handle_TColgp_HArray1OfVec2d GetHandle() {
-	return *(Handle_TColgp_HArray1OfVec2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfVec2d::Handle_TColgp_HArray1OfVec2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfVec2d;
 class Handle_TColgp_HArray1OfVec2d : public Handle_MMgt_TShared {
@@ -3369,20 +2769,6 @@ class Handle_TColgp_HArray1OfVec2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfVec2d {
     TColgp_HArray1OfVec2d* GetObject() {
     return (TColgp_HArray1OfVec2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfVec2d::~Handle_TColgp_HArray1OfVec2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfVec2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3456,25 +2842,23 @@ class TColgp_HArray1OfXY : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfXY::~TColgp_HArray1OfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfXY {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfXY(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfXY {
-	Handle_TColgp_HArray1OfXY GetHandle() {
-	return *(Handle_TColgp_HArray1OfXY*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfXY::Handle_TColgp_HArray1OfXY %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfXY;
 class Handle_TColgp_HArray1OfXY : public Handle_MMgt_TShared {
@@ -3492,20 +2876,6 @@ class Handle_TColgp_HArray1OfXY : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfXY {
     TColgp_HArray1OfXY* GetObject() {
     return (TColgp_HArray1OfXY*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfXY::~Handle_TColgp_HArray1OfXY %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfXY {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3579,25 +2949,23 @@ class TColgp_HArray1OfXYZ : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray1OfXYZ::~TColgp_HArray1OfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray1OfXYZ {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray1OfXYZ(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray1OfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray1OfXYZ {
-	Handle_TColgp_HArray1OfXYZ GetHandle() {
-	return *(Handle_TColgp_HArray1OfXYZ*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray1OfXYZ::Handle_TColgp_HArray1OfXYZ %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray1OfXYZ;
 class Handle_TColgp_HArray1OfXYZ : public Handle_MMgt_TShared {
@@ -3615,20 +2983,6 @@ class Handle_TColgp_HArray1OfXYZ : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray1OfXYZ {
     TColgp_HArray1OfXYZ* GetObject() {
     return (TColgp_HArray1OfXYZ*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray1OfXYZ::~Handle_TColgp_HArray1OfXYZ %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray1OfXYZ {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3728,25 +3082,23 @@ class TColgp_HArray2OfCirc2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfCirc2d::~TColgp_HArray2OfCirc2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfCirc2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfCirc2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfCirc2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfCirc2d {
-	Handle_TColgp_HArray2OfCirc2d GetHandle() {
-	return *(Handle_TColgp_HArray2OfCirc2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfCirc2d::Handle_TColgp_HArray2OfCirc2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfCirc2d;
 class Handle_TColgp_HArray2OfCirc2d : public Handle_MMgt_TShared {
@@ -3764,20 +3116,6 @@ class Handle_TColgp_HArray2OfCirc2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfCirc2d {
     TColgp_HArray2OfCirc2d* GetObject() {
     return (TColgp_HArray2OfCirc2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfCirc2d::~Handle_TColgp_HArray2OfCirc2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfCirc2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3877,25 +3215,23 @@ class TColgp_HArray2OfDir : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfDir::~TColgp_HArray2OfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfDir {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfDir(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfDir {
-	Handle_TColgp_HArray2OfDir GetHandle() {
-	return *(Handle_TColgp_HArray2OfDir*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfDir::Handle_TColgp_HArray2OfDir %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfDir;
 class Handle_TColgp_HArray2OfDir : public Handle_MMgt_TShared {
@@ -3913,20 +3249,6 @@ class Handle_TColgp_HArray2OfDir : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfDir {
     TColgp_HArray2OfDir* GetObject() {
     return (TColgp_HArray2OfDir*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfDir::~Handle_TColgp_HArray2OfDir %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfDir {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4026,25 +3348,23 @@ class TColgp_HArray2OfDir2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfDir2d::~TColgp_HArray2OfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfDir2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfDir2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfDir2d {
-	Handle_TColgp_HArray2OfDir2d GetHandle() {
-	return *(Handle_TColgp_HArray2OfDir2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfDir2d::Handle_TColgp_HArray2OfDir2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfDir2d;
 class Handle_TColgp_HArray2OfDir2d : public Handle_MMgt_TShared {
@@ -4062,20 +3382,6 @@ class Handle_TColgp_HArray2OfDir2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfDir2d {
     TColgp_HArray2OfDir2d* GetObject() {
     return (TColgp_HArray2OfDir2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfDir2d::~Handle_TColgp_HArray2OfDir2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfDir2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4175,25 +3481,23 @@ class TColgp_HArray2OfLin2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfLin2d::~TColgp_HArray2OfLin2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfLin2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfLin2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfLin2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfLin2d {
-	Handle_TColgp_HArray2OfLin2d GetHandle() {
-	return *(Handle_TColgp_HArray2OfLin2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfLin2d::Handle_TColgp_HArray2OfLin2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfLin2d;
 class Handle_TColgp_HArray2OfLin2d : public Handle_MMgt_TShared {
@@ -4211,20 +3515,6 @@ class Handle_TColgp_HArray2OfLin2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfLin2d {
     TColgp_HArray2OfLin2d* GetObject() {
     return (TColgp_HArray2OfLin2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfLin2d::~Handle_TColgp_HArray2OfLin2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfLin2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4324,25 +3614,23 @@ class TColgp_HArray2OfPnt : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfPnt::~TColgp_HArray2OfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfPnt {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfPnt(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfPnt {
-	Handle_TColgp_HArray2OfPnt GetHandle() {
-	return *(Handle_TColgp_HArray2OfPnt*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfPnt::Handle_TColgp_HArray2OfPnt %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfPnt;
 class Handle_TColgp_HArray2OfPnt : public Handle_MMgt_TShared {
@@ -4360,20 +3648,6 @@ class Handle_TColgp_HArray2OfPnt : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfPnt {
     TColgp_HArray2OfPnt* GetObject() {
     return (TColgp_HArray2OfPnt*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfPnt::~Handle_TColgp_HArray2OfPnt %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfPnt {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4473,25 +3747,23 @@ class TColgp_HArray2OfPnt2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfPnt2d::~TColgp_HArray2OfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfPnt2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfPnt2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfPnt2d {
-	Handle_TColgp_HArray2OfPnt2d GetHandle() {
-	return *(Handle_TColgp_HArray2OfPnt2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfPnt2d::Handle_TColgp_HArray2OfPnt2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfPnt2d;
 class Handle_TColgp_HArray2OfPnt2d : public Handle_MMgt_TShared {
@@ -4509,20 +3781,6 @@ class Handle_TColgp_HArray2OfPnt2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfPnt2d {
     TColgp_HArray2OfPnt2d* GetObject() {
     return (TColgp_HArray2OfPnt2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfPnt2d::~Handle_TColgp_HArray2OfPnt2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfPnt2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4622,25 +3880,23 @@ class TColgp_HArray2OfVec : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfVec::~TColgp_HArray2OfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfVec {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfVec(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfVec {
-	Handle_TColgp_HArray2OfVec GetHandle() {
-	return *(Handle_TColgp_HArray2OfVec*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfVec::Handle_TColgp_HArray2OfVec %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfVec;
 class Handle_TColgp_HArray2OfVec : public Handle_MMgt_TShared {
@@ -4658,20 +3914,6 @@ class Handle_TColgp_HArray2OfVec : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfVec {
     TColgp_HArray2OfVec* GetObject() {
     return (TColgp_HArray2OfVec*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfVec::~Handle_TColgp_HArray2OfVec %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfVec {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4771,25 +4013,23 @@ class TColgp_HArray2OfVec2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfVec2d::~TColgp_HArray2OfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfVec2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfVec2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfVec2d {
-	Handle_TColgp_HArray2OfVec2d GetHandle() {
-	return *(Handle_TColgp_HArray2OfVec2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfVec2d::Handle_TColgp_HArray2OfVec2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfVec2d;
 class Handle_TColgp_HArray2OfVec2d : public Handle_MMgt_TShared {
@@ -4807,20 +4047,6 @@ class Handle_TColgp_HArray2OfVec2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfVec2d {
     TColgp_HArray2OfVec2d* GetObject() {
     return (TColgp_HArray2OfVec2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfVec2d::~Handle_TColgp_HArray2OfVec2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfVec2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4920,25 +4146,23 @@ class TColgp_HArray2OfXY : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfXY::~TColgp_HArray2OfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfXY {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfXY(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfXY {
-	Handle_TColgp_HArray2OfXY GetHandle() {
-	return *(Handle_TColgp_HArray2OfXY*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfXY::Handle_TColgp_HArray2OfXY %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfXY;
 class Handle_TColgp_HArray2OfXY : public Handle_MMgt_TShared {
@@ -4956,20 +4180,6 @@ class Handle_TColgp_HArray2OfXY : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfXY {
     TColgp_HArray2OfXY* GetObject() {
     return (TColgp_HArray2OfXY*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfXY::~Handle_TColgp_HArray2OfXY %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfXY {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5069,25 +4279,23 @@ class TColgp_HArray2OfXYZ : public MMgt_TShared {
 };
 
 
-%feature("shadow") TColgp_HArray2OfXYZ::~TColgp_HArray2OfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_HArray2OfXYZ {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HArray2OfXYZ(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_HArray2OfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HArray2OfXYZ {
-	Handle_TColgp_HArray2OfXYZ GetHandle() {
-	return *(Handle_TColgp_HArray2OfXYZ*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_HArray2OfXYZ::Handle_TColgp_HArray2OfXYZ %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_HArray2OfXYZ;
 class Handle_TColgp_HArray2OfXYZ : public Handle_MMgt_TShared {
@@ -5105,20 +4313,6 @@ class Handle_TColgp_HArray2OfXYZ : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HArray2OfXYZ {
     TColgp_HArray2OfXYZ* GetObject() {
     return (TColgp_HArray2OfXYZ*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HArray2OfXYZ::~Handle_TColgp_HArray2OfXYZ %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HArray2OfXYZ {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5257,32 +4451,26 @@ class TColgp_HSequenceOfDir : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfDir
 ") ChangeSequence;
 		TColgp_SequenceOfDir & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfDir
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfDir ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfDir::~TColgp_HSequenceOfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfDir {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfDir(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfDir::Handle_TColgp_HSequenceOfDir %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfDir {
-	Handle_TColgp_HSequenceOfDir GetHandle() {
-	return *(Handle_TColgp_HSequenceOfDir*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfDir;
 class Handle_TColgp_HSequenceOfDir : public Handle_MMgt_TShared {
@@ -5300,20 +4488,6 @@ class Handle_TColgp_HSequenceOfDir : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfDir {
     TColgp_HSequenceOfDir* GetObject() {
     return (TColgp_HSequenceOfDir*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfDir::~Handle_TColgp_HSequenceOfDir %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfDir {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5452,32 +4626,26 @@ class TColgp_HSequenceOfDir2d : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfDir2d
 ") ChangeSequence;
 		TColgp_SequenceOfDir2d & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfDir2d
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfDir2d ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfDir2d::~TColgp_HSequenceOfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfDir2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfDir2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfDir2d::Handle_TColgp_HSequenceOfDir2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfDir2d {
-	Handle_TColgp_HSequenceOfDir2d GetHandle() {
-	return *(Handle_TColgp_HSequenceOfDir2d*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfDir2d;
 class Handle_TColgp_HSequenceOfDir2d : public Handle_MMgt_TShared {
@@ -5495,20 +4663,6 @@ class Handle_TColgp_HSequenceOfDir2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfDir2d {
     TColgp_HSequenceOfDir2d* GetObject() {
     return (TColgp_HSequenceOfDir2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfDir2d::~Handle_TColgp_HSequenceOfDir2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfDir2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5647,32 +4801,26 @@ class TColgp_HSequenceOfPnt : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfPnt
 ") ChangeSequence;
 		TColgp_SequenceOfPnt & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfPnt
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfPnt ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfPnt::~TColgp_HSequenceOfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfPnt {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfPnt(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfPnt::Handle_TColgp_HSequenceOfPnt %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfPnt {
-	Handle_TColgp_HSequenceOfPnt GetHandle() {
-	return *(Handle_TColgp_HSequenceOfPnt*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfPnt;
 class Handle_TColgp_HSequenceOfPnt : public Handle_MMgt_TShared {
@@ -5690,20 +4838,6 @@ class Handle_TColgp_HSequenceOfPnt : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfPnt {
     TColgp_HSequenceOfPnt* GetObject() {
     return (TColgp_HSequenceOfPnt*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfPnt::~Handle_TColgp_HSequenceOfPnt %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfPnt {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5842,32 +4976,26 @@ class TColgp_HSequenceOfPnt2d : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfPnt2d
 ") ChangeSequence;
 		TColgp_SequenceOfPnt2d & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfPnt2d
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfPnt2d ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfPnt2d::~TColgp_HSequenceOfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfPnt2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfPnt2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfPnt2d::Handle_TColgp_HSequenceOfPnt2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfPnt2d {
-	Handle_TColgp_HSequenceOfPnt2d GetHandle() {
-	return *(Handle_TColgp_HSequenceOfPnt2d*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfPnt2d;
 class Handle_TColgp_HSequenceOfPnt2d : public Handle_MMgt_TShared {
@@ -5885,20 +5013,6 @@ class Handle_TColgp_HSequenceOfPnt2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfPnt2d {
     TColgp_HSequenceOfPnt2d* GetObject() {
     return (TColgp_HSequenceOfPnt2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfPnt2d::~Handle_TColgp_HSequenceOfPnt2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfPnt2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6037,32 +5151,26 @@ class TColgp_HSequenceOfVec : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfVec
 ") ChangeSequence;
 		TColgp_SequenceOfVec & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfVec
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfVec ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfVec::~TColgp_HSequenceOfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfVec {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfVec(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfVec::Handle_TColgp_HSequenceOfVec %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfVec {
-	Handle_TColgp_HSequenceOfVec GetHandle() {
-	return *(Handle_TColgp_HSequenceOfVec*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfVec;
 class Handle_TColgp_HSequenceOfVec : public Handle_MMgt_TShared {
@@ -6080,20 +5188,6 @@ class Handle_TColgp_HSequenceOfVec : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfVec {
     TColgp_HSequenceOfVec* GetObject() {
     return (TColgp_HSequenceOfVec*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfVec::~Handle_TColgp_HSequenceOfVec %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfVec {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6232,32 +5326,26 @@ class TColgp_HSequenceOfVec2d : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfVec2d
 ") ChangeSequence;
 		TColgp_SequenceOfVec2d & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfVec2d
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfVec2d ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfVec2d::~TColgp_HSequenceOfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfVec2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfVec2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfVec2d::Handle_TColgp_HSequenceOfVec2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfVec2d {
-	Handle_TColgp_HSequenceOfVec2d GetHandle() {
-	return *(Handle_TColgp_HSequenceOfVec2d*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfVec2d;
 class Handle_TColgp_HSequenceOfVec2d : public Handle_MMgt_TShared {
@@ -6275,20 +5363,6 @@ class Handle_TColgp_HSequenceOfVec2d : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfVec2d {
     TColgp_HSequenceOfVec2d* GetObject() {
     return (TColgp_HSequenceOfVec2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfVec2d::~Handle_TColgp_HSequenceOfVec2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfVec2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6427,32 +5501,26 @@ class TColgp_HSequenceOfXY : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfXY
 ") ChangeSequence;
 		TColgp_SequenceOfXY & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfXY
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfXY ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfXY::~TColgp_HSequenceOfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfXY {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfXY(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfXY::Handle_TColgp_HSequenceOfXY %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfXY {
-	Handle_TColgp_HSequenceOfXY GetHandle() {
-	return *(Handle_TColgp_HSequenceOfXY*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfXY;
 class Handle_TColgp_HSequenceOfXY : public Handle_MMgt_TShared {
@@ -6470,20 +5538,6 @@ class Handle_TColgp_HSequenceOfXY : public Handle_MMgt_TShared {
 %extend Handle_TColgp_HSequenceOfXY {
     TColgp_HSequenceOfXY* GetObject() {
     return (TColgp_HSequenceOfXY*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_HSequenceOfXY::~Handle_TColgp_HSequenceOfXY %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfXY {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6622,32 +5676,26 @@ class TColgp_HSequenceOfXYZ : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: TColgp_SequenceOfXYZ
 ") ChangeSequence;
 		TColgp_SequenceOfXYZ & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TColgp_HSequenceOfXYZ
-") ShallowCopy;
-		Handle_TColgp_HSequenceOfXYZ ShallowCopy ();
 };
 
 
-%feature("shadow") TColgp_HSequenceOfXYZ::~TColgp_HSequenceOfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_HSequenceOfXYZ {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_HSequenceOfXYZ(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_HSequenceOfXYZ::Handle_TColgp_HSequenceOfXYZ %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_HSequenceOfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_HSequenceOfXYZ {
-	Handle_TColgp_HSequenceOfXYZ GetHandle() {
-	return *(Handle_TColgp_HSequenceOfXYZ*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_HSequenceOfXYZ;
 class Handle_TColgp_HSequenceOfXYZ : public Handle_MMgt_TShared {
@@ -6667,20 +5715,6 @@ class Handle_TColgp_HSequenceOfXYZ : public Handle_MMgt_TShared {
     return (TColgp_HSequenceOfXYZ*)$self->Access();
     }
 };
-%feature("shadow") Handle_TColgp_HSequenceOfXYZ::~Handle_TColgp_HSequenceOfXYZ %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_HSequenceOfXYZ {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d;
 class TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d : public TCollection_SeqNode {
@@ -6698,29 +5732,27 @@ class TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d : public TCollection_SeqNode 
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TColgp_HArray1OfPnt2d
 ") Value;
-		Handle_TColgp_HArray1OfPnt2d & Value ();
+		Handle_TColgp_HArray1OfPnt2d Value ();
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d::~TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d::Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d {
-	Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d;
 class Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d : public Handle_TCollection_SeqNode {
@@ -6738,20 +5770,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d : public Handle_TColle
 %extend Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d {
     TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d::~Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfArray1OfPnt2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6775,25 +5793,23 @@ class TColgp_SequenceNodeOfSequenceOfDir : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfDir::~TColgp_SequenceNodeOfSequenceOfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfDir {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfDir(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfDir {
-	Handle_TColgp_SequenceNodeOfSequenceOfDir GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfDir*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfDir::Handle_TColgp_SequenceNodeOfSequenceOfDir %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfDir;
 class Handle_TColgp_SequenceNodeOfSequenceOfDir : public Handle_TCollection_SeqNode {
@@ -6811,20 +5827,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfDir : public Handle_TCollection_SeqN
 %extend Handle_TColgp_SequenceNodeOfSequenceOfDir {
     TColgp_SequenceNodeOfSequenceOfDir* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfDir*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfDir::~Handle_TColgp_SequenceNodeOfSequenceOfDir %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfDir {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6848,25 +5850,23 @@ class TColgp_SequenceNodeOfSequenceOfDir2d : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfDir2d::~TColgp_SequenceNodeOfSequenceOfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfDir2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfDir2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfDir2d {
-	Handle_TColgp_SequenceNodeOfSequenceOfDir2d GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfDir2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfDir2d::Handle_TColgp_SequenceNodeOfSequenceOfDir2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfDir2d;
 class Handle_TColgp_SequenceNodeOfSequenceOfDir2d : public Handle_TCollection_SeqNode {
@@ -6884,20 +5884,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfDir2d : public Handle_TCollection_Se
 %extend Handle_TColgp_SequenceNodeOfSequenceOfDir2d {
     TColgp_SequenceNodeOfSequenceOfDir2d* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfDir2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfDir2d::~Handle_TColgp_SequenceNodeOfSequenceOfDir2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfDir2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6921,25 +5907,23 @@ class TColgp_SequenceNodeOfSequenceOfPnt : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfPnt::~TColgp_SequenceNodeOfSequenceOfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfPnt {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfPnt(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfPnt {
-	Handle_TColgp_SequenceNodeOfSequenceOfPnt GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfPnt*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfPnt::Handle_TColgp_SequenceNodeOfSequenceOfPnt %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfPnt;
 class Handle_TColgp_SequenceNodeOfSequenceOfPnt : public Handle_TCollection_SeqNode {
@@ -6957,20 +5941,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfPnt : public Handle_TCollection_SeqN
 %extend Handle_TColgp_SequenceNodeOfSequenceOfPnt {
     TColgp_SequenceNodeOfSequenceOfPnt* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfPnt*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfPnt::~Handle_TColgp_SequenceNodeOfSequenceOfPnt %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfPnt {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6994,25 +5964,23 @@ class TColgp_SequenceNodeOfSequenceOfPnt2d : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfPnt2d::~TColgp_SequenceNodeOfSequenceOfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfPnt2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfPnt2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfPnt2d {
-	Handle_TColgp_SequenceNodeOfSequenceOfPnt2d GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfPnt2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfPnt2d::Handle_TColgp_SequenceNodeOfSequenceOfPnt2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfPnt2d;
 class Handle_TColgp_SequenceNodeOfSequenceOfPnt2d : public Handle_TCollection_SeqNode {
@@ -7030,20 +5998,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfPnt2d : public Handle_TCollection_Se
 %extend Handle_TColgp_SequenceNodeOfSequenceOfPnt2d {
     TColgp_SequenceNodeOfSequenceOfPnt2d* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfPnt2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfPnt2d::~Handle_TColgp_SequenceNodeOfSequenceOfPnt2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfPnt2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7067,25 +6021,23 @@ class TColgp_SequenceNodeOfSequenceOfVec : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfVec::~TColgp_SequenceNodeOfSequenceOfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfVec {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfVec(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfVec {
-	Handle_TColgp_SequenceNodeOfSequenceOfVec GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfVec*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfVec::Handle_TColgp_SequenceNodeOfSequenceOfVec %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfVec;
 class Handle_TColgp_SequenceNodeOfSequenceOfVec : public Handle_TCollection_SeqNode {
@@ -7103,20 +6055,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfVec : public Handle_TCollection_SeqN
 %extend Handle_TColgp_SequenceNodeOfSequenceOfVec {
     TColgp_SequenceNodeOfSequenceOfVec* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfVec*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfVec::~Handle_TColgp_SequenceNodeOfSequenceOfVec %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfVec {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7140,25 +6078,23 @@ class TColgp_SequenceNodeOfSequenceOfVec2d : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfVec2d::~TColgp_SequenceNodeOfSequenceOfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfVec2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfVec2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfVec2d {
-	Handle_TColgp_SequenceNodeOfSequenceOfVec2d GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfVec2d*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfVec2d::Handle_TColgp_SequenceNodeOfSequenceOfVec2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfVec2d;
 class Handle_TColgp_SequenceNodeOfSequenceOfVec2d : public Handle_TCollection_SeqNode {
@@ -7176,20 +6112,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfVec2d : public Handle_TCollection_Se
 %extend Handle_TColgp_SequenceNodeOfSequenceOfVec2d {
     TColgp_SequenceNodeOfSequenceOfVec2d* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfVec2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfVec2d::~Handle_TColgp_SequenceNodeOfSequenceOfVec2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfVec2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7213,25 +6135,23 @@ class TColgp_SequenceNodeOfSequenceOfXY : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfXY::~TColgp_SequenceNodeOfSequenceOfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfXY {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfXY(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfXY {
-	Handle_TColgp_SequenceNodeOfSequenceOfXY GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfXY*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfXY::Handle_TColgp_SequenceNodeOfSequenceOfXY %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfXY;
 class Handle_TColgp_SequenceNodeOfSequenceOfXY : public Handle_TCollection_SeqNode {
@@ -7249,20 +6169,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfXY : public Handle_TCollection_SeqNo
 %extend Handle_TColgp_SequenceNodeOfSequenceOfXY {
     TColgp_SequenceNodeOfSequenceOfXY* GetObject() {
     return (TColgp_SequenceNodeOfSequenceOfXY*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfXY::~Handle_TColgp_SequenceNodeOfSequenceOfXY %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfXY {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7286,25 +6192,23 @@ class TColgp_SequenceNodeOfSequenceOfXYZ : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TColgp_SequenceNodeOfSequenceOfXYZ::~TColgp_SequenceNodeOfSequenceOfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TColgp_SequenceNodeOfSequenceOfXYZ {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TColgp_SequenceNodeOfSequenceOfXYZ(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TColgp_SequenceNodeOfSequenceOfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TColgp_SequenceNodeOfSequenceOfXYZ {
-	Handle_TColgp_SequenceNodeOfSequenceOfXYZ GetHandle() {
-	return *(Handle_TColgp_SequenceNodeOfSequenceOfXYZ*) &$self;
-	}
-};
+%pythonappend Handle_TColgp_SequenceNodeOfSequenceOfXYZ::Handle_TColgp_SequenceNodeOfSequenceOfXYZ %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TColgp_SequenceNodeOfSequenceOfXYZ;
 class Handle_TColgp_SequenceNodeOfSequenceOfXYZ : public Handle_TCollection_SeqNode {
@@ -7324,20 +6228,6 @@ class Handle_TColgp_SequenceNodeOfSequenceOfXYZ : public Handle_TCollection_SeqN
     return (TColgp_SequenceNodeOfSequenceOfXYZ*)$self->Access();
     }
 };
-%feature("shadow") Handle_TColgp_SequenceNodeOfSequenceOfXYZ::~Handle_TColgp_SequenceNodeOfSequenceOfXYZ %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TColgp_SequenceNodeOfSequenceOfXYZ {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TColgp_SequenceOfArray1OfPnt2d;
 class TColgp_SequenceOfArray1OfPnt2d : public TCollection_BaseSequence {
@@ -7346,6 +6236,12 @@ class TColgp_SequenceOfArray1OfPnt2d : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfArray1OfPnt2d;
 		 TColgp_SequenceOfArray1OfPnt2d ();
+		%feature("compactdefaultargs") TColgp_SequenceOfArray1OfPnt2d;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfArray1OfPnt2d
+	:rtype: None
+") TColgp_SequenceOfArray1OfPnt2d;
+		 TColgp_SequenceOfArray1OfPnt2d (const TColgp_SequenceOfArray1OfPnt2d & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -7421,11 +6317,11 @@ class TColgp_SequenceOfArray1OfPnt2d : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TColgp_HArray1OfPnt2d
 ") First;
-		const Handle_TColgp_HArray1OfPnt2d & First ();
+		Handle_TColgp_HArray1OfPnt2d First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TColgp_HArray1OfPnt2d
 ") Last;
-		const Handle_TColgp_HArray1OfPnt2d & Last ();
+		Handle_TColgp_HArray1OfPnt2d Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -7439,7 +6335,7 @@ class TColgp_SequenceOfArray1OfPnt2d : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TColgp_HArray1OfPnt2d
 ") Value;
-		const Handle_TColgp_HArray1OfPnt2d & Value (const Standard_Integer Index);
+		Handle_TColgp_HArray1OfPnt2d Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -7453,7 +6349,7 @@ class TColgp_SequenceOfArray1OfPnt2d : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TColgp_HArray1OfPnt2d
 ") ChangeValue;
-		Handle_TColgp_HArray1OfPnt2d & ChangeValue (const Standard_Integer Index);
+		Handle_TColgp_HArray1OfPnt2d ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -7471,20 +6367,6 @@ class TColgp_SequenceOfArray1OfPnt2d : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfArray1OfPnt2d::~TColgp_SequenceOfArray1OfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfArray1OfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfDir;
 class TColgp_SequenceOfDir : public TCollection_BaseSequence {
 	public:
@@ -7492,6 +6374,12 @@ class TColgp_SequenceOfDir : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfDir;
 		 TColgp_SequenceOfDir ();
+		%feature("compactdefaultargs") TColgp_SequenceOfDir;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfDir
+	:rtype: None
+") TColgp_SequenceOfDir;
+		 TColgp_SequenceOfDir (const TColgp_SequenceOfDir & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -7617,20 +6505,6 @@ class TColgp_SequenceOfDir : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfDir::~TColgp_SequenceOfDir %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfDir {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfDir2d;
 class TColgp_SequenceOfDir2d : public TCollection_BaseSequence {
 	public:
@@ -7638,6 +6512,12 @@ class TColgp_SequenceOfDir2d : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfDir2d;
 		 TColgp_SequenceOfDir2d ();
+		%feature("compactdefaultargs") TColgp_SequenceOfDir2d;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfDir2d
+	:rtype: None
+") TColgp_SequenceOfDir2d;
+		 TColgp_SequenceOfDir2d (const TColgp_SequenceOfDir2d & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -7763,20 +6643,6 @@ class TColgp_SequenceOfDir2d : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfDir2d::~TColgp_SequenceOfDir2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfDir2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfPnt;
 class TColgp_SequenceOfPnt : public TCollection_BaseSequence {
 	public:
@@ -7784,6 +6650,12 @@ class TColgp_SequenceOfPnt : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfPnt;
 		 TColgp_SequenceOfPnt ();
+		%feature("compactdefaultargs") TColgp_SequenceOfPnt;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfPnt
+	:rtype: None
+") TColgp_SequenceOfPnt;
+		 TColgp_SequenceOfPnt (const TColgp_SequenceOfPnt & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -7909,20 +6781,6 @@ class TColgp_SequenceOfPnt : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfPnt::~TColgp_SequenceOfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfPnt2d;
 class TColgp_SequenceOfPnt2d : public TCollection_BaseSequence {
 	public:
@@ -7930,6 +6788,12 @@ class TColgp_SequenceOfPnt2d : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfPnt2d;
 		 TColgp_SequenceOfPnt2d ();
+		%feature("compactdefaultargs") TColgp_SequenceOfPnt2d;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfPnt2d
+	:rtype: None
+") TColgp_SequenceOfPnt2d;
+		 TColgp_SequenceOfPnt2d (const TColgp_SequenceOfPnt2d & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -8055,20 +6919,6 @@ class TColgp_SequenceOfPnt2d : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfPnt2d::~TColgp_SequenceOfPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfVec;
 class TColgp_SequenceOfVec : public TCollection_BaseSequence {
 	public:
@@ -8076,6 +6926,12 @@ class TColgp_SequenceOfVec : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfVec;
 		 TColgp_SequenceOfVec ();
+		%feature("compactdefaultargs") TColgp_SequenceOfVec;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfVec
+	:rtype: None
+") TColgp_SequenceOfVec;
+		 TColgp_SequenceOfVec (const TColgp_SequenceOfVec & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -8201,20 +7057,6 @@ class TColgp_SequenceOfVec : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfVec::~TColgp_SequenceOfVec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfVec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfVec2d;
 class TColgp_SequenceOfVec2d : public TCollection_BaseSequence {
 	public:
@@ -8222,6 +7064,12 @@ class TColgp_SequenceOfVec2d : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfVec2d;
 		 TColgp_SequenceOfVec2d ();
+		%feature("compactdefaultargs") TColgp_SequenceOfVec2d;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfVec2d
+	:rtype: None
+") TColgp_SequenceOfVec2d;
+		 TColgp_SequenceOfVec2d (const TColgp_SequenceOfVec2d & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -8347,20 +7195,6 @@ class TColgp_SequenceOfVec2d : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfVec2d::~TColgp_SequenceOfVec2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfVec2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfXY;
 class TColgp_SequenceOfXY : public TCollection_BaseSequence {
 	public:
@@ -8368,6 +7202,12 @@ class TColgp_SequenceOfXY : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfXY;
 		 TColgp_SequenceOfXY ();
+		%feature("compactdefaultargs") TColgp_SequenceOfXY;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfXY
+	:rtype: None
+") TColgp_SequenceOfXY;
+		 TColgp_SequenceOfXY (const TColgp_SequenceOfXY & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -8493,20 +7333,6 @@ class TColgp_SequenceOfXY : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfXY::~TColgp_SequenceOfXY %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfXY {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TColgp_SequenceOfXYZ;
 class TColgp_SequenceOfXYZ : public TCollection_BaseSequence {
 	public:
@@ -8514,6 +7340,12 @@ class TColgp_SequenceOfXYZ : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TColgp_SequenceOfXYZ;
 		 TColgp_SequenceOfXYZ ();
+		%feature("compactdefaultargs") TColgp_SequenceOfXYZ;
+		%feature("autodoc", "	:param Other:
+	:type Other: TColgp_SequenceOfXYZ
+	:rtype: None
+") TColgp_SequenceOfXYZ;
+		 TColgp_SequenceOfXYZ (const TColgp_SequenceOfXYZ & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -8639,17 +7471,3 @@ class TColgp_SequenceOfXYZ : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TColgp_SequenceOfXYZ::~TColgp_SequenceOfXYZ %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TColgp_SequenceOfXYZ {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Select3D_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -85,20 +101,6 @@ class Select3D_Box2d {
 };
 
 
-%feature("shadow") Select3D_Box2d::~Select3D_Box2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_Box2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_ListIteratorOfListOfSensitive;
 class Select3D_ListIteratorOfListOfSensitive {
 	public:
@@ -129,24 +131,10 @@ class Select3D_ListIteratorOfListOfSensitive {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") Value;
-		Handle_Select3D_SensitiveEntity & Value ();
+		Handle_Select3D_SensitiveEntity Value ();
 };
 
 
-%feature("shadow") Select3D_ListIteratorOfListOfSensitive::~Select3D_ListIteratorOfListOfSensitive %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_ListIteratorOfListOfSensitive {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_ListIteratorOfListOfSensitiveTriangle;
 class Select3D_ListIteratorOfListOfSensitiveTriangle {
 	public:
@@ -177,24 +165,10 @@ class Select3D_ListIteratorOfListOfSensitiveTriangle {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveTriangle
 ") Value;
-		Handle_Select3D_SensitiveTriangle & Value ();
+		Handle_Select3D_SensitiveTriangle Value ();
 };
 
 
-%feature("shadow") Select3D_ListIteratorOfListOfSensitiveTriangle::~Select3D_ListIteratorOfListOfSensitiveTriangle %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_ListIteratorOfListOfSensitiveTriangle {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_ListNodeOfListOfSensitive;
 class Select3D_ListNodeOfListOfSensitive : public TCollection_MapNode {
 	public:
@@ -209,29 +183,27 @@ class Select3D_ListNodeOfListOfSensitive : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") Value;
-		Handle_Select3D_SensitiveEntity & Value ();
+		Handle_Select3D_SensitiveEntity Value ();
 };
 
 
-%feature("shadow") Select3D_ListNodeOfListOfSensitive::~Select3D_ListNodeOfListOfSensitive %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Select3D_ListNodeOfListOfSensitive {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_ListNodeOfListOfSensitive(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Select3D_ListNodeOfListOfSensitive::Handle_Select3D_ListNodeOfListOfSensitive %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Select3D_ListNodeOfListOfSensitive {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_ListNodeOfListOfSensitive {
-	Handle_Select3D_ListNodeOfListOfSensitive GetHandle() {
-	return *(Handle_Select3D_ListNodeOfListOfSensitive*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Select3D_ListNodeOfListOfSensitive;
 class Handle_Select3D_ListNodeOfListOfSensitive : public Handle_TCollection_MapNode {
@@ -251,20 +223,6 @@ class Handle_Select3D_ListNodeOfListOfSensitive : public Handle_TCollection_MapN
     return (Select3D_ListNodeOfListOfSensitive*)$self->Access();
     }
 };
-%feature("shadow") Handle_Select3D_ListNodeOfListOfSensitive::~Handle_Select3D_ListNodeOfListOfSensitive %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_ListNodeOfListOfSensitive {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Select3D_ListNodeOfListOfSensitiveTriangle;
 class Select3D_ListNodeOfListOfSensitiveTriangle : public TCollection_MapNode {
@@ -280,29 +238,27 @@ class Select3D_ListNodeOfListOfSensitiveTriangle : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveTriangle
 ") Value;
-		Handle_Select3D_SensitiveTriangle & Value ();
+		Handle_Select3D_SensitiveTriangle Value ();
 };
 
 
-%feature("shadow") Select3D_ListNodeOfListOfSensitiveTriangle::~Select3D_ListNodeOfListOfSensitiveTriangle %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Select3D_ListNodeOfListOfSensitiveTriangle {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_ListNodeOfListOfSensitiveTriangle(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Select3D_ListNodeOfListOfSensitiveTriangle::Handle_Select3D_ListNodeOfListOfSensitiveTriangle %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Select3D_ListNodeOfListOfSensitiveTriangle {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_ListNodeOfListOfSensitiveTriangle {
-	Handle_Select3D_ListNodeOfListOfSensitiveTriangle GetHandle() {
-	return *(Handle_Select3D_ListNodeOfListOfSensitiveTriangle*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Select3D_ListNodeOfListOfSensitiveTriangle;
 class Handle_Select3D_ListNodeOfListOfSensitiveTriangle : public Handle_TCollection_MapNode {
@@ -322,20 +278,6 @@ class Handle_Select3D_ListNodeOfListOfSensitiveTriangle : public Handle_TCollect
     return (Select3D_ListNodeOfListOfSensitiveTriangle*)$self->Access();
     }
 };
-%feature("shadow") Handle_Select3D_ListNodeOfListOfSensitiveTriangle::~Handle_Select3D_ListNodeOfListOfSensitiveTriangle %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_ListNodeOfListOfSensitiveTriangle {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Select3D_ListOfSensitive;
 class Select3D_ListOfSensitive {
@@ -344,6 +286,12 @@ class Select3D_ListOfSensitive {
 		%feature("autodoc", "	:rtype: None
 ") Select3D_ListOfSensitive;
 		 Select3D_ListOfSensitive ();
+		%feature("compactdefaultargs") Select3D_ListOfSensitive;
+		%feature("autodoc", "	:param Other:
+	:type Other: Select3D_ListOfSensitive &
+	:rtype: None
+") Select3D_ListOfSensitive;
+		 Select3D_ListOfSensitive (const Select3D_ListOfSensitive & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: Select3D_ListOfSensitive &
@@ -411,11 +359,11 @@ class Select3D_ListOfSensitive {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") First;
-		Handle_Select3D_SensitiveEntity & First ();
+		Handle_Select3D_SensitiveEntity First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") Last;
-		Handle_Select3D_SensitiveEntity & Last ();
+		Handle_Select3D_SensitiveEntity Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -461,20 +409,6 @@ class Select3D_ListOfSensitive {
 };
 
 
-%feature("shadow") Select3D_ListOfSensitive::~Select3D_ListOfSensitive %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_ListOfSensitive {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_ListOfSensitiveTriangle;
 class Select3D_ListOfSensitiveTriangle {
 	public:
@@ -482,6 +416,12 @@ class Select3D_ListOfSensitiveTriangle {
 		%feature("autodoc", "	:rtype: None
 ") Select3D_ListOfSensitiveTriangle;
 		 Select3D_ListOfSensitiveTriangle ();
+		%feature("compactdefaultargs") Select3D_ListOfSensitiveTriangle;
+		%feature("autodoc", "	:param Other:
+	:type Other: Select3D_ListOfSensitiveTriangle &
+	:rtype: None
+") Select3D_ListOfSensitiveTriangle;
+		 Select3D_ListOfSensitiveTriangle (const Select3D_ListOfSensitiveTriangle & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: Select3D_ListOfSensitiveTriangle &
@@ -549,11 +489,11 @@ class Select3D_ListOfSensitiveTriangle {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveTriangle
 ") First;
-		Handle_Select3D_SensitiveTriangle & First ();
+		Handle_Select3D_SensitiveTriangle First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveTriangle
 ") Last;
-		Handle_Select3D_SensitiveTriangle & Last ();
+		Handle_Select3D_SensitiveTriangle Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -599,20 +539,6 @@ class Select3D_ListOfSensitiveTriangle {
 };
 
 
-%feature("shadow") Select3D_ListOfSensitiveTriangle::~Select3D_ListOfSensitiveTriangle %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_ListOfSensitiveTriangle {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_Pnt;
 class Select3D_Pnt {
 	public:
@@ -633,20 +559,6 @@ class Select3D_Pnt {
 };
 
 
-%feature("shadow") Select3D_Pnt::~Select3D_Pnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_Pnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_Pnt2d;
 class Select3D_Pnt2d {
 	public:
@@ -667,20 +579,6 @@ class Select3D_Pnt2d {
 };
 
 
-%feature("shadow") Select3D_Pnt2d::~Select3D_Pnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_Pnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_PointData;
 class Select3D_PointData {
 	public:
@@ -741,237 +639,249 @@ class Select3D_PointData {
 };
 
 
-%feature("shadow") Select3D_PointData::~Select3D_PointData %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_PointData {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_Projector;
 class Select3D_Projector : public Standard_Transient {
 	public:
 		%feature("compactdefaultargs") Select3D_Projector;
-		%feature("autodoc", "	* Constructs the 3D projector object defined by the 3D view aView.
+		%feature("autodoc", "	* Constructs the 3D projector object from the passed view. The projector captures current model-view and projection transformation of the passed view.
 
-	:param aView:
-	:type aView: Handle_V3d_View &
+	:param theView:
+	:type theView: Handle_V3d_View &
 	:rtype: None
 ") Select3D_Projector;
-		 Select3D_Projector (const Handle_V3d_View & aView);
+		 Select3D_Projector (const Handle_V3d_View & theView);
 		%feature("compactdefaultargs") Select3D_Projector;
-		%feature("autodoc", "	:rtype: None
+		%feature("autodoc", "	* Constructs identity projector.
+
+	:rtype: None
 ") Select3D_Projector;
 		 Select3D_Projector ();
 		%feature("compactdefaultargs") Select3D_Projector;
-		%feature("autodoc", "	* Creates an axonometric projector. <CS> represents viewing coordinate system and could be constructed from x direction, view plane normal direction, and view point location in world-coordinate space.
+		%feature("autodoc", "	* Builds the Projector from the model-view transformation specified by the passed viewing coordinate system <theCS>. The Projector has identity projection transformation, is orthogonal. The viewing coordinate system could be constructed from x direction, view plane normal direction, and view point location in world-coordinate space.
 
-	:param CS:
-	:type CS: gp_Ax2
+	:param theCS:
+	:type theCS: gp_Ax2
 	:rtype: None
 ") Select3D_Projector;
-		 Select3D_Projector (const gp_Ax2 & CS);
+		 Select3D_Projector (const gp_Ax2 & theCS);
 		%feature("compactdefaultargs") Select3D_Projector;
-		%feature("autodoc", "	* Creates a perspective projector. <CS> represents viewing coordinate system and could be constructed from x direction, view plane normal direction, and focal point location in world-coordinate space. <Focus> should represent distance of an eye from view plane in world-coordinate space (focal distance).
+		%feature("autodoc", "	* Builds the Projector from the model-view transformation specified by the passed view coordinate system <theCS> and simplified perspective projection transformation defined by <theFocus> parameter. The viewing coordinate system could be constructed from x direction, view plane normal direction, and focal point location in world-coordinate space. <theFocus> should represent distance of an eye from view plane in world-coordinate space (focal distance).
 
-	:param CS:
-	:type CS: gp_Ax2
-	:param Focus:
-	:type Focus: float
+	:param theCS:
+	:type theCS: gp_Ax2
+	:param theFocus:
+	:type theFocus: float
 	:rtype: None
 ") Select3D_Projector;
-		 Select3D_Projector (const gp_Ax2 & CS,const Standard_Real Focus);
+		 Select3D_Projector (const gp_Ax2 & theCS,const Standard_Real theFocus);
 		%feature("compactdefaultargs") Select3D_Projector;
-		%feature("autodoc", "	* build a Projector from the given transformation. In case, when <T> transformation should represent custom view projection, it could be constructed from two separate components: transposed view orientation matrix and translation of focal point in view-coordiante system. <T> could be built up from x direction, up direction, view plane normal direction vectors and translation with SetValues(...) method, where first row arguments (a11, a12, a13, a14) are x, y, z component of x direction vector, and x value of reversed translation vector. Second row arguments, are x y z for up direction and y value of reversed translation, and the third row defined in the same manner. This also suits for simple perspective view, where <Focus> is the focale distance of an eye from view plane in world-space coordiantes. Note, that in that case amount of perspective distortion (perspective angle) should be defined through focal distance.
+		%feature("autodoc", "	* Build the Projector from the model-view transformation passed as <theViewTrsf> and simplified perspective projection transformation parameters passed as <theIsPersp> and <theFocus>. In case, when <theViewTrsf> transformation should represent custom view projection, it could be constructed from two separate components: transposed view orientation matrix and translation of focal point in view-coordinate system. <theViewTrsf> could be built up from x direction, up direction, view plane normal direction vectors and translation with SetValues(...) method, where first row arguments (a11, a12, a13, a14) are x, y, z component of x direction vector, and x value of reversed translation vector. Second row arguments, are x y z for up direction and y value of reversed translation, and the third row defined in the same manner. This also suits for simple perspective view, where <theFocus> is the focale distance of an eye from view plane in world-space coordinates. Note, that in that case amount of perspective distortion (perspective angle) should be defined through focal distance.
 
-	:param T:
-	:type T: gp_Trsf
-	:param Persp:
-	:type Persp: bool
-	:param Focus:
-	:type Focus: float
+	:param theViewTrsf:
+	:type theViewTrsf: gp_Trsf
+	:param theIsPersp:
+	:type theIsPersp: bool
+	:param theFocus:
+	:type theFocus: float
 	:rtype: None
 ") Select3D_Projector;
-		 Select3D_Projector (const gp_Trsf & T,const Standard_Boolean Persp,const Standard_Real Focus);
+		 Select3D_Projector (const gp_Trsf & theViewTrsf,const Standard_Boolean theIsPersp,const Standard_Real theFocus);
 		%feature("compactdefaultargs") Select3D_Projector;
-		%feature("autodoc", "	* build a Projector from the given transformation. In case, when <GT> transformation should represent custom view projection, it could be constructed from two separate components: transposed view orientation matrix and translation of a focal point in view-coordinate system. This also suits for perspective view, with <Focus> that could be equal to distance from an eye to a view plane in world-coordinates (focal distance). The 3x3 transformation matrix is built up from three vectors: x direction, up direction and view plane normal vectors, where each vector is a matrix row. Then <GT> is constructed from matrix and reversed translation with methods SetTranslationPart(..) and SetVectorialPart(..). Note, that in that case amount of perspective distortion (perspective angle) should be defined through focal distance.
+		%feature("autodoc", "	* Builds the Projector from the model-view transformation passed as <theViewTrsf> and projection transformation for <theIsPersp> and <theFocus> parameters. In case, when <theViewTrsf> transformation should represent custom view projection, it could be constructed from two separate components: transposed view orientation matrix and translation of a focal point in view-coordinate system. This also suits for perspective view, with <theFocus> that could be equal to distance from an eye to a view plane in world-coordinates (focal distance). The 3x3 transformation matrix is built up from three vectors: x direction, up direction and view plane normal vectors, where each vector is a matrix row. Then <theViewTrsf> is constructed from matrix and reversed translation with methods SetTranslationPart(..) and SetVectorialPart(..). Note, that in that case amount of perspective distortion (perspective angle) should be defined through focal distance.
 
-	:param GT:
-	:type GT: gp_GTrsf
-	:param Persp:
-	:type Persp: bool
-	:param Focus:
-	:type Focus: float
+	:param theViewTrsf:
+	:type theViewTrsf: gp_GTrsf
+	:param theIsPersp:
+	:type theIsPersp: bool
+	:param theFocus:
+	:type theFocus: float
 	:rtype: None
 ") Select3D_Projector;
-		 Select3D_Projector (const gp_GTrsf & GT,const Standard_Boolean Persp,const Standard_Real Focus);
+		 Select3D_Projector (const gp_GTrsf & theViewTrsf,const Standard_Boolean theIsPersp,const Standard_Real theFocus);
+		%feature("compactdefaultargs") Select3D_Projector;
+		%feature("autodoc", "	* Builds the Projector from the passed model-view <theViewTrsf> and projection <theProjTrsf> transformation matrices.
+
+	:param theViewTrsf:
+	:type theViewTrsf: Graphic3d_Mat4d &
+	:param theProjTrsf:
+	:type theProjTrsf: Graphic3d_Mat4d &
+	:rtype: None
+") Select3D_Projector;
+		 Select3D_Projector (const Graphic3d_Mat4d & theViewTrsf,const Graphic3d_Mat4d & theProjTrsf);
 		%feature("compactdefaultargs") Set;
-		%feature("autodoc", "	:param T:
-	:type T: gp_Trsf
-	:param Persp:
-	:type Persp: bool
-	:param Focus:
-	:type Focus: float
+		%feature("autodoc", "	* Sets new parameters for the Projector.
+
+	:param theViewTrsf:
+	:type theViewTrsf: gp_Trsf
+	:param theIsPersp:
+	:type theIsPersp: bool
+	:param theFocus:
+	:type theFocus: float
 	:rtype: None
 ") Set;
-		void Set (const gp_Trsf & T,const Standard_Boolean Persp,const Standard_Real Focus);
-		%feature("compactdefaultargs") SetView;
-		%feature("autodoc", "	* Sets the 3D view V used at the time of construction.
+		void Set (const gp_Trsf & theViewTrsf,const Standard_Boolean theIsPersp,const Standard_Real theFocus);
+		%feature("compactdefaultargs") Set;
+		%feature("autodoc", "	* Sets new parameters for the Projector.
 
-	:param V:
-	:type V: Handle_V3d_View &
+	:param theViewTrsf:
+	:type theViewTrsf: Graphic3d_Mat4d &
+	:param theProjTrsf:
+	:type theProjTrsf: Graphic3d_Mat4d &
+	:rtype: None
+") Set;
+		void Set (const Graphic3d_Mat4d & theViewTrsf,const Graphic3d_Mat4d & theProjTrsf);
+		%feature("compactdefaultargs") SetView;
+		%feature("autodoc", "	* Sets new parameters for the Projector captured from the passed view.
+
+	:param theView:
+	:type theView: Handle_V3d_View &
 	:rtype: None
 ") SetView;
-		void SetView (const Handle_V3d_View & V);
-		%feature("compactdefaultargs") View;
-		%feature("autodoc", "	* Returns the 3D view used at the time of construction.
-
-	:rtype: Handle_V3d_View
-") View;
-		const Handle_V3d_View & View ();
+		void SetView (const Handle_V3d_View & theView);
 		%feature("compactdefaultargs") Scaled;
-		%feature("autodoc", "	* to compute with the given scale and translation.
+		%feature("autodoc", "	* Pre-compute inverse transformation and ensure whether it is possible to use optimized transformation for the common view-orientation type or not if <theToCheckOptimized> is True.
 
-	:param On: default value is Standard_False
-	:type On: bool
+	:param theToCheckOptimized: default value is Standard_False
+	:type theToCheckOptimized: bool
 	:rtype: void
 ") Scaled;
-		virtual void Scaled (const Standard_Boolean On = Standard_False);
+		virtual void Scaled (const Standard_Boolean theToCheckOptimized = Standard_False);
 		%feature("compactdefaultargs") Perspective;
-		%feature("autodoc", "	* Returns True if there is a perspective transformation.
+		%feature("autodoc", "	* Returns True if there is simplified perspective projection approach is used. Distortion defined by Focus.
 
 	:rtype: bool
 ") Perspective;
 		Standard_Boolean Perspective ();
+		%feature("compactdefaultargs") Focus;
+		%feature("autodoc", "	* Returns the focal length of simplified perspective projection approach. Raises program error exception if the the projection transformation is not specified as simplified Perspective (for example, custom projection transformation is defined or the orthogonal Projector is defined).
+
+	:rtype: float
+") Focus;
+		Standard_Real Focus ();
+		%feature("compactdefaultargs") Projection;
+		%feature("autodoc", "	* Returns projection transformation. Please note that for simplified perspective projection approach, defined by Focus, the returned transformation is identity.
+
+	:rtype: Graphic3d_Mat4d
+") Projection;
+		const Graphic3d_Mat4d & Projection ();
 		%feature("compactdefaultargs") Transformation;
-		%feature("autodoc", "	* Returns the active transformation.
+		%feature("autodoc", "	* Returns the view transformation.
 
 	:rtype: gp_GTrsf
 ") Transformation;
 		const gp_GTrsf  Transformation ();
 		%feature("compactdefaultargs") InvertedTransformation;
-		%feature("autodoc", "	* Returns the active inverted transformation.
+		%feature("autodoc", "	* Returns the inverted view transformation.
 
 	:rtype: gp_GTrsf
 ") InvertedTransformation;
 		const gp_GTrsf  InvertedTransformation ();
 		%feature("compactdefaultargs") FullTransformation;
-		%feature("autodoc", "	* Returns the original transformation.
+		%feature("autodoc", "	* Returns the uniform-scaled view transformation.
 
 	:rtype: gp_Trsf
 ") FullTransformation;
 		const gp_Trsf  FullTransformation ();
-		%feature("compactdefaultargs") Focus;
-		%feature("autodoc", "	* Returns the focal length.
-
-	:rtype: float
-") Focus;
-		Standard_Real Focus ();
 		%feature("compactdefaultargs") Transform;
-		%feature("autodoc", "	:param D:
-	:type D: gp_Vec
+		%feature("autodoc", "	* Transforms the vector into view-coordinate space.
+
+	:param theD:
+	:type theD: gp_Vec
 	:rtype: None
 ") Transform;
-		void Transform (gp_Vec & D);
+		void Transform (gp_Vec & theD);
 		%feature("compactdefaultargs") Transform;
-		%feature("autodoc", "	:param Pnt:
-	:type Pnt: gp_Pnt
+		%feature("autodoc", "	* Transforms the point into view-coordinate space.
+
+	:param thePnt:
+	:type thePnt: gp_Pnt
 	:rtype: None
 ") Transform;
-		void Transform (gp_Pnt & Pnt);
+		void Transform (gp_Pnt & thePnt);
 		%feature("compactdefaultargs") Project;
-		%feature("autodoc", "	* Transform and apply perspective if needed.
+		%feature("autodoc", "	* Transforms the point into view-coordinate space and applies projection transformation.
 
-	:param P:
-	:type P: gp_Pnt
-	:param Pout:
-	:type Pout: gp_Pnt2d
+	:param theP:
+	:type theP: gp_Pnt
+	:param thePout:
+	:type thePout: gp_Pnt2d
 	:rtype: void
 ") Project;
-		virtual void Project (const gp_Pnt & P,gp_Pnt2d & Pout);
+		virtual void Project (const gp_Pnt & theP,gp_Pnt2d & thePout);
 		%feature("compactdefaultargs") Project;
-		%feature("autodoc", "	* Transform and apply perspective if needed.
+		%feature("autodoc", "	* Transforms the point into view-coordinate space and applies projection transformation.
 
-	:param P:
-	:type P: gp_Pnt
-	:param X:
-	:type X: float &
-	:param Y:
-	:type Y: float &
-	:param Z:
-	:type Z: float &
+	:param theP:
+	:type theP: gp_Pnt
+	:param theX:
+	:type theX: float &
+	:param theY:
+	:type theY: float &
+	:param theZ:
+	:type theZ: float &
 	:rtype: None
 ") Project;
-		void Project (const gp_Pnt & P,Standard_Real &OutValue,Standard_Real &OutValue,Standard_Real &OutValue);
+		void Project (const gp_Pnt & theP,Standard_Real &OutValue,Standard_Real &OutValue,Standard_Real &OutValue);
 		%feature("compactdefaultargs") Project;
-		%feature("autodoc", "	* Transform and apply perspective if needed.
+		%feature("autodoc", "	* Transforms the point and vector passed from its location into view-coordinate space and applies projection transformation.
 
-	:param P:
-	:type P: gp_Pnt
-	:param D1:
-	:type D1: gp_Vec
-	:param Pout:
-	:type Pout: gp_Pnt2d
-	:param D1out:
-	:type D1out: gp_Vec2d
+	:param theP:
+	:type theP: gp_Pnt
+	:param theD1:
+	:type theD1: gp_Vec
+	:param thePout:
+	:type thePout: gp_Pnt2d
+	:param theD1out:
+	:type theD1out: gp_Vec2d
 	:rtype: void
 ") Project;
-		virtual void Project (const gp_Pnt & P,const gp_Vec & D1,gp_Pnt2d & Pout,gp_Vec2d & D1out);
+		virtual void Project (const gp_Pnt & theP,const gp_Vec & theD1,gp_Pnt2d & thePout,gp_Vec2d & theD1out);
 		%feature("compactdefaultargs") Shoot;
-		%feature("autodoc", "	* return a line going through the eye towards the 2d point <X,Y>.
+		%feature("autodoc", "	* Return projection line going through the 2d point <theX, theY>
 
-	:param X:
-	:type X: float
-	:param Y:
-	:type Y: float
+	:param theX:
+	:type theX: float
+	:param theY:
+	:type theY: float
 	:rtype: gp_Lin
 ") Shoot;
-		virtual gp_Lin Shoot (const Standard_Real X,const Standard_Real Y);
+		virtual gp_Lin Shoot (const Standard_Real theX,const Standard_Real theY);
 		%feature("compactdefaultargs") Transform;
-		%feature("autodoc", "	:param P:
-	:type P: gp_Pnt
-	:param T:
-	:type T: gp_GTrsf
+		%feature("autodoc", "	:param thePnt:
+	:type thePnt: gp_Pnt
+	:param theTrsf:
+	:type theTrsf: gp_GTrsf
 	:rtype: None
 ") Transform;
-		void Transform (gp_Pnt & P,const gp_GTrsf & T);
+		void Transform (gp_Pnt & thePnt,const gp_GTrsf & theTrsf);
 		%feature("compactdefaultargs") Transform;
-		%feature("autodoc", "	:param D:
-	:type D: gp_Lin
-	:param T:
-	:type T: gp_GTrsf
+		%feature("autodoc", "	:param theLin:
+	:type theLin: gp_Lin
+	:param theTrsf:
+	:type theTrsf: gp_GTrsf
 	:rtype: None
 ") Transform;
-		void Transform (gp_Lin & D,const gp_GTrsf & T);
+		void Transform (gp_Lin & theLin,const gp_GTrsf & theTrsf);
 };
 
 
-%feature("shadow") Select3D_Projector::~Select3D_Projector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Select3D_Projector {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_Projector(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Select3D_Projector::Handle_Select3D_Projector %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Select3D_Projector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_Projector {
-	Handle_Select3D_Projector GetHandle() {
-	return *(Handle_Select3D_Projector*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Select3D_Projector;
 class Handle_Select3D_Projector : public Handle_Standard_Transient {
@@ -989,20 +899,6 @@ class Handle_Select3D_Projector : public Handle_Standard_Transient {
 %extend Handle_Select3D_Projector {
     Select3D_Projector* GetObject() {
     return (Select3D_Projector*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_Projector::~Handle_Select3D_Projector %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_Projector {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1080,7 +976,7 @@ class Select3D_SensitiveEntity : public SelectBasics_SensitiveEntity {
 		%feature("compactdefaultargs") Location;
 		%feature("autodoc", "	:rtype: TopLoc_Location
 ") Location;
-		virtual const TopLoc_Location & Location ();
+		virtual const TopLoc_Location Location ();
 		%feature("compactdefaultargs") ResetLocation;
 		%feature("autodoc", "	* sets the location to Identity
 
@@ -1094,7 +990,7 @@ class Select3D_SensitiveEntity : public SelectBasics_SensitiveEntity {
 ") SetLocation;
 		virtual void SetLocation (const TopLoc_Location & aLoc);
 		%feature("compactdefaultargs") Dump;
-		%feature("autodoc", "	* 2 options : <FullDump> = False -> general information //!	 <FullDump> = True -> whole informtion 3D +2d ...
+		%feature("autodoc", "	* 2 options : <FullDump> = False -> general information <FullDump> = True -> whole informtion 3D +2d ...
 
 	:param S:
 	:type S: Standard_OStream &
@@ -1120,25 +1016,23 @@ class Select3D_SensitiveEntity : public SelectBasics_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitiveEntity::~Select3D_SensitiveEntity %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveEntity {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveEntity(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveEntity {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveEntity {
-	Handle_Select3D_SensitiveEntity GetHandle() {
-	return *(Handle_Select3D_SensitiveEntity*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveEntity::Handle_Select3D_SensitiveEntity %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveEntity;
 class Handle_Select3D_SensitiveEntity : public Handle_SelectBasics_SensitiveEntity {
@@ -1158,20 +1052,6 @@ class Handle_Select3D_SensitiveEntity : public Handle_SelectBasics_SensitiveEnti
     return (Select3D_SensitiveEntity*)$self->Access();
     }
 };
-%feature("shadow") Handle_Select3D_SensitiveEntity::~Handle_Select3D_SensitiveEntity %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveEntity {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Select3D_SensitiveEntitySequence;
 class Select3D_SensitiveEntitySequence : public TCollection_BaseSequence {
@@ -1180,6 +1060,12 @@ class Select3D_SensitiveEntitySequence : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Select3D_SensitiveEntitySequence;
 		 Select3D_SensitiveEntitySequence ();
+		%feature("compactdefaultargs") Select3D_SensitiveEntitySequence;
+		%feature("autodoc", "	:param Other:
+	:type Other: Select3D_SensitiveEntitySequence &
+	:rtype: None
+") Select3D_SensitiveEntitySequence;
+		 Select3D_SensitiveEntitySequence (const Select3D_SensitiveEntitySequence & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -1255,11 +1141,11 @@ class Select3D_SensitiveEntitySequence : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") First;
-		const Handle_Select3D_SensitiveEntity & First ();
+		Handle_Select3D_SensitiveEntity First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") Last;
-		const Handle_Select3D_SensitiveEntity & Last ();
+		Handle_Select3D_SensitiveEntity Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1273,7 +1159,7 @@ class Select3D_SensitiveEntitySequence : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_Select3D_SensitiveEntity
 ") Value;
-		const Handle_Select3D_SensitiveEntity & Value (const Standard_Integer Index);
+		Handle_Select3D_SensitiveEntity Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1287,7 +1173,7 @@ class Select3D_SensitiveEntitySequence : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_Select3D_SensitiveEntity
 ") ChangeValue;
-		Handle_Select3D_SensitiveEntity & ChangeValue (const Standard_Integer Index);
+		Handle_Select3D_SensitiveEntity ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1305,20 +1191,6 @@ class Select3D_SensitiveEntitySequence : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Select3D_SensitiveEntitySequence::~Select3D_SensitiveEntitySequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Select3D_SensitiveEntitySequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Select3D_SequenceNodeOfSensitiveEntitySequence;
 class Select3D_SequenceNodeOfSensitiveEntitySequence : public TCollection_SeqNode {
 	public:
@@ -1335,29 +1207,27 @@ class Select3D_SequenceNodeOfSensitiveEntitySequence : public TCollection_SeqNod
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Select3D_SensitiveEntity
 ") Value;
-		Handle_Select3D_SensitiveEntity & Value ();
+		Handle_Select3D_SensitiveEntity Value ();
 };
 
 
-%feature("shadow") Select3D_SequenceNodeOfSensitiveEntitySequence::~Select3D_SequenceNodeOfSensitiveEntitySequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Select3D_SequenceNodeOfSensitiveEntitySequence {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SequenceNodeOfSensitiveEntitySequence(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Select3D_SequenceNodeOfSensitiveEntitySequence::Handle_Select3D_SequenceNodeOfSensitiveEntitySequence %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Select3D_SequenceNodeOfSensitiveEntitySequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SequenceNodeOfSensitiveEntitySequence {
-	Handle_Select3D_SequenceNodeOfSensitiveEntitySequence GetHandle() {
-	return *(Handle_Select3D_SequenceNodeOfSensitiveEntitySequence*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Select3D_SequenceNodeOfSensitiveEntitySequence;
 class Handle_Select3D_SequenceNodeOfSensitiveEntitySequence : public Handle_TCollection_SeqNode {
@@ -1375,20 +1245,6 @@ class Handle_Select3D_SequenceNodeOfSensitiveEntitySequence : public Handle_TCol
 %extend Handle_Select3D_SequenceNodeOfSensitiveEntitySequence {
     Select3D_SequenceNodeOfSensitiveEntitySequence* GetObject() {
     return (Select3D_SequenceNodeOfSensitiveEntitySequence*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SequenceNodeOfSensitiveEntitySequence::~Handle_Select3D_SequenceNodeOfSensitiveEntitySequence %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SequenceNodeOfSensitiveEntitySequence {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1506,25 +1362,23 @@ class Select3D_SensitiveBox : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitiveBox::~Select3D_SensitiveBox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveBox {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveBox(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveBox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveBox {
-	Handle_Select3D_SensitiveBox GetHandle() {
-	return *(Handle_Select3D_SensitiveBox*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveBox::Handle_Select3D_SensitiveBox %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveBox;
 class Handle_Select3D_SensitiveBox : public Handle_Select3D_SensitiveEntity {
@@ -1542,20 +1396,6 @@ class Handle_Select3D_SensitiveBox : public Handle_Select3D_SensitiveEntity {
 %extend Handle_Select3D_SensitiveBox {
     Select3D_SensitiveBox* GetObject() {
     return (Select3D_SensitiveBox*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveBox::~Handle_Select3D_SensitiveBox %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveBox {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1727,25 +1567,23 @@ class Select3D_SensitiveGroup : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitiveGroup::~Select3D_SensitiveGroup %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveGroup {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveGroup(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveGroup {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveGroup {
-	Handle_Select3D_SensitiveGroup GetHandle() {
-	return *(Handle_Select3D_SensitiveGroup*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveGroup::Handle_Select3D_SensitiveGroup %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveGroup;
 class Handle_Select3D_SensitiveGroup : public Handle_Select3D_SensitiveEntity {
@@ -1765,20 +1603,6 @@ class Handle_Select3D_SensitiveGroup : public Handle_Select3D_SensitiveEntity {
     return (Select3D_SensitiveGroup*)$self->Access();
     }
 };
-%feature("shadow") Handle_Select3D_SensitiveGroup::~Handle_Select3D_SensitiveGroup %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveGroup {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Select3D_SensitivePoint;
 class Select3D_SensitivePoint : public Select3D_SensitiveEntity {
@@ -1794,7 +1618,7 @@ class Select3D_SensitivePoint : public Select3D_SensitiveEntity {
 ") Select3D_SensitivePoint;
 		 Select3D_SensitivePoint (const Handle_SelectBasics_EntityOwner & OwnerId,const gp_Pnt & Point);
 		%feature("compactdefaultargs") Project;
-		%feature("autodoc", "	* //!Converts the stored 3D point into a 2D point according  to <aProjector> ; this method is called by the selection Manager.
+		%feature("autodoc", "	* Converts the stored 3D point into a 2D point according to <aProjector> ; this method is called by the selection Manager.
 
 	:param aProjector:
 	:type aProjector: Handle_Select3D_Projector &
@@ -1874,25 +1698,23 @@ class Select3D_SensitivePoint : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitivePoint::~Select3D_SensitivePoint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitivePoint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitivePoint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitivePoint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitivePoint {
-	Handle_Select3D_SensitivePoint GetHandle() {
-	return *(Handle_Select3D_SensitivePoint*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitivePoint::Handle_Select3D_SensitivePoint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitivePoint;
 class Handle_Select3D_SensitivePoint : public Handle_Select3D_SensitiveEntity {
@@ -1910,20 +1732,6 @@ class Handle_Select3D_SensitivePoint : public Handle_Select3D_SensitiveEntity {
 %extend Handle_Select3D_SensitivePoint {
     Select3D_SensitivePoint* GetObject() {
     return (Select3D_SensitivePoint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitivePoint::~Handle_Select3D_SensitivePoint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitivePoint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1965,25 +1773,23 @@ class Select3D_SensitivePoly : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitivePoly::~Select3D_SensitivePoly %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitivePoly {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitivePoly(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitivePoly {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitivePoly {
-	Handle_Select3D_SensitivePoly GetHandle() {
-	return *(Handle_Select3D_SensitivePoly*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitivePoly::Handle_Select3D_SensitivePoly %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitivePoly;
 class Handle_Select3D_SensitivePoly : public Handle_Select3D_SensitiveEntity {
@@ -2001,20 +1807,6 @@ class Handle_Select3D_SensitivePoly : public Handle_Select3D_SensitiveEntity {
 %extend Handle_Select3D_SensitivePoly {
     Select3D_SensitivePoly* GetObject() {
     return (Select3D_SensitivePoly*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitivePoly::~Handle_Select3D_SensitivePoly %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitivePoly {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2148,7 +1940,7 @@ class Select3D_SensitiveSegment : public Select3D_SensitiveEntity {
 ") ComputeDepth;
 		Standard_Real ComputeDepth (const gp_Lin & EyeLine);
 		%feature("compactdefaultargs") MaxBoxes;
-		%feature("autodoc", "	* //!returns <mymaxrect>
+		%feature("autodoc", "	* returns <mymaxrect>
 
 	:rtype: int
 ") MaxBoxes;
@@ -2164,25 +1956,23 @@ class Select3D_SensitiveSegment : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitiveSegment::~Select3D_SensitiveSegment %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveSegment {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveSegment(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveSegment {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveSegment {
-	Handle_Select3D_SensitiveSegment GetHandle() {
-	return *(Handle_Select3D_SensitiveSegment*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveSegment::Handle_Select3D_SensitiveSegment %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveSegment;
 class Handle_Select3D_SensitiveSegment : public Handle_Select3D_SensitiveEntity {
@@ -2200,20 +1990,6 @@ class Handle_Select3D_SensitiveSegment : public Handle_Select3D_SensitiveEntity 
 %extend Handle_Select3D_SensitiveSegment {
     Select3D_SensitiveSegment* GetObject() {
     return (Select3D_SensitiveSegment*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveSegment::~Handle_Select3D_SensitiveSegment %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveSegment {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2319,7 +2095,7 @@ class Select3D_SensitiveWire : public Select3D_SensitiveEntity {
 ") Matches;
 		virtual Standard_Boolean Matches (const TColgp_Array1OfPnt2d & Polyline,const Bnd_Box2d & aBox,const Standard_Real aTol);
 		%feature("compactdefaultargs") MaxBoxes;
-		%feature("autodoc", "	* //!returns <mymaxrect>
+		%feature("autodoc", "	* returns <mymaxrect>
 
 	:rtype: int
 ") MaxBoxes;
@@ -2341,7 +2117,7 @@ class Select3D_SensitiveWire : public Select3D_SensitiveEntity {
 ") Set;
 		void Set (const Handle_SelectBasics_EntityOwner & TheOwnerId);
 		%feature("compactdefaultargs") GetLastDetected;
-		%feature("autodoc", "	* //!returns <mymaxrect>
+		%feature("autodoc", "	* returns <mymaxrect>
 
 	:rtype: Handle_Select3D_SensitiveEntity
 ") GetLastDetected;
@@ -2349,25 +2125,23 @@ class Select3D_SensitiveWire : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") Select3D_SensitiveWire::~Select3D_SensitiveWire %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveWire {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveWire(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveWire {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveWire {
-	Handle_Select3D_SensitiveWire GetHandle() {
-	return *(Handle_Select3D_SensitiveWire*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveWire::Handle_Select3D_SensitiveWire %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveWire;
 class Handle_Select3D_SensitiveWire : public Handle_Select3D_SensitiveEntity {
@@ -2385,20 +2159,6 @@ class Handle_Select3D_SensitiveWire : public Handle_Select3D_SensitiveEntity {
 %extend Handle_Select3D_SensitiveWire {
     Select3D_SensitiveWire* GetObject() {
     return (Select3D_SensitiveWire*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveWire::~Handle_Select3D_SensitiveWire %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveWire {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2546,25 +2306,23 @@ class Select3D_SensitiveCircle : public Select3D_SensitivePoly {
 };
 
 
-%feature("shadow") Select3D_SensitiveCircle::~Select3D_SensitiveCircle %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveCircle {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveCircle(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveCircle {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveCircle {
-	Handle_Select3D_SensitiveCircle GetHandle() {
-	return *(Handle_Select3D_SensitiveCircle*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveCircle::Handle_Select3D_SensitiveCircle %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveCircle;
 class Handle_Select3D_SensitiveCircle : public Handle_Select3D_SensitivePoly {
@@ -2582,20 +2340,6 @@ class Handle_Select3D_SensitiveCircle : public Handle_Select3D_SensitivePoly {
 %extend Handle_Select3D_SensitiveCircle {
     Select3D_SensitiveCircle* GetObject() {
     return (Select3D_SensitiveCircle*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveCircle::~Handle_Select3D_SensitiveCircle %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveCircle {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2705,25 +2449,23 @@ class Select3D_SensitiveCurve : public Select3D_SensitivePoly {
 };
 
 
-%feature("shadow") Select3D_SensitiveCurve::~Select3D_SensitiveCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveCurve {
-	Handle_Select3D_SensitiveCurve GetHandle() {
-	return *(Handle_Select3D_SensitiveCurve*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveCurve::Handle_Select3D_SensitiveCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveCurve;
 class Handle_Select3D_SensitiveCurve : public Handle_Select3D_SensitivePoly {
@@ -2741,20 +2483,6 @@ class Handle_Select3D_SensitiveCurve : public Handle_Select3D_SensitivePoly {
 %extend Handle_Select3D_SensitiveCurve {
     Select3D_SensitiveCurve* GetObject() {
     return (Select3D_SensitiveCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveCurve::~Handle_Select3D_SensitiveCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2852,25 +2580,23 @@ class Select3D_SensitiveFace : public Select3D_SensitivePoly {
 };
 
 
-%feature("shadow") Select3D_SensitiveFace::~Select3D_SensitiveFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveFace {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveFace(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveFace {
-	Handle_Select3D_SensitiveFace GetHandle() {
-	return *(Handle_Select3D_SensitiveFace*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveFace::Handle_Select3D_SensitiveFace %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveFace;
 class Handle_Select3D_SensitiveFace : public Handle_Select3D_SensitivePoly {
@@ -2888,20 +2614,6 @@ class Handle_Select3D_SensitiveFace : public Handle_Select3D_SensitivePoly {
 %extend Handle_Select3D_SensitiveFace {
     Select3D_SensitiveFace* GetObject() {
     return (Select3D_SensitiveFace*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveFace::~Handle_Select3D_SensitiveFace %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveFace {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3039,25 +2751,23 @@ class Select3D_SensitiveTriangle : public Select3D_SensitivePoly {
 };
 
 
-%feature("shadow") Select3D_SensitiveTriangle::~Select3D_SensitiveTriangle %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Select3D_SensitiveTriangle {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Select3D_SensitiveTriangle(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Select3D_SensitiveTriangle {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Select3D_SensitiveTriangle {
-	Handle_Select3D_SensitiveTriangle GetHandle() {
-	return *(Handle_Select3D_SensitiveTriangle*) &$self;
-	}
-};
+%pythonappend Handle_Select3D_SensitiveTriangle::Handle_Select3D_SensitiveTriangle %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Select3D_SensitiveTriangle;
 class Handle_Select3D_SensitiveTriangle : public Handle_Select3D_SensitivePoly {
@@ -3075,20 +2785,6 @@ class Handle_Select3D_SensitiveTriangle : public Handle_Select3D_SensitivePoly {
 %extend Handle_Select3D_SensitiveTriangle {
     Select3D_SensitiveTriangle* GetObject() {
     return (Select3D_SensitiveTriangle*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Select3D_SensitiveTriangle::~Handle_Select3D_SensitiveTriangle %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Select3D_SensitiveTriangle {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

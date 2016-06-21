@@ -18,16 +18,22 @@
 //---------------------------------------------------------------------------
 #include "Tesselator.h"
 #include <sstream>
+#include <algorithm>
 //---------------------------------------------------------------------------
 #include <TopExp_Explorer.hxx>
 #include <Bnd_Box.hxx>
 #include <StdPrs_ToolShadedShape.hxx>
-#include <BRepMesh.hxx>
+#include <BRepMesh_IncrementalMesh.hxx>
+#include <TopoDS.hxx>
 #include <Poly_Connect.hxx>
 #include <Poly_Triangulation.hxx>
+#include <Poly_PolygonOnTriangulation.hxx>
 #include <TColgp_Array1OfPnt.hxx>
 #include <TColgp_Array1OfDir.hxx>
 #include <TColgp_Array1OfPnt2d.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopExp.hxx>
 #include <BRepTools.hxx>
 #include <BRepBndLib.hxx>
 //---------------------------------------------------------------------------
@@ -108,6 +114,18 @@ Tesselator::~Tesselator()
 
     if (locTexcoord)
       delete [] locTexcoord;
+
+    for (std::vector<aedge*>::iterator edgeit = edgelist.begin(); edgeit != edgelist.end(); ++edgeit) {
+      aedge* edge = *edgeit;
+      if (edge) {
+        if (edge->vertex_coord)
+          delete[] edge->vertex_coord;
+
+        delete edge;
+        *edgeit = NULL;
+      }
+    }
+    edgelist.clear();
 }
 
 //---------------------------------------------------------------------------
@@ -120,14 +138,6 @@ void Tesselator::SetDeviation(Standard_Real aDeviation)
 //---------------------------------------------------------------------------
 void Tesselator::Tesselate()
 {
-    Standard_Real Umin;
-    Standard_Real Umax;
-    Standard_Real Vmin;
-    Standard_Real Vmax;
-
-    Standard_Real dUmax;
-    Standard_Real dVmax;
-
     TopExp_Explorer       ExpFace;
     StdPrs_ToolShadedShape   SST;
 
@@ -138,7 +148,7 @@ void Tesselator::Tesselate()
     gp_Pnt2d d_coord;
 
     //Triangulate
-    BRepMesh::Mesh(myShape, myDeviation);
+    BRepMesh_IncrementalMesh(myShape, myDeviation);
 
     for (ExpFace.Init(myShape, TopAbs_FACE); ExpFace.More(); ExpFace.Next()) {
       const TopoDS_Face&    myFace    = TopoDS::Face(ExpFace.Current());
@@ -157,9 +167,9 @@ void Tesselator::Tesselate()
         this_face->number_of_coords = Nodes.Length();
         for (int i = Nodes.Lower(); i <= Nodes.Upper(); i++) {
           p = Nodes(i).Transformed(aLocation.Transformation());
-          this_face->vertex_coord[((i-1) * 3)+ 0] = p.X();
-          this_face->vertex_coord[((i-1) * 3)+ 1] = p.Y();
-          this_face->vertex_coord[((i-1) * 3)+ 2] = p.Z();
+          this_face->vertex_coord[((i-1) * 3)+ 0] = static_cast<float>(p.X());
+          this_face->vertex_coord[((i-1) * 3)+ 1] = static_cast<float>(p.Y());
+          this_face->vertex_coord[((i-1) * 3)+ 2] = static_cast<float>(p.Z());
         }
 
         //write normal buffer
@@ -169,9 +179,9 @@ void Tesselator::Tesselate()
         this_face->number_of_normals = myNormal.Length();
         for (int i = myNormal.Lower(); i <= myNormal.Upper(); i++) {
           d = myNormal(i).Transformed(aLocation.Transformation());
-          this_face->normal_coord[((i-1) * 3)+ 0] = d.X();
-          this_face->normal_coord[((i-1) * 3)+ 1] = d.Y();
-          this_face->normal_coord[((i-1) * 3)+ 2] = d.Z();
+          this_face->normal_coord[((i-1) * 3)+ 0] = static_cast<float>(d.X());
+          this_face->normal_coord[((i-1) * 3)+ 1] = static_cast<float>(d.Y());
+          this_face->normal_coord[((i-1) * 3)+ 2] = static_cast<float>(d.Z());
         }
 
         // set uvcoords buffers to NULL
@@ -204,6 +214,7 @@ void Tesselator::Tesselate()
       }
     }
     JoinPrimitives();    
+    ComputeEdges();
 }
 
 //---------------------------------------------------------------------------
@@ -227,7 +238,7 @@ void Tesselator::TesselateWithUVCoords()
   gp_Pnt2d d_coord;
   
   //Triangulate
-  BRepMesh::Mesh(myShape, myDeviation);
+  BRepMesh_IncrementalMesh(myShape, myDeviation);
 
   for (ExpFace.Init(myShape, TopAbs_FACE); ExpFace.More(); ExpFace.Next()) {
     const TopoDS_Face&    myFace    = TopoDS::Face(ExpFace.Current());
@@ -246,9 +257,9 @@ void Tesselator::TesselateWithUVCoords()
       this_face->number_of_coords = Nodes.Length();
       for (int i = Nodes.Lower(); i <= Nodes.Upper(); i++) {
         p = Nodes(i).Transformed(aLocation.Transformation());
-        this_face->vertex_coord[((i-1) * 3)+ 0] = p.X();
-        this_face->vertex_coord[((i-1) * 3)+ 1] = p.Y();
-        this_face->vertex_coord[((i-1) * 3)+ 2] = p.Z();
+        this_face->vertex_coord[((i-1) * 3)+ 0] = static_cast<float>(p.X());
+        this_face->vertex_coord[((i-1) * 3)+ 1] = static_cast<float>(p.Y());
+        this_face->vertex_coord[((i-1) * 3)+ 2] = static_cast<float>(p.Z());
       }
 
       //write normal buffer
@@ -258,9 +269,9 @@ void Tesselator::TesselateWithUVCoords()
       this_face->number_of_normals = myNormal.Length();
       for (int i = myNormal.Lower(); i <= myNormal.Upper(); i++) {
         d = myNormal(i).Transformed(aLocation.Transformation());
-        this_face->normal_coord[((i-1) * 3)+ 0] = d.X();
-        this_face->normal_coord[((i-1) * 3)+ 1] = d.Y();
-        this_face->normal_coord[((i-1) * 3)+ 2] = d.Z();
+        this_face->normal_coord[((i-1) * 3)+ 0] = static_cast<float>(d.X());
+        this_face->normal_coord[((i-1) * 3)+ 1] = static_cast<float>(d.Y());
+        this_face->normal_coord[((i-1) * 3)+ 2] = static_cast<float>(d.Z());
       }
 
       //write uvcoord buffer
@@ -292,9 +303,9 @@ void Tesselator::TesselateWithUVCoords()
           d_coord.SetY((-myVOrigin+(myVRepeat*(d_coord.Y()-Vmin))/dVmax)/myScaleV);
         }
         d_coord.Rotate(gp::Origin2d(), myRotationAngle);  
-        this_face->tex_coord[((i-1) * 3)+ id1] = d_coord.X();
-        this_face->tex_coord[((i-1) * 3)+ id2] = d_coord.Y();
-        this_face->tex_coord[((i-1) * 3)+ idNull] = 0;
+        this_face->tex_coord[((i-1) * 3)+ id1] = static_cast<float>(d_coord.X());
+        this_face->tex_coord[((i-1) * 3)+ id2] = static_cast<float>(d_coord.Y());
+        this_face->tex_coord[((i-1) * 3)+ idNull] = 0.;
       }
 
       //write triangle buffer
@@ -322,6 +333,7 @@ void Tesselator::TesselateWithUVCoords()
     }
   }
   JoinPrimitivesWithUVCoords();
+  ComputeEdges();
 }
 
 //---------------------------INTERFACE---------------------------------------
@@ -341,6 +353,82 @@ void Tesselator::ComputeDefaultDeviation()
 
     Standard_Real adeviation = std::max(aXmax-aXmin, std::max(aYmax-aYmin, aZmax-aZmin)) * 1e-2 ;
     myDeviation = adeviation;
+}
+
+void Tesselator::ComputeEdges()
+{
+  TopLoc_Location aTrsf;
+
+  // clear current data
+  std::vector<aedge*>::iterator it;
+  for (it = edgelist.begin(); it != edgelist.end(); ++it) {
+    if (*it) {
+      if ((*it)->vertex_coord)
+        delete[] (*it)->vertex_coord;
+
+      delete *it;
+      *it = NULL;
+    }
+  }
+  edgelist.clear();
+
+  // explore all boundary edges
+  TopTools_IndexedDataMapOfShapeListOfShape edgeMap;
+  TopExp::MapShapesAndAncestors (myShape, TopAbs_EDGE, TopAbs_FACE, edgeMap);
+
+  for (int iEdge = 1 ; iEdge <= edgeMap.Extent (); iEdge++) {
+    // reject free edges
+    const TopTools_ListOfShape& faceList = edgeMap.FindFromIndex (iEdge);
+    if (faceList.Extent() == 0) {
+      continue;
+    }
+
+    // take one of the shared edges and get edge triangulation
+    const TopoDS_Face& aFace  = TopoDS::Face (faceList.First ());
+    const TopoDS_Edge& anEdge = TopoDS::Edge (edgeMap.FindKey (iEdge));
+
+    Handle(Poly_Triangulation) trian = BRep_Tool::Triangulation (aFace, aTrsf);
+
+    if (trian.IsNull ())
+      continue;
+
+    Handle(Poly_PolygonOnTriangulation) anEdgePoly =
+        BRep_Tool::PolygonOnTriangulation (anEdge, trian, aTrsf);
+
+    if (anEdgePoly.IsNull ()) {
+      continue;
+    }
+
+    // get edge vertex indexes from face triangulation
+    const TColgp_Array1OfPnt& trainVerts = trian->Nodes ();
+    const TColStd_Array1OfInteger& edgeVerts = anEdgePoly->Nodes ();
+
+    if (edgeVerts.Length () < 2) {
+      continue;
+    }
+
+    aedge* theEdge = new aedge;
+    theEdge->number_of_coords = edgeVerts.Upper () - edgeVerts.Lower() + 1;
+    theEdge->vertex_coord = new float[theEdge->number_of_coords * 3 * sizeof(float)];
+
+    for (int aNodeIdx = edgeVerts.Lower (); aNodeIdx <= edgeVerts.Upper (); aNodeIdx++) {
+      // node index in face triangulation
+      int aTriIndex = edgeVerts.Value (aNodeIdx);
+
+      // get node and apply location transformation to the node
+      gp_Pnt aTriNode = trainVerts.Value (aTriIndex);
+      if (!aTrsf.IsIdentity ()) {
+        aTriNode.Transform (aTrsf);
+      }
+
+      int locIndex = aNodeIdx - edgeVerts.Lower ();
+      theEdge->vertex_coord[locIndex*3 + 0] = static_cast<float>(aTriNode.X());
+      theEdge->vertex_coord[locIndex*3 + 1] = static_cast<float>(aTriNode.Y());
+      theEdge->vertex_coord[locIndex*3 + 2] = static_cast<float>(aTriNode.Z());
+    }
+
+    edgelist.push_back(theEdge);
+  }
 }
 
 std::string Tesselator::ExportShapeToX3DIndexedFaceSet()
@@ -523,6 +611,54 @@ int Tesselator::ObjGetNormalCount()
 int Tesselator::ObjGetTexCoordCount()
 {
   return  tot_texcoord_count;
+}
+//---------------------------------------------------------------------------
+int Tesselator::ObjGetEdgeCount()
+{
+  return edgelist.size();
+}
+//---------------------------------------------------------------------------
+int Tesselator::ObjEdgeGetVertexCount(int iEdge)
+{
+  aedge* edge = edgelist.at(iEdge);
+  if (!edge) {
+    return 0;
+  }
+
+  return edge->number_of_coords;
+}
+//---------------------------------------------------------------------------
+void Tesselator::GetVertex(int ivert, float& x, float& y, float& z)
+{
+  x = locVertexcoord[ivert*3 + 0];
+  y = locVertexcoord[ivert*3 + 1];
+  z = locVertexcoord[ivert*3 + 2];
+}
+//---------------------------------------------------------------------------
+void Tesselator::GetNormal(int ivert, float& x, float& y, float& z)
+{
+  x = locNormalcoord[ivert*3 + 0];
+  y = locNormalcoord[ivert*3 + 1];
+  z = locNormalcoord[ivert*3 + 2];
+}
+//---------------------------------------------------------------------------
+void Tesselator::GetTriangleIndex(int triangleIdx, int &v1, int &v2, int &v3)
+{
+  v1 = loc_tri_indexes[3*triangleIdx + 0];
+  v2 = loc_tri_indexes[3*triangleIdx + 1];
+  v3 = loc_tri_indexes[3*triangleIdx + 2];
+}
+//---------------------------------------------------------------------------
+void Tesselator::GetEdgeVertex(int iEdge, int ivert, float &x, float &y, float &z)
+{
+  aedge* e = edgelist.at(iEdge);
+  if (!e) {
+    return;
+  }
+
+  x = e->vertex_coord[3*ivert + 0];
+  y = e->vertex_coord[3*ivert + 1];
+  z = e->vertex_coord[3*ivert + 2];
 }
 //---------------------------------------------------------------------------
 void Tesselator::ObjGetTriangle(int trianglenum, int *vertices, int *texcoords, int *normals)
@@ -735,9 +871,6 @@ void Tesselator::PrepareBoxTextureCoordinates(const TopoDS_Shape& aShape)
   //declare local variables
   Bnd_Box aBox;
   Standard_Real aXmin,aYmin ,aZmin ,aXmax ,aYmax ,aZmax;
-  Standard_Real aUmaxBack, aVmaxBack;
-  Standard_Real aUmaxLeft, aVmaxLeft;
-  Standard_Real aUmaxBottom, aVmaxBottom;
 
   //calculate the bounding box
   BRepBndLib::Add(aShape, aBox);

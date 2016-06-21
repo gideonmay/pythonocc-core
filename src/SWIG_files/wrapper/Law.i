@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Law_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -106,7 +122,7 @@ class Law {
 ") Reparametrize;
 		static Handle_Law_BSpline Reparametrize (const Adaptor3d_Curve & Curve,const Standard_Real First,const Standard_Real Last,const Standard_Boolean HasDF,const Standard_Boolean HasDL,const Standard_Real DFirst,const Standard_Real DLast,const Standard_Boolean Rev,const Standard_Integer NbPoints);
 		%feature("compactdefaultargs") Scale;
-		%feature("autodoc", "	* Computes a 1 d curve to scale a field of tangency. Value is 1. for t = (First+Last)/2 . If HasFirst value for t = First is VFirst (null derivative). If HasLast value for t = Last is VLast (null derivative).  1.  _  _/ \_  __/ \__  /  VFirst ____/ VLast \____  First  Last
+		%feature("autodoc", "	* Computes a 1 d curve to scale a field of tangency. Value is 1. for t = (First+Last)/2 . If HasFirst value for t = First is VFirst (null derivative). If HasLast value for t = Last is VLast (null derivative). //! 1.  _ _/ \_ __/ \__ / VFirst ____/  VLast \____ First  Last
 
 	:param First:
 	:type First: float
@@ -142,25 +158,11 @@ class Law {
 };
 
 
-%feature("shadow") Law::~Law %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Law {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Law_BSpline;
 class Law_BSpline : public MMgt_TShared {
 	public:
 		%feature("compactdefaultargs") Law_BSpline;
-		%feature("autodoc", "	* Creates a non-rational B_spline curve on the  basis <Knots, Multiplicities> of degree <Degree>.
+		%feature("autodoc", "	* Creates a non-rational B_spline curve on the basis <Knots, Multiplicities> of degree <Degree>.
 
 	:param Poles:
 	:type Poles: TColStd_Array1OfReal &
@@ -176,7 +178,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Law_BSpline;
 		 Law_BSpline (const TColStd_Array1OfReal & Poles,const TColStd_Array1OfReal & Knots,const TColStd_Array1OfInteger & Multiplicities,const Standard_Integer Degree,const Standard_Boolean Periodic = Standard_False);
 		%feature("compactdefaultargs") Law_BSpline;
-		%feature("autodoc", "	* Creates a rational B_spline curve on the basis  <Knots, Multiplicities> of degree <Degree>.
+		%feature("autodoc", "	* Creates a rational B_spline curve on the basis <Knots, Multiplicities> of degree <Degree>.
 
 	:param Poles:
 	:type Poles: TColStd_Array1OfReal &
@@ -202,7 +204,7 @@ class Law_BSpline : public MMgt_TShared {
 ") IncreaseDegree;
 		void IncreaseDegree (const Standard_Integer Degree);
 		%feature("compactdefaultargs") IncreaseMultiplicity;
-		%feature("autodoc", "	* //!Increases the multiplicity of the knot <Index> to  <M>. If <M> is lower or equal to the current  multiplicity nothing is done. If <M> is higher than  the degree the degree is used. If <Index> is not in [FirstUKnotIndex, LastUKnotIndex]
+		%feature("autodoc", "	* Increases the multiplicity of the knot <Index> to <M>. //! If <M> is lower or equal to the current multiplicity nothing is done. If <M> is higher than the degree the degree is used. If <Index> is not in [FirstUKnotIndex, LastUKnotIndex]
 
 	:param Index:
 	:type Index: int
@@ -212,7 +214,7 @@ class Law_BSpline : public MMgt_TShared {
 ") IncreaseMultiplicity;
 		void IncreaseMultiplicity (const Standard_Integer Index,const Standard_Integer M);
 		%feature("compactdefaultargs") IncreaseMultiplicity;
-		%feature("autodoc", "	* //!Increases the multiplicities of the knots in  [I1,I2] to <M>. For each knot if <M> is lower or equal to the  current multiplicity nothing is done. If <M> is  higher than the degree the degree is used. If <I1,I2> are not in [FirstUKnotIndex, LastUKnotIndex]
+		%feature("autodoc", "	* Increases the multiplicities of the knots in [I1,I2] to <M>. //! For each knot if <M> is lower or equal to the current multiplicity nothing is done. If <M> is higher than the degree the degree is used. If <I1,I2> are not in [FirstUKnotIndex, LastUKnotIndex]
 
 	:param I1:
 	:type I1: int
@@ -224,7 +226,7 @@ class Law_BSpline : public MMgt_TShared {
 ") IncreaseMultiplicity;
 		void IncreaseMultiplicity (const Standard_Integer I1,const Standard_Integer I2,const Standard_Integer M);
 		%feature("compactdefaultargs") IncrementMultiplicity;
-		%feature("autodoc", "	* //!Increment the multiplicities of the knots in  [I1,I2] by <M>. If <M> is not positive nithing is done. For each knot the resulting multiplicity is  limited to the Degree. If <I1,I2> are not in [FirstUKnotIndex, LastUKnotIndex]
+		%feature("autodoc", "	* Increment the multiplicities of the knots in [I1,I2] by <M>. //! If <M> is not positive nithing is done. //! For each knot the resulting multiplicity is limited to the Degree. If <I1,I2> are not in [FirstUKnotIndex, LastUKnotIndex]
 
 	:param I1:
 	:type I1: int
@@ -236,7 +238,7 @@ class Law_BSpline : public MMgt_TShared {
 ") IncrementMultiplicity;
 		void IncrementMultiplicity (const Standard_Integer I1,const Standard_Integer I2,const Standard_Integer M);
 		%feature("compactdefaultargs") InsertKnot;
-		%feature("autodoc", "	* Inserts a knot value in the sequence of knots. If <U> is an existing knot the multiplicity is increased by <M>.  If U is not on the parameter range nothing is done.  If the multiplicity is negative or null nothing is done. The new multiplicity is limited to the degree.  The tolerance criterion for knots equality is the max of Epsilon(U) and ParametricTolerance.
+		%feature("autodoc", "	* Inserts a knot value in the sequence of knots. If <U> is an existing knot the multiplicity is increased by <M>. //! If U is not on the parameter range nothing is done. //! If the multiplicity is negative or null nothing is done. The new multiplicity is limited to the degree. //! The tolerance criterion for knots equality is the max of Epsilon(U) and ParametricTolerance.
 
 	:param U:
 	:type U: float
@@ -250,7 +252,7 @@ class Law_BSpline : public MMgt_TShared {
 ") InsertKnot;
 		void InsertKnot (const Standard_Real U,const Standard_Integer M = 1,const Standard_Real ParametricTolerance = 0.0,const Standard_Boolean Add = Standard_True);
 		%feature("compactdefaultargs") InsertKnots;
-		%feature("autodoc", "	* Inserts a set of knots values in the sequence of knots.  For each U = Knots(i), M = Mults(i)  If <U> is an existing knot the multiplicity is increased by <M> if <Add> is True, increased to <M> if <Add> is False.  If U is not on the parameter range nothing is done.  If the multiplicity is negative or null nothing is done. The new multiplicity is limited to the degree.  The tolerance criterion for knots equality is the max of Epsilon(U) and ParametricTolerance.
+		%feature("autodoc", "	* Inserts a set of knots values in the sequence of knots. //! For each U = Knots(i), M = Mults(i) //! If <U> is an existing knot the multiplicity is increased by <M> if <Add> is True, increased to <M> if <Add> is False. //! If U is not on the parameter range nothing is done. //! If the multiplicity is negative or null nothing is done. The new multiplicity is limited to the degree. //! The tolerance criterion for knots equality is the max of Epsilon(U) and ParametricTolerance.
 
 	:param Knots:
 	:type Knots: TColStd_Array1OfReal &
@@ -264,7 +266,7 @@ class Law_BSpline : public MMgt_TShared {
 ") InsertKnots;
 		void InsertKnots (const TColStd_Array1OfReal & Knots,const TColStd_Array1OfInteger & Mults,const Standard_Real ParametricTolerance = 0.0,const Standard_Boolean Add = Standard_False);
 		%feature("compactdefaultargs") RemoveKnot;
-		%feature("autodoc", "	* Decrement the knots multiplicity to <M>. If M is  0 the knot is removed. The Poles sequence is  modified. As there are two ways to compute the new poles the  average is computed if the distance is lower than  the <Tolerance>, else False is returned. A low tolerance is used to prevent the modification  of the curve. A high tolerance is used to 'smooth' the curve. Raised if Index is not in the range [FirstUKnotIndex, LastUKnotIndex] pole insertion and pole removing this operation is limited to the Uniform or QuasiUniform BSplineCurve. The knot values are modified . If the BSpline is NonUniform or Piecewise Bezier an exception Construction error is raised.
+		%feature("autodoc", "	* Decrement the knots multiplicity to <M>. If M is 0 the knot is removed. The Poles sequence is modified. //! As there are two ways to compute the new poles the average is computed if the distance is lower than the <Tolerance>, else False is returned. //! A low tolerance is used to prevent the modification of the curve. //! A high tolerance is used to 'smooth' the curve. //! Raised if Index is not in the range [FirstUKnotIndex, LastUKnotIndex] pole insertion and pole removing this operation is limited to the Uniform or QuasiUniform BSplineCurve. The knot values are modified . If the BSpline is NonUniform or Piecewise Bezier an exception Construction error is raised.
 
 	:param Index:
 	:type Index: int
@@ -282,7 +284,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Reverse;
 		void Reverse ();
 		%feature("compactdefaultargs") ReversedParameter;
-		%feature("autodoc", "	* Returns the parameter on the reversed curve for the point of parameter U on <self>.  returns UFirst + ULast - U
+		%feature("autodoc", "	* Returns the parameter on the reversed curve for the point of parameter U on <self>. //! returns UFirst + ULast - U
 
 	:param U:
 	:type U: float
@@ -310,7 +312,7 @@ class Law_BSpline : public MMgt_TShared {
 ") SetKnot;
 		void SetKnot (const Standard_Integer Index,const Standard_Real K);
 		%feature("compactdefaultargs") SetKnots;
-		%feature("autodoc", "	* Changes all the knots of the curve The multiplicity of the knots are not modified. Raised if there is an index such that K (Index+1) <= K (Index). Raised if K.Lower() < 1 or K.Upper() > NbKnots
+		%feature("autodoc", "	* Changes all the knots of the curve The multiplicity of the knots are not modified. //! Raised if there is an index such that K (Index+1) <= K (Index). //! Raised if K.Lower() < 1 or K.Upper() > NbKnots
 
 	:param K:
 	:type K: TColStd_Array1OfReal &
@@ -318,7 +320,7 @@ class Law_BSpline : public MMgt_TShared {
 ") SetKnots;
 		void SetKnots (const TColStd_Array1OfReal & K);
 		%feature("compactdefaultargs") SetKnot;
-		%feature("autodoc", "	* Changes the knot of range Index with its multiplicity. You can increase the multiplicity of a knot but it is not allowed to decrease the multiplicity of an existing knot. Raised if K >= Knots(Index+1) or K <= Knots(Index-1). Raised if M is greater than Degree or lower than the previous multiplicity of knot of range Index. Raised if Index < 1 || Index > NbKnots
+		%feature("autodoc", "	* Changes the knot of range Index with its multiplicity. You can increase the multiplicity of a knot but it is not allowed to decrease the multiplicity of an existing knot. //! Raised if K >= Knots(Index+1) or K <= Knots(Index-1). Raised if M is greater than Degree or lower than the previous multiplicity of knot of range Index. Raised if Index < 1 || Index > NbKnots
 
 	:param Index:
 	:type Index: int
@@ -330,7 +332,7 @@ class Law_BSpline : public MMgt_TShared {
 ") SetKnot;
 		void SetKnot (const Standard_Integer Index,const Standard_Real K,const Standard_Integer M);
 		%feature("compactdefaultargs") PeriodicNormalization;
-		%feature("autodoc", "	* returns the parameter normalized within  the period if the curve is periodic : otherwise  does not do anything
+		%feature("autodoc", "	* returns the parameter normalized within the period if the curve is periodic : otherwise does not do anything
 
 	:param U:
 	:type U: float &
@@ -358,7 +360,7 @@ class Law_BSpline : public MMgt_TShared {
 ") SetNotPeriodic;
 		void SetNotPeriodic ();
 		%feature("compactdefaultargs") SetPole;
-		%feature("autodoc", "	* Substitutes the Pole of range Index with P. Raised if Index < 1 || Index > NbPoles
+		%feature("autodoc", "	* Substitutes the Pole of range Index with P. //! Raised if Index < 1 || Index > NbPoles
 
 	:param Index:
 	:type Index: int
@@ -368,7 +370,7 @@ class Law_BSpline : public MMgt_TShared {
 ") SetPole;
 		void SetPole (const Standard_Integer Index,const Standard_Real P);
 		%feature("compactdefaultargs") SetPole;
-		%feature("autodoc", "	* Substitutes the pole and the weight of range Index. If the curve <self> is not rational it can become rational If the curve was rational it can become non rational Raised if Index < 1 || Index > NbPoles Raised if Weight <= 0.0
+		%feature("autodoc", "	* Substitutes the pole and the weight of range Index. If the curve <self> is not rational it can become rational If the curve was rational it can become non rational //! Raised if Index < 1 || Index > NbPoles Raised if Weight <= 0.0
 
 	:param Index:
 	:type Index: int
@@ -380,7 +382,7 @@ class Law_BSpline : public MMgt_TShared {
 ") SetPole;
 		void SetPole (const Standard_Integer Index,const Standard_Real P,const Standard_Real Weight);
 		%feature("compactdefaultargs") SetWeight;
-		%feature("autodoc", "	* Changes the weight for the pole of range Index. If the curve was non rational it can become rational. If the curve was rational it can become non rational. Raised if Index < 1 || Index > NbPoles Raised if Weight <= 0.0
+		%feature("autodoc", "	* Changes the weight for the pole of range Index. If the curve was non rational it can become rational. If the curve was rational it can become non rational. //! Raised if Index < 1 || Index > NbPoles Raised if Weight <= 0.0
 
 	:param Index:
 	:type Index: int
@@ -596,7 +598,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Knot;
 		Standard_Real Knot (const Standard_Integer Index);
 		%feature("compactdefaultargs") Knots;
-		%feature("autodoc", "	* returns the knot values of the B-spline curve; Raised if the length of K is not equal to the number of knots.
+		%feature("autodoc", "	* returns the knot values of the B-spline curve; //! Raised if the length of K is not equal to the number of knots.
 
 	:param K:
 	:type K: TColStd_Array1OfReal &
@@ -604,7 +606,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Knots;
 		void Knots (TColStd_Array1OfReal & K);
 		%feature("compactdefaultargs") KnotSequence;
-		%feature("autodoc", "	* Returns the knots sequence. In this sequence the knots with a multiplicity greater than 1 are repeated. Example : K = {k1, k1, k1, k2, k3, k3, k4, k4, k4} Raised if the length of K is not equal to NbPoles + Degree + 1
+		%feature("autodoc", "	* Returns the knots sequence. In this sequence the knots with a multiplicity greater than 1 are repeated. Example : K = {k1, k1, k1, k2, k3, k3, k4, k4, k4} //! Raised if the length of K is not equal to NbPoles + Degree + 1
 
 	:param K:
 	:type K: TColStd_Array1OfReal &
@@ -654,7 +656,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Multiplicity;
 		Standard_Integer Multiplicity (const Standard_Integer Index);
 		%feature("compactdefaultargs") Multiplicities;
-		%feature("autodoc", "	* Returns the multiplicity of the knots of the curve. Raised if the length of M is not equal to NbKnots.
+		%feature("autodoc", "	* Returns the multiplicity of the knots of the curve. //! Raised if the length of M is not equal to NbKnots.
 
 	:param M:
 	:type M: TColStd_Array1OfInteger &
@@ -682,7 +684,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Pole;
 		Standard_Real Pole (const Standard_Integer Index);
 		%feature("compactdefaultargs") Poles;
-		%feature("autodoc", "	* Returns the poles of the B-spline curve; Raised if the length of P is not equal to the number of poles.
+		%feature("autodoc", "	* Returns the poles of the B-spline curve; //! Raised if the length of P is not equal to the number of poles.
 
 	:param P:
 	:type P: TColStd_Array1OfReal &
@@ -704,7 +706,7 @@ class Law_BSpline : public MMgt_TShared {
 ") Weight;
 		Standard_Real Weight (const Standard_Integer Index);
 		%feature("compactdefaultargs") Weights;
-		%feature("autodoc", "	* Returns the weights of the B-spline curve; Raised if the length of W is not equal to NbPoles.
+		%feature("autodoc", "	* Returns the weights of the B-spline curve; //! Raised if the length of W is not equal to NbPoles.
 
 	:param W:
 	:type W: TColStd_Array1OfReal &
@@ -754,25 +756,23 @@ class Law_BSpline : public MMgt_TShared {
 };
 
 
-%feature("shadow") Law_BSpline::~Law_BSpline %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_BSpline {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_BSpline(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_BSpline {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_BSpline {
-	Handle_Law_BSpline GetHandle() {
-	return *(Handle_Law_BSpline*) &$self;
-	}
-};
+%pythonappend Handle_Law_BSpline::Handle_Law_BSpline %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_BSpline;
 class Handle_Law_BSpline : public Handle_MMgt_TShared {
@@ -792,26 +792,12 @@ class Handle_Law_BSpline : public Handle_MMgt_TShared {
     return (Law_BSpline*)$self->Access();
     }
 };
-%feature("shadow") Handle_Law_BSpline::~Handle_Law_BSpline %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_BSpline {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Law_BSplineKnotSplitting;
 class Law_BSplineKnotSplitting {
 	public:
 		%feature("compactdefaultargs") Law_BSplineKnotSplitting;
-		%feature("autodoc", "	* Locates the knot values which correspond to the segmentation of the curve into arcs with a continuity equal to ContinuityRange. Raised if ContinuityRange is not greater or equal zero.
+		%feature("autodoc", "	* Locates the knot values which correspond to the segmentation of the curve into arcs with a continuity equal to ContinuityRange. //! Raised if ContinuityRange is not greater or equal zero.
 
 	:param BasisLaw:
 	:type BasisLaw: Handle_Law_BSpline &
@@ -827,7 +813,7 @@ class Law_BSplineKnotSplitting {
 ") NbSplits;
 		Standard_Integer NbSplits ();
 		%feature("compactdefaultargs") Splitting;
-		%feature("autodoc", "	* Returns the indexes of the BSpline curve knots corresponding to the splitting. Raised if the length of SplitValues is not equal to NbSPlit.
+		%feature("autodoc", "	* Returns the indexes of the BSpline curve knots corresponding to the splitting. //! Raised if the length of SplitValues is not equal to NbSPlit.
 
 	:param SplitValues:
 	:type SplitValues: TColStd_Array1OfInteger &
@@ -835,7 +821,7 @@ class Law_BSplineKnotSplitting {
 ") Splitting;
 		void Splitting (TColStd_Array1OfInteger & SplitValues);
 		%feature("compactdefaultargs") SplitValue;
-		%feature("autodoc", "	* Returns the index of the knot corresponding to the splitting of range Index. Raised if Index < 1 or Index > NbSplits
+		%feature("autodoc", "	* Returns the index of the knot corresponding to the splitting of range Index. //! Raised if Index < 1 or Index > NbSplits
 
 	:param Index:
 	:type Index: int
@@ -845,20 +831,6 @@ class Law_BSplineKnotSplitting {
 };
 
 
-%feature("shadow") Law_BSplineKnotSplitting::~Law_BSplineKnotSplitting %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Law_BSplineKnotSplitting {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Law_Function;
 class Law_Function : public MMgt_TShared {
 	public:
@@ -875,7 +847,7 @@ class Law_Function : public MMgt_TShared {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -943,25 +915,23 @@ class Law_Function : public MMgt_TShared {
 };
 
 
-%feature("shadow") Law_Function::~Law_Function %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_Function {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_Function(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_Function {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_Function {
-	Handle_Law_Function GetHandle() {
-	return *(Handle_Law_Function*) &$self;
-	}
-};
+%pythonappend Handle_Law_Function::Handle_Law_Function %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_Function;
 class Handle_Law_Function : public Handle_MMgt_TShared {
@@ -979,20 +949,6 @@ class Handle_Law_Function : public Handle_MMgt_TShared {
 %extend Handle_Law_Function {
     Law_Function* GetObject() {
     return (Law_Function*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_Function::~Handle_Law_Function %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_Function {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1054,7 +1010,7 @@ class Law_Interpolate {
 		%feature("compactdefaultargs") Curve;
 		%feature("autodoc", "	:rtype: Handle_Law_BSpline
 ") Curve;
-		const Handle_Law_BSpline & Curve ();
+		Handle_Law_BSpline Curve ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -1062,20 +1018,6 @@ class Law_Interpolate {
 };
 
 
-%feature("shadow") Law_Interpolate::~Law_Interpolate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Law_Interpolate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Law_Laws;
 class Law_Laws {
 	public:
@@ -1083,6 +1025,12 @@ class Law_Laws {
 		%feature("autodoc", "	:rtype: None
 ") Law_Laws;
 		 Law_Laws ();
+		%feature("compactdefaultargs") Law_Laws;
+		%feature("autodoc", "	:param Other:
+	:type Other: Law_Laws &
+	:rtype: None
+") Law_Laws;
+		 Law_Laws (const Law_Laws & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: Law_Laws &
@@ -1150,11 +1098,11 @@ class Law_Laws {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_Law_Function
 ") First;
-		Handle_Law_Function & First ();
+		Handle_Law_Function First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_Law_Function
 ") Last;
-		Handle_Law_Function & Last ();
+		Handle_Law_Function Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -1200,20 +1148,6 @@ class Law_Laws {
 };
 
 
-%feature("shadow") Law_Laws::~Law_Laws %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Law_Laws {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Law_ListIteratorOfLaws;
 class Law_ListIteratorOfLaws {
 	public:
@@ -1244,24 +1178,10 @@ class Law_ListIteratorOfLaws {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Law_Function
 ") Value;
-		Handle_Law_Function & Value ();
+		Handle_Law_Function Value ();
 };
 
 
-%feature("shadow") Law_ListIteratorOfLaws::~Law_ListIteratorOfLaws %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Law_ListIteratorOfLaws {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Law_ListNodeOfLaws;
 class Law_ListNodeOfLaws : public TCollection_MapNode {
 	public:
@@ -1276,29 +1196,27 @@ class Law_ListNodeOfLaws : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_Law_Function
 ") Value;
-		Handle_Law_Function & Value ();
+		Handle_Law_Function Value ();
 };
 
 
-%feature("shadow") Law_ListNodeOfLaws::~Law_ListNodeOfLaws %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Law_ListNodeOfLaws {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_ListNodeOfLaws(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Law_ListNodeOfLaws::Handle_Law_ListNodeOfLaws %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Law_ListNodeOfLaws {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_ListNodeOfLaws {
-	Handle_Law_ListNodeOfLaws GetHandle() {
-	return *(Handle_Law_ListNodeOfLaws*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Law_ListNodeOfLaws;
 class Handle_Law_ListNodeOfLaws : public Handle_TCollection_MapNode {
@@ -1316,20 +1234,6 @@ class Handle_Law_ListNodeOfLaws : public Handle_TCollection_MapNode {
 %extend Handle_Law_ListNodeOfLaws {
     Law_ListNodeOfLaws* GetObject() {
     return (Law_ListNodeOfLaws*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_ListNodeOfLaws::~Handle_Law_ListNodeOfLaws %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_ListNodeOfLaws {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1363,7 +1267,7 @@ class Law_BSpFunc : public Law_Function {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -1433,25 +1337,23 @@ class Law_BSpFunc : public Law_Function {
 };
 
 
-%feature("shadow") Law_BSpFunc::~Law_BSpFunc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_BSpFunc {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_BSpFunc(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_BSpFunc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_BSpFunc {
-	Handle_Law_BSpFunc GetHandle() {
-	return *(Handle_Law_BSpFunc*) &$self;
-	}
-};
+%pythonappend Handle_Law_BSpFunc::Handle_Law_BSpFunc %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_BSpFunc;
 class Handle_Law_BSpFunc : public Handle_Law_Function {
@@ -1469,20 +1371,6 @@ class Handle_Law_BSpFunc : public Handle_Law_Function {
 %extend Handle_Law_BSpFunc {
     Law_BSpFunc* GetObject() {
     return (Law_BSpFunc*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_BSpFunc::~Handle_Law_BSpFunc %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_BSpFunc {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1520,7 +1408,7 @@ class Law_Composite : public Law_Function {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -1592,7 +1480,7 @@ class Law_Composite : public Law_Function {
 	:type W: float
 	:rtype: Handle_Law_Function
 ") ChangeElementaryLaw;
-		Handle_Law_Function & ChangeElementaryLaw (const Standard_Real W);
+		Handle_Law_Function ChangeElementaryLaw (const Standard_Real W);
 		%feature("compactdefaultargs") ChangeLaws;
 		%feature("autodoc", "	:rtype: Law_Laws
 ") ChangeLaws;
@@ -1608,25 +1496,23 @@ class Law_Composite : public Law_Function {
 };
 
 
-%feature("shadow") Law_Composite::~Law_Composite %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_Composite {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_Composite(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_Composite {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_Composite {
-	Handle_Law_Composite GetHandle() {
-	return *(Handle_Law_Composite*) &$self;
-	}
-};
+%pythonappend Handle_Law_Composite::Handle_Law_Composite %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_Composite;
 class Handle_Law_Composite : public Handle_Law_Function {
@@ -1644,20 +1530,6 @@ class Handle_Law_Composite : public Handle_Law_Function {
 %extend Handle_Law_Composite {
     Law_Composite* GetObject() {
     return (Law_Composite*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_Composite::~Handle_Law_Composite %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_Composite {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1759,25 +1631,23 @@ class Law_Constant : public Law_Function {
 };
 
 
-%feature("shadow") Law_Constant::~Law_Constant %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_Constant {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_Constant(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_Constant {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_Constant {
-	Handle_Law_Constant GetHandle() {
-	return *(Handle_Law_Constant*) &$self;
-	}
-};
+%pythonappend Handle_Law_Constant::Handle_Law_Constant %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_Constant;
 class Handle_Law_Constant : public Handle_Law_Function {
@@ -1795,20 +1665,6 @@ class Handle_Law_Constant : public Handle_Law_Function {
 %extend Handle_Law_Constant {
     Law_Constant* GetObject() {
     return (Law_Constant*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_Constant::~Handle_Law_Constant %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_Constant {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1916,25 +1772,23 @@ class Law_Linear : public Law_Function {
 };
 
 
-%feature("shadow") Law_Linear::~Law_Linear %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_Linear {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_Linear(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_Linear {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_Linear {
-	Handle_Law_Linear GetHandle() {
-	return *(Handle_Law_Linear*) &$self;
-	}
-};
+%pythonappend Handle_Law_Linear::Handle_Law_Linear %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_Linear;
 class Handle_Law_Linear : public Handle_Law_Function {
@@ -1952,20 +1806,6 @@ class Handle_Law_Linear : public Handle_Law_Function {
 %extend Handle_Law_Linear {
     Law_Linear* GetObject() {
     return (Law_Linear*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_Linear::~Handle_Law_Linear %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_Linear {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2033,25 +1873,23 @@ class Law_Interpol : public Law_BSpFunc {
 };
 
 
-%feature("shadow") Law_Interpol::~Law_Interpol %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_Interpol {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_Interpol(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_Interpol {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_Interpol {
-	Handle_Law_Interpol GetHandle() {
-	return *(Handle_Law_Interpol*) &$self;
-	}
-};
+%pythonappend Handle_Law_Interpol::Handle_Law_Interpol %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_Interpol;
 class Handle_Law_Interpol : public Handle_Law_BSpFunc {
@@ -2069,20 +1907,6 @@ class Handle_Law_Interpol : public Handle_Law_BSpFunc {
 %extend Handle_Law_Interpol {
     Law_Interpol* GetObject() {
     return (Law_Interpol*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_Interpol::~Handle_Law_Interpol %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_Interpol {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2130,25 +1954,23 @@ class Law_S : public Law_BSpFunc {
 };
 
 
-%feature("shadow") Law_S::~Law_S %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Law_S {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Law_S(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Law_S {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Law_S {
-	Handle_Law_S GetHandle() {
-	return *(Handle_Law_S*) &$self;
-	}
-};
+%pythonappend Handle_Law_S::Handle_Law_S %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Law_S;
 class Handle_Law_S : public Handle_Law_BSpFunc {
@@ -2166,20 +1988,6 @@ class Handle_Law_S : public Handle_Law_BSpFunc {
 %extend Handle_Law_S {
     Law_S* GetObject() {
     return (Law_S*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Law_S::~Handle_Law_S %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Law_S {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

@@ -32,18 +32,36 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Standard_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef bool Standard_Boolean;
 typedef const char * Standard_CString;
+typedef std::istream Standard_IStream;
 typedef Standard_ExtCharacter * Standard_PExtCharacter;
 typedef std::time_t Standard_Time;
 typedef unsigned char Standard_Byte;
 typedef void * Standard_Address;
-typedef Standard_Byte * Standard_PByte;
+typedef uint16_t Standard_Utf16Char;
 typedef GUID Standard_UUID;
 typedef short Standard_ExtCharacter;
+typedef unsigned __int8 uint8_t;
 typedef double Standard_Real;
 typedef Standard_ErrorHandler * Standard_PErrorHandler;
 typedef int Standard_Integer;
@@ -55,13 +73,13 @@ typedef wchar_t Standard_WideChar;
 typedef char Standard_Character;
 typedef unsigned char Standard_Utf8UChar;
 typedef uint32_t Standard_Utf32Char;
-typedef Standard_Persistent * Standard_OId;
-typedef strstream Standard_SStream;
-typedef uint16_t Standard_Utf16Char;
+typedef std::stringstream Standard_SStream;
+typedef Standard_Byte * Standard_PByte;
 typedef const short * Standard_ExtString;
 typedef unsigned __int32 uint32_t;
 typedef size_t Standard_Size;
-typedef ostream Standard_OStream;
+typedef std::ostream Standard_OStream;
+typedef unsigned __int64 uint64_t;
 typedef unsigned __int16 uint16_t;
 /* end typedefs declaration */
 
@@ -129,6 +147,16 @@ class Standard {
 	:rtype: Standard_Address
 ") Reallocate;
 		static Standard_Address Reallocate (const Standard_Address aStorage,const Standard_Size aNewSize);
+		%feature("compactdefaultargs") AllocateAligned;
+		%feature("autodoc", "	* Allocates aligned memory blocks. Should be used with CPU instructions which require specific alignment. For example: SSE requires 16 bytes, AVX requires 32 bytes. @param theSize bytes to allocate @param theAlign alignment in bytes
+
+	:param theSize:
+	:type theSize: Standard_Size
+	:param theAlign:
+	:type theAlign: Standard_Size
+	:rtype: Standard_Address
+") AllocateAligned;
+		static Standard_Address AllocateAligned (const Standard_Size theSize,const Standard_Size theAlign);
 		%feature("compactdefaultargs") Purge;
 		%feature("autodoc", "	* Deallocates the storage retained on the free list and clears the list. Returns non-zero if some memory has been actually freed.
 
@@ -138,20 +166,6 @@ class Standard {
 };
 
 
-%feature("shadow") Standard::~Standard %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_ErrorHandler;
 class Standard_ErrorHandler {
 	public:
@@ -208,35 +222,9 @@ class Standard_ErrorHandler {
 };
 
 
-%feature("shadow") Standard_ErrorHandler::~Standard_ErrorHandler %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_ErrorHandler {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_ErrorHandlerCallback;
 class Standard_ErrorHandlerCallback {
 	public:
-		%feature("compactdefaultargs") RegisterCallback;
-		%feature("autodoc", "	* Registers this callback object in the current error handler (if found).
-
-	:rtype: None
-") RegisterCallback;
-		void RegisterCallback ();
-		%feature("compactdefaultargs") UnregisterCallback;
-		%feature("autodoc", "	* Unregisters this callback object from the error handler.
-
-	:rtype: None
-") UnregisterCallback;
-		void UnregisterCallback ();
 		%feature("compactdefaultargs") DestroyCallback;
 		%feature("autodoc", "	* The callback function to perform necessary callback action. Called by the exception handler when it is being destroyed but still has this callback registered.
 
@@ -246,20 +234,6 @@ class Standard_ErrorHandlerCallback {
 };
 
 
-%feature("shadow") Standard_ErrorHandlerCallback::~Standard_ErrorHandlerCallback %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_ErrorHandlerCallback {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_GUID;
 class Standard_GUID {
 	public:
@@ -276,7 +250,7 @@ class Standard_GUID {
 ") Standard_GUID;
 		 Standard_GUID (const char * aGuid);
 		%feature("compactdefaultargs") Standard_GUID;
-		%feature("autodoc", "	* build a GUID from an unicode string with the following format:  '00000000-0000-0000-0000-000000000000'
+		%feature("autodoc", "	* build a GUID from an unicode string with the following format: //! '00000000-0000-0000-0000-000000000000'
 
 	:param aGuid:
 	:type aGuid: Standard_ExtString
@@ -324,7 +298,7 @@ class Standard_GUID {
 ") ToUUID;
 		Standard_UUID ToUUID ();
 		%feature("compactdefaultargs") ToCString;
-		%feature("autodoc", "	* translate the GUID into ascii string the aStrGuid is allocated by user. the guid have the following format:  '00000000-0000-0000-0000-000000000000'
+		%feature("autodoc", "	* translate the GUID into ascii string the aStrGuid is allocated by user. the guid have the following format: //! '00000000-0000-0000-0000-000000000000'
 
 	:param aStrGuid:
 	:type aStrGuid: Standard_PCharacter
@@ -332,7 +306,7 @@ class Standard_GUID {
 ") ToCString;
 		void ToCString (const Standard_PCharacter aStrGuid);
 		%feature("compactdefaultargs") ToExtString;
-		%feature("autodoc", "	* translate the GUID into unicode string the aStrGuid is allocated by user. the guid have the following format:  '00000000-0000-0000-0000-000000000000'
+		%feature("autodoc", "	* translate the GUID into unicode string the aStrGuid is allocated by user. the guid have the following format: //! '00000000-0000-0000-0000-000000000000'
 
 	:param aStrGuid:
 	:type aStrGuid: Standard_PExtCharacter
@@ -550,20 +524,6 @@ class Standard_GUID {
 };
 
 
-%feature("shadow") Standard_GUID::~Standard_GUID %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_GUID {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_MMgrRoot;
 class Standard_MMgrRoot {
 	public:
@@ -604,20 +564,6 @@ class Standard_MMgrRoot {
 };
 
 
-%feature("shadow") Standard_MMgrRoot::~Standard_MMgrRoot %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_MMgrRoot {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_Static_Assert<true>;
 class Standard_Static_Assert<true> {
 	public:
@@ -628,20 +574,6 @@ class Standard_Static_Assert<true> {
 };
 
 
-%feature("shadow") Standard_Static_Assert<true>::~Standard_Static_Assert<true> %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_Static_Assert<true> {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class Standard_Storable {
 	public:
 		%feature("compactdefaultargs") Delete;
@@ -649,7 +581,7 @@ class Standard_Storable {
 ") Delete;
 		virtual void Delete ();
 		%feature("compactdefaultargs") HashCode;
-		%feature("autodoc", "	* Returns a hashed value denoting <self>. This value is in  the range 1..<Upper>.
+		%feature("autodoc", "	* Returns a hashed value denoting <self>. This value is in the range 1..<Upper>.
 
 	:param Upper:
 	:type Upper: int
@@ -663,7 +595,7 @@ class Standard_Storable {
             }
         };
         		%feature("compactdefaultargs") IsEqual;
-		%feature("autodoc", "	* Returns true if the direct contents of <self> and  <Other> are memberwise equal.
+		%feature("autodoc", "	* Returns true if the direct contents of <self> and <Other> are memberwise equal.
 
 	:param Other:
 	:type Other: Standard_Storable &
@@ -685,38 +617,16 @@ class Standard_Storable {
                 return False
         }
         		%feature("compactdefaultargs") IsSimilar;
-		%feature("autodoc", "	* Returns true if the Deep contents of <self> and  <Other> are memberwise equal.
+		%feature("autodoc", "	* Returns true if the Deep contents of <self> and <Other> are memberwise equal.
 
 	:param Other:
 	:type Other: Standard_Storable &
 	:rtype: bool
 ") IsSimilar;
 		Standard_Boolean IsSimilar (const Standard_Storable & Other);
-
-        %feature("autodoc", "1");
-        %extend{
-            std::string ShallowDumpToString() {
-            std::stringstream s;
-            self->ShallowDump(s);
-            return s.str();}
-        };
-        };
-
-
-%feature("shadow") Standard_Storable::~Standard_Storable %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_Storable {
-	void _kill_pointed() {
-		delete $self;
-	}
 };
+
+
 %nodefaultctor Standard_Transient;
 class Standard_Transient {
 	public:
@@ -748,20 +658,12 @@ class Standard_Transient {
 	:rtype: void
 ") Delete;
 		virtual void Delete ();
-
-        %feature("autodoc", "1");
-        %extend{
-            std::string ShallowDumpToString() {
-            std::stringstream s;
-            self->ShallowDump(s);
-            return s.str();}
-        };
-        		%feature("compactdefaultargs") DynamicType;
+		%feature("compactdefaultargs") DynamicType;
 		%feature("autodoc", "	* Returns a type information object about this object.
 
 	:rtype: Handle_Standard_Type
 ") DynamicType;
-		virtual const Handle_Standard_Type & DynamicType ();
+		Handle_Standard_Type DynamicType ();
 		%feature("compactdefaultargs") IsInstance;
 		%feature("autodoc", "	* Returns a true value if this is an instance of Type.
 
@@ -809,25 +711,23 @@ class Standard_Transient {
 };
 
 
-%feature("shadow") Standard_Transient::~Standard_Transient %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Standard_Transient {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Standard_Transient(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Standard_Transient {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Standard_Transient {
-	Handle_Standard_Transient GetHandle() {
-	return *(Handle_Standard_Transient*) &$self;
-	}
-};
+%pythonappend Handle_Standard_Transient::Handle_Standard_Transient %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Standard_Transient;
 class Handle_Standard_Transient {
@@ -893,18 +793,113 @@ class Handle_Standard_Transient {
     return (Standard_Transient*)$self->Access();
     }
 };
-%feature("shadow") Handle_Standard_Transient::~Handle_Standard_Transient %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
+
+%nodefaultctor Standard_Failure;
+class Standard_Failure : public Standard_Transient {
+	public:
+		%feature("compactdefaultargs") Standard_Failure;
+		%feature("autodoc", "	* Creates a status object of type 'Failure'.
+
+	:rtype: None
+") Standard_Failure;
+		 Standard_Failure ();
+		%feature("compactdefaultargs") Standard_Failure;
+		%feature("autodoc", "	:param f:
+	:type f: Standard_Failure &
+	:rtype: None
+") Standard_Failure;
+		 Standard_Failure (const Standard_Failure & f);
+		%feature("compactdefaultargs") Standard_Failure;
+		%feature("autodoc", "	* Creates a status object of type 'Failure'.
+
+	:param aString:
+	:type aString: char *
+	:rtype: None
+") Standard_Failure;
+		 Standard_Failure (const char * aString);
+		%feature("compactdefaultargs") Destroy;
+		%feature("autodoc", "	:rtype: None
+") Destroy;
+		void Destroy ();
+
+        %feature("autodoc", "1");
+        %extend{
+            std::string PrintToString() {
+            std::stringstream s;
+            self->Print(s);
+            return s.str();}
+        };
+        		%feature("compactdefaultargs") GetMessageString;
+		%feature("autodoc", "	* Returns error message
+
+	:rtype: char *
+") GetMessageString;
+		char * GetMessageString ();
+		%feature("compactdefaultargs") SetMessageString;
+		%feature("autodoc", "	* Sets error message
+
+	:param aMessage:
+	:type aMessage: char *
+	:rtype: None
+") SetMessageString;
+		void SetMessageString (const char * aMessage);
+		%feature("compactdefaultargs") NewInstance;
+		%feature("autodoc", "	* Used to construct an instance of the exception object as a handle. Shall be used to protect against possible construction of exception object in C stack -- that is dangerous since some of methods require that object was allocated dynamically.
+
+	:param aMessage:
+	:type aMessage: char *
+	:rtype: Handle_Standard_Failure
+") NewInstance;
+		static Handle_Standard_Failure NewInstance (const char * aMessage);
+		%feature("compactdefaultargs") Jump;
+		%feature("autodoc", "	* Used to throw CASCADE exception from C signal handler. On platforms that do not allow throwing C++ exceptions from this handler (e.g. Linux), uses longjump to get to the current active signal handler, and only then is converted to C++ exception.
+
+	:rtype: None
+") Jump;
+		void Jump ();
+		%feature("compactdefaultargs") Caught;
+		%feature("autodoc", "	* Returns the last caught exception. Needed when exceptions are emulated by C longjumps, in other cases is also provided for compatibility.
+
+	:rtype: Handle_Standard_Failure
+") Caught;
+		static Handle_Standard_Failure Caught ();
+};
+
+
+%extend Standard_Failure {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Standard_Failure(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Standard_Failure::Handle_Standard_Failure %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
 
-%extend Handle_Standard_Transient {
-    void _kill_pointed() {
-        delete $self;
+%nodefaultctor Handle_Standard_Failure;
+class Handle_Standard_Failure : public Handle_Standard_Transient {
+
+    public:
+        // constructors
+        Handle_Standard_Failure();
+        Handle_Standard_Failure(const Handle_Standard_Failure &aHandle);
+        Handle_Standard_Failure(const Standard_Failure *anItem);
+        void Nullify();
+        Standard_Boolean IsNull() const;
+        static const Handle_Standard_Failure DownCast(const Handle_Standard_Transient &AnObject);
+
+};
+%extend Handle_Standard_Failure {
+    Standard_Failure* GetObject() {
+    return (Standard_Failure*)$self->Access();
     }
 };
 
@@ -964,20 +959,6 @@ class Standard_MMgrOpt : public Standard_MMgrRoot {
 };
 
 
-%feature("shadow") Standard_MMgrOpt::~Standard_MMgrOpt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_MMgrOpt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_MMgrRaw;
 class Standard_MMgrRaw : public Standard_MMgrRoot {
 	public:
@@ -1018,20 +999,6 @@ class Standard_MMgrRaw : public Standard_MMgrRoot {
 };
 
 
-%feature("shadow") Standard_MMgrRaw::~Standard_MMgrRaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_MMgrRaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_MMgrTBBalloc;
 class Standard_MMgrTBBalloc : public Standard_MMgrRoot {
 	public:
@@ -1072,20 +1039,6 @@ class Standard_MMgrTBBalloc : public Standard_MMgrRoot {
 };
 
 
-%feature("shadow") Standard_MMgrTBBalloc::~Standard_MMgrTBBalloc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_MMgrTBBalloc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_Mutex;
 class Standard_Mutex : public Standard_ErrorHandlerCallback {
 	public:
@@ -1116,20 +1069,6 @@ class Standard_Mutex : public Standard_ErrorHandlerCallback {
 };
 
 
-%feature("shadow") Standard_Mutex::~Standard_Mutex %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Standard_Mutex {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Standard_Type;
 class Standard_Type : public Standard_Transient {
 	public:
@@ -1255,21 +1194,7 @@ class Standard_Type : public Standard_Transient {
 	:rtype: int
 ") NumberOfAncestor;
 		Standard_Integer NumberOfAncestor ();
-		%feature("compactdefaultargs") ShallowDump;
-		%feature("autodoc", "	* Prints the Information about type.
 
-	:rtype: None
-") ShallowDump;
-		void ShallowDump ();
-
-        %feature("autodoc", "1");
-        %extend{
-            std::string ShallowDumpToString() {
-            std::stringstream s;
-            self->ShallowDump(s);
-            return s.str();}
-        };
-        
         %feature("autodoc", "1");
         %extend{
             std::string PrintToString() {
@@ -1280,25 +1205,23 @@ class Standard_Type : public Standard_Transient {
         };
 
 
-%feature("shadow") Standard_Type::~Standard_Type %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Standard_Type {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Standard_Type(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Standard_Type {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Standard_Type {
-	Handle_Standard_Type GetHandle() {
-	return *(Handle_Standard_Type*) &$self;
-	}
-};
+%pythonappend Handle_Standard_Type::Handle_Standard_Type %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Standard_Type;
 class Handle_Standard_Type : public Handle_Standard_Transient {
@@ -1316,20 +1239,6 @@ class Handle_Standard_Type : public Handle_Standard_Transient {
 %extend Handle_Standard_Type {
     Standard_Type* GetObject() {
     return (Standard_Type*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Standard_Type::~Handle_Standard_Type %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Standard_Type {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

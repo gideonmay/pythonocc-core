@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepFilletAPI_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -188,20 +204,6 @@ class BRepFilletAPI_LocalOperation : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepFilletAPI_LocalOperation::~BRepFilletAPI_LocalOperation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFilletAPI_LocalOperation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFilletAPI_MakeFillet2d;
 class BRepFilletAPI_MakeFillet2d : public BRepBuilderAPI_MakeShape {
 	public:
@@ -420,20 +422,6 @@ class BRepFilletAPI_MakeFillet2d : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepFilletAPI_MakeFillet2d::~BRepFilletAPI_MakeFillet2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFilletAPI_MakeFillet2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFilletAPI_MakeChamfer;
 class BRepFilletAPI_MakeChamfer : public BRepFilletAPI_LocalOperation {
 	public:
@@ -762,20 +750,6 @@ class BRepFilletAPI_MakeChamfer : public BRepFilletAPI_LocalOperation {
 };
 
 
-%feature("shadow") BRepFilletAPI_MakeChamfer::~BRepFilletAPI_MakeChamfer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFilletAPI_MakeChamfer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFilletAPI_MakeFillet;
 class BRepFilletAPI_MakeFillet : public BRepFilletAPI_LocalOperation {
 	public:
@@ -834,7 +808,7 @@ class BRepFilletAPI_MakeFillet : public BRepFilletAPI_LocalOperation {
 ") Add;
 		void Add (const Standard_Real Radius,const TopoDS_Edge & E);
 		%feature("compactdefaultargs") Add;
-		%feature("autodoc", "	* Adds a fillet description in the builder - builds a contour of tangent edges, - sets a linear radius evolution law between  the first and last vertex of the spine.
+		%feature("autodoc", "	* Adds a fillet description in the builder - builds a contour of tangent edges, - sets a linear radius evolution law between the first and last vertex of the spine.
 
 	:param R1:
 	:type R1: float
@@ -856,7 +830,7 @@ class BRepFilletAPI_MakeFillet : public BRepFilletAPI_LocalOperation {
 ") Add;
 		void Add (const Handle_Law_Function & L,const TopoDS_Edge & E);
 		%feature("compactdefaultargs") Add;
-		%feature("autodoc", "	* Adds a fillet description in the builder - builds a contour of tangent edges, - sets the radius evolution law interpolating the values given in the array UandR :  p2d.X() = relative parameter on the spine [0,1] p2d.Y() = value of the radius.
+		%feature("autodoc", "	* Adds a fillet description in the builder - builds a contour of tangent edges, - sets the radius evolution law interpolating the values given in the array UandR : //! p2d.X() = relative parameter on the spine [0,1] p2d.Y() = value of the radius.
 
 	:param UandR:
 	:type UandR: TColgp_Array1OfPnt2d
@@ -1258,7 +1232,7 @@ class BRepFilletAPI_MakeFillet : public BRepFilletAPI_LocalOperation {
 ") BadShape;
 		TopoDS_Shape BadShape ();
 		%feature("compactdefaultargs") StripeStatus;
-		%feature("autodoc", "	* returns the status concerning the contour IC in case of error ChFiDS_Ok : the computation is Ok ChFiDS_StartsolFailure : the computation can't start, perhaps the  the radius is too big ChFiDS_TwistedSurface : the computation failed because of a twisted  surface ChFiDS_WalkingFailure : there is a problem in the walking ChFiDS_Error: other error different from above
+		%feature("autodoc", "	* returns the status concerning the contour IC in case of error ChFiDS_Ok : the computation is Ok ChFiDS_StartsolFailure : the computation can't start, perhaps the the radius is too big ChFiDS_TwistedSurface : the computation failed because of a twisted surface ChFiDS_WalkingFailure : there is a problem in the walking ChFiDS_Error: other error different from above
 
 	:param IC:
 	:type IC: int
@@ -1268,17 +1242,3 @@ class BRepFilletAPI_MakeFillet : public BRepFilletAPI_LocalOperation {
 };
 
 
-%feature("shadow") BRepFilletAPI_MakeFillet::~BRepFilletAPI_MakeFillet %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFilletAPI_MakeFillet {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

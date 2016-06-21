@@ -32,12 +32,29 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include MeshVS_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef Standard_Integer MeshVS_DisplayModeFlags;
 typedef Standard_Integer MeshVS_BuilderPriority;
 typedef MeshVS_Mesh * MeshVS_MeshPtr;
+typedef std::pair <Standard_Integer , Standard_Integer> MeshVS_NodePair;
 /* end typedefs declaration */
 
 /* public enums */
@@ -226,21 +243,7 @@ class MeshVS_Array1OfSequenceOfInteger {
 };
 
 
-%feature("shadow") MeshVS_Array1OfSequenceOfInteger::~MeshVS_Array1OfSequenceOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_Array1OfSequenceOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-class MeshVS_ColorHasher : public TColStd_MapIntegerHasher {
+class MeshVS_ColorHasher {
 	public:
 		%feature("compactdefaultargs") HashCode;
 		%feature("autodoc", "	:param K:
@@ -261,20 +264,6 @@ class MeshVS_ColorHasher : public TColStd_MapIntegerHasher {
 };
 
 
-%feature("shadow") MeshVS_ColorHasher::~MeshVS_ColorHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_ColorHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfColorMapOfInteger;
 class MeshVS_DataMapIteratorOfDataMapOfColorMapOfInteger : public TCollection_BasicMapIterator {
 	public:
@@ -305,20 +294,6 @@ class MeshVS_DataMapIteratorOfDataMapOfColorMapOfInteger : public TCollection_Ba
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfColorMapOfInteger::~MeshVS_DataMapIteratorOfDataMapOfColorMapOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfColorMapOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfHArray1OfSequenceOfInteger;
 class MeshVS_DataMapIteratorOfDataMapOfHArray1OfSequenceOfInteger : public TCollection_BasicMapIterator {
 	public:
@@ -345,24 +320,10 @@ class MeshVS_DataMapIteratorOfDataMapOfHArray1OfSequenceOfInteger : public TColl
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_HArray1OfSequenceOfInteger
 ") Value;
-		const Handle_MeshVS_HArray1OfSequenceOfInteger & Value ();
+		Handle_MeshVS_HArray1OfSequenceOfInteger Value ();
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfHArray1OfSequenceOfInteger::~MeshVS_DataMapIteratorOfDataMapOfHArray1OfSequenceOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfHArray1OfSequenceOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerAsciiString;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerAsciiString : public TCollection_BasicMapIterator {
 	public:
@@ -393,20 +354,6 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerAsciiString : public TCollection_B
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerAsciiString::~MeshVS_DataMapIteratorOfDataMapOfIntegerAsciiString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerAsciiString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerBoolean;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerBoolean : public TCollection_BasicMapIterator {
 	public:
@@ -437,20 +384,6 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerBoolean : public TCollection_Basic
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerBoolean::~MeshVS_DataMapIteratorOfDataMapOfIntegerBoolean %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerBoolean {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerColor;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerColor : public TCollection_BasicMapIterator {
 	public:
@@ -481,20 +414,6 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerColor : public TCollection_BasicMa
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerColor::~MeshVS_DataMapIteratorOfDataMapOfIntegerColor %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerColor {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerMaterial;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerMaterial : public TCollection_BasicMapIterator {
 	public:
@@ -525,20 +444,6 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerMaterial : public TCollection_Basi
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerMaterial::~MeshVS_DataMapIteratorOfDataMapOfIntegerMaterial %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerMaterial {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerMeshEntityOwner;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerMeshEntityOwner : public TCollection_BasicMapIterator {
 	public:
@@ -565,24 +470,10 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerMeshEntityOwner : public TCollecti
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_MeshEntityOwner
 ") Value;
-		const Handle_MeshVS_MeshEntityOwner & Value ();
+		Handle_MeshVS_MeshEntityOwner Value ();
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerMeshEntityOwner::~MeshVS_DataMapIteratorOfDataMapOfIntegerMeshEntityOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerMeshEntityOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerOwner;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerOwner : public TCollection_BasicMapIterator {
 	public:
@@ -609,24 +500,10 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerOwner : public TCollection_BasicMa
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_SelectMgr_EntityOwner
 ") Value;
-		const Handle_SelectMgr_EntityOwner & Value ();
+		Handle_SelectMgr_EntityOwner Value ();
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerOwner::~MeshVS_DataMapIteratorOfDataMapOfIntegerOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerTwoColors;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerTwoColors : public TCollection_BasicMapIterator {
 	public:
@@ -657,20 +534,6 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerTwoColors : public TCollection_Bas
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerTwoColors::~MeshVS_DataMapIteratorOfDataMapOfIntegerTwoColors %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerTwoColors {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfIntegerVector;
 class MeshVS_DataMapIteratorOfDataMapOfIntegerVector : public TCollection_BasicMapIterator {
 	public:
@@ -701,20 +564,6 @@ class MeshVS_DataMapIteratorOfDataMapOfIntegerVector : public TCollection_BasicM
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfIntegerVector::~MeshVS_DataMapIteratorOfDataMapOfIntegerVector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfIntegerVector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapIteratorOfDataMapOfTwoColorsMapOfInteger;
 class MeshVS_DataMapIteratorOfDataMapOfTwoColorsMapOfInteger : public TCollection_BasicMapIterator {
 	public:
@@ -745,20 +594,6 @@ class MeshVS_DataMapIteratorOfDataMapOfTwoColorsMapOfInteger : public TCollectio
 };
 
 
-%feature("shadow") MeshVS_DataMapIteratorOfDataMapOfTwoColorsMapOfInteger::~MeshVS_DataMapIteratorOfDataMapOfTwoColorsMapOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapIteratorOfDataMapOfTwoColorsMapOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger;
 class MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger : public TCollection_MapNode {
 	public:
@@ -783,25 +618,23 @@ class MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger : public TCollection_MapNod
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger::~MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger {
-	Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger::Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger;
 class Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger : public Handle_TCollection_MapNode {
@@ -819,20 +652,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger : public Handle_TCol
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger {
     MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger::~Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfColorMapOfInteger {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -865,29 +684,27 @@ class MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger : public TCollecti
             		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_HArray1OfSequenceOfInteger
 ") Value;
-		Handle_MeshVS_HArray1OfSequenceOfInteger & Value ();
+		Handle_MeshVS_HArray1OfSequenceOfInteger Value ();
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger::~MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger::Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger {
-	Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger*) &$self;
-	}
-};
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger;
 class Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger : public Handle_TCollection_MapNode {
@@ -905,20 +722,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger : public Ha
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger {
     MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger::~Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfHArray1OfSequenceOfInteger {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -955,25 +758,23 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString : public TCollection_MapNo
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString::~MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString : public Handle_TCollection_MapNode {
@@ -991,20 +792,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString : public Handle_TCo
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString {
     MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerAsciiString {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1050,25 +837,23 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerBoolean : public TCollection_MapNode {
             };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerBoolean::~MeshVS_DataMapNodeOfDataMapOfIntegerBoolean %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerBoolean {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerBoolean {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerBoolean {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean : public Handle_TCollection_MapNode {
@@ -1086,20 +871,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean : public Handle_TCollec
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean {
     MeshVS_DataMapNodeOfDataMapOfIntegerBoolean* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerBoolean*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerBoolean {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1136,25 +907,23 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerColor : public TCollection_MapNode {
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerColor::~MeshVS_DataMapNodeOfDataMapOfIntegerColor %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerColor {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerColor {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerColor {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor : public Handle_TCollection_MapNode {
@@ -1172,20 +941,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor : public Handle_TCollecti
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor {
     MeshVS_DataMapNodeOfDataMapOfIntegerColor* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerColor*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerColor {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1222,25 +977,23 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerMaterial : public TCollection_MapNode 
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerMaterial::~MeshVS_DataMapNodeOfDataMapOfIntegerMaterial %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerMaterial {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerMaterial {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerMaterial {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial : public Handle_TCollection_MapNode {
@@ -1258,20 +1011,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial : public Handle_TColle
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial {
     MeshVS_DataMapNodeOfDataMapOfIntegerMaterial* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerMaterial*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMaterial {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1304,29 +1043,27 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner : public TCollection_M
             		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_MeshEntityOwner
 ") Value;
-		Handle_MeshVS_MeshEntityOwner & Value ();
+		Handle_MeshVS_MeshEntityOwner Value ();
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner::~MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner*) &$self;
-	}
-};
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner : public Handle_TCollection_MapNode {
@@ -1344,20 +1081,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner : public Handle
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner {
     MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerMeshEntityOwner {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1390,29 +1113,27 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerOwner : public TCollection_MapNode {
             		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_SelectMgr_EntityOwner
 ") Value;
-		Handle_SelectMgr_EntityOwner & Value ();
+		Handle_SelectMgr_EntityOwner Value ();
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerOwner::~MeshVS_DataMapNodeOfDataMapOfIntegerOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerOwner {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerOwner {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner*) &$self;
-	}
-};
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner : public Handle_TCollection_MapNode {
@@ -1430,20 +1151,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner : public Handle_TCollecti
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner {
     MeshVS_DataMapNodeOfDataMapOfIntegerOwner* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerOwner*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerOwner {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1480,25 +1187,23 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors : public TCollection_MapNode
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors::~MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors : public Handle_TCollection_MapNode {
@@ -1516,20 +1221,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors : public Handle_TColl
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors {
     MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerTwoColors {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1566,25 +1257,23 @@ class MeshVS_DataMapNodeOfDataMapOfIntegerVector : public TCollection_MapNode {
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfIntegerVector::~MeshVS_DataMapNodeOfDataMapOfIntegerVector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfIntegerVector {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerVector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfIntegerVector {
-	Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector::Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector;
 class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector : public Handle_TCollection_MapNode {
@@ -1602,20 +1291,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector : public Handle_TCollect
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector {
     MeshVS_DataMapNodeOfDataMapOfIntegerVector* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfIntegerVector*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector::~Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfIntegerVector {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1643,25 +1318,23 @@ class MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger : public TCollection_Ma
 };
 
 
-%feature("shadow") MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger::~MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger {
-	Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger GetHandle() {
-	return *(Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger::Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger;
 class Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger : public Handle_TCollection_MapNode {
@@ -1679,20 +1352,6 @@ class Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger : public Handle_
 %extend Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger {
     MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger* GetObject() {
     return (MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger::~Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataMapNodeOfDataMapOfTwoColorsMapOfInteger {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1774,20 +1433,6 @@ class MeshVS_DataMapOfColorMapOfInteger : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfColorMapOfInteger::~MeshVS_DataMapOfColorMapOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfColorMapOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfHArray1OfSequenceOfInteger;
 class MeshVS_DataMapOfHArray1OfSequenceOfInteger : public TCollection_BasicMap {
 	public:
@@ -1844,13 +1489,13 @@ class MeshVS_DataMapOfHArray1OfSequenceOfInteger : public TCollection_BasicMap {
 	:type K: int &
 	:rtype: Handle_MeshVS_HArray1OfSequenceOfInteger
 ") Find;
-		const Handle_MeshVS_HArray1OfSequenceOfInteger & Find (const Standard_Integer & K);
+		Handle_MeshVS_HArray1OfSequenceOfInteger Find (const Standard_Integer & K);
 		%feature("compactdefaultargs") ChangeFind;
 		%feature("autodoc", "	:param K:
 	:type K: int &
 	:rtype: Handle_MeshVS_HArray1OfSequenceOfInteger
 ") ChangeFind;
-		Handle_MeshVS_HArray1OfSequenceOfInteger & ChangeFind (const Standard_Integer & K);
+		Handle_MeshVS_HArray1OfSequenceOfInteger ChangeFind (const Standard_Integer & K);
 		%feature("compactdefaultargs") Find1;
 		%feature("autodoc", "	:param K:
 	:type K: int &
@@ -1866,20 +1511,6 @@ class MeshVS_DataMapOfHArray1OfSequenceOfInteger : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfHArray1OfSequenceOfInteger::~MeshVS_DataMapOfHArray1OfSequenceOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfHArray1OfSequenceOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerAsciiString;
 class MeshVS_DataMapOfIntegerAsciiString : public TCollection_BasicMap {
 	public:
@@ -1958,20 +1589,6 @@ class MeshVS_DataMapOfIntegerAsciiString : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerAsciiString::~MeshVS_DataMapOfIntegerAsciiString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerAsciiString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerBoolean;
 class MeshVS_DataMapOfIntegerBoolean : public TCollection_BasicMap {
 	public:
@@ -2050,20 +1667,6 @@ class MeshVS_DataMapOfIntegerBoolean : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerBoolean::~MeshVS_DataMapOfIntegerBoolean %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerBoolean {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerColor;
 class MeshVS_DataMapOfIntegerColor : public TCollection_BasicMap {
 	public:
@@ -2142,20 +1745,6 @@ class MeshVS_DataMapOfIntegerColor : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerColor::~MeshVS_DataMapOfIntegerColor %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerColor {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerMaterial;
 class MeshVS_DataMapOfIntegerMaterial : public TCollection_BasicMap {
 	public:
@@ -2234,20 +1823,6 @@ class MeshVS_DataMapOfIntegerMaterial : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerMaterial::~MeshVS_DataMapOfIntegerMaterial %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerMaterial {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerMeshEntityOwner;
 class MeshVS_DataMapOfIntegerMeshEntityOwner : public TCollection_BasicMap {
 	public:
@@ -2304,13 +1879,13 @@ class MeshVS_DataMapOfIntegerMeshEntityOwner : public TCollection_BasicMap {
 	:type K: int &
 	:rtype: Handle_MeshVS_MeshEntityOwner
 ") Find;
-		const Handle_MeshVS_MeshEntityOwner & Find (const Standard_Integer & K);
+		Handle_MeshVS_MeshEntityOwner Find (const Standard_Integer & K);
 		%feature("compactdefaultargs") ChangeFind;
 		%feature("autodoc", "	:param K:
 	:type K: int &
 	:rtype: Handle_MeshVS_MeshEntityOwner
 ") ChangeFind;
-		Handle_MeshVS_MeshEntityOwner & ChangeFind (const Standard_Integer & K);
+		Handle_MeshVS_MeshEntityOwner ChangeFind (const Standard_Integer & K);
 		%feature("compactdefaultargs") Find1;
 		%feature("autodoc", "	:param K:
 	:type K: int &
@@ -2326,20 +1901,6 @@ class MeshVS_DataMapOfIntegerMeshEntityOwner : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerMeshEntityOwner::~MeshVS_DataMapOfIntegerMeshEntityOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerMeshEntityOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerOwner;
 class MeshVS_DataMapOfIntegerOwner : public TCollection_BasicMap {
 	public:
@@ -2396,13 +1957,13 @@ class MeshVS_DataMapOfIntegerOwner : public TCollection_BasicMap {
 	:type K: int &
 	:rtype: Handle_SelectMgr_EntityOwner
 ") Find;
-		const Handle_SelectMgr_EntityOwner & Find (const Standard_Integer & K);
+		Handle_SelectMgr_EntityOwner Find (const Standard_Integer & K);
 		%feature("compactdefaultargs") ChangeFind;
 		%feature("autodoc", "	:param K:
 	:type K: int &
 	:rtype: Handle_SelectMgr_EntityOwner
 ") ChangeFind;
-		Handle_SelectMgr_EntityOwner & ChangeFind (const Standard_Integer & K);
+		Handle_SelectMgr_EntityOwner ChangeFind (const Standard_Integer & K);
 		%feature("compactdefaultargs") Find1;
 		%feature("autodoc", "	:param K:
 	:type K: int &
@@ -2418,20 +1979,6 @@ class MeshVS_DataMapOfIntegerOwner : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerOwner::~MeshVS_DataMapOfIntegerOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerTwoColors;
 class MeshVS_DataMapOfIntegerTwoColors : public TCollection_BasicMap {
 	public:
@@ -2510,20 +2057,6 @@ class MeshVS_DataMapOfIntegerTwoColors : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerTwoColors::~MeshVS_DataMapOfIntegerTwoColors %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerTwoColors {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfIntegerVector;
 class MeshVS_DataMapOfIntegerVector : public TCollection_BasicMap {
 	public:
@@ -2602,20 +2135,6 @@ class MeshVS_DataMapOfIntegerVector : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfIntegerVector::~MeshVS_DataMapOfIntegerVector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfIntegerVector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataMapOfTwoColorsMapOfInteger;
 class MeshVS_DataMapOfTwoColorsMapOfInteger : public TCollection_BasicMap {
 	public:
@@ -2694,20 +2213,6 @@ class MeshVS_DataMapOfTwoColorsMapOfInteger : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_DataMapOfTwoColorsMapOfInteger::~MeshVS_DataMapOfTwoColorsMapOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_DataMapOfTwoColorsMapOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataSource;
 class MeshVS_DataSource : public MMgt_TShared {
 	public:
@@ -2946,25 +2451,23 @@ class MeshVS_DataSource : public MMgt_TShared {
 };
 
 
-%feature("shadow") MeshVS_DataSource::~MeshVS_DataSource %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataSource {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataSource(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataSource {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataSource {
-	Handle_MeshVS_DataSource GetHandle() {
-	return *(Handle_MeshVS_DataSource*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataSource::Handle_MeshVS_DataSource %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataSource;
 class Handle_MeshVS_DataSource : public Handle_MMgt_TShared {
@@ -2982,20 +2485,6 @@ class Handle_MeshVS_DataSource : public Handle_MMgt_TShared {
 %extend Handle_MeshVS_DataSource {
     MeshVS_DataSource* GetObject() {
     return (MeshVS_DataSource*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataSource::~Handle_MeshVS_DataSource %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataSource {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3145,25 +2634,23 @@ class MeshVS_Drawer : public MMgt_TShared {
 };
 
 
-%feature("shadow") MeshVS_Drawer::~MeshVS_Drawer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_Drawer {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_Drawer(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_Drawer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_Drawer {
-	Handle_MeshVS_Drawer GetHandle() {
-	return *(Handle_MeshVS_Drawer*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_Drawer::Handle_MeshVS_Drawer %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_Drawer;
 class Handle_MeshVS_Drawer : public Handle_MMgt_TShared {
@@ -3181,20 +2668,6 @@ class Handle_MeshVS_Drawer : public Handle_MMgt_TShared {
 %extend Handle_MeshVS_Drawer {
     MeshVS_Drawer* GetObject() {
     return (MeshVS_Drawer*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_Drawer::~Handle_MeshVS_Drawer %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_Drawer {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3262,25 +2735,23 @@ class MeshVS_DummySensitiveEntity : public SelectBasics_SensitiveEntity {
 };
 
 
-%feature("shadow") MeshVS_DummySensitiveEntity::~MeshVS_DummySensitiveEntity %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DummySensitiveEntity {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DummySensitiveEntity(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DummySensitiveEntity {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DummySensitiveEntity {
-	Handle_MeshVS_DummySensitiveEntity GetHandle() {
-	return *(Handle_MeshVS_DummySensitiveEntity*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DummySensitiveEntity::Handle_MeshVS_DummySensitiveEntity %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DummySensitiveEntity;
 class Handle_MeshVS_DummySensitiveEntity : public Handle_SelectBasics_SensitiveEntity {
@@ -3298,20 +2769,6 @@ class Handle_MeshVS_DummySensitiveEntity : public Handle_SelectBasics_SensitiveE
 %extend Handle_MeshVS_DummySensitiveEntity {
     MeshVS_DummySensitiveEntity* GetObject() {
     return (MeshVS_DummySensitiveEntity*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DummySensitiveEntity::~Handle_MeshVS_DummySensitiveEntity %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DummySensitiveEntity {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3385,25 +2842,23 @@ class MeshVS_HArray1OfSequenceOfInteger : public MMgt_TShared {
 };
 
 
-%feature("shadow") MeshVS_HArray1OfSequenceOfInteger::~MeshVS_HArray1OfSequenceOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_HArray1OfSequenceOfInteger {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_HArray1OfSequenceOfInteger(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_HArray1OfSequenceOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_HArray1OfSequenceOfInteger {
-	Handle_MeshVS_HArray1OfSequenceOfInteger GetHandle() {
-	return *(Handle_MeshVS_HArray1OfSequenceOfInteger*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_HArray1OfSequenceOfInteger::Handle_MeshVS_HArray1OfSequenceOfInteger %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_HArray1OfSequenceOfInteger;
 class Handle_MeshVS_HArray1OfSequenceOfInteger : public Handle_MMgt_TShared {
@@ -3421,20 +2876,6 @@ class Handle_MeshVS_HArray1OfSequenceOfInteger : public Handle_MMgt_TShared {
 %extend Handle_MeshVS_HArray1OfSequenceOfInteger {
     MeshVS_HArray1OfSequenceOfInteger* GetObject() {
     return (MeshVS_HArray1OfSequenceOfInteger*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_HArray1OfSequenceOfInteger::~Handle_MeshVS_HArray1OfSequenceOfInteger %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_HArray1OfSequenceOfInteger {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3464,20 +2905,6 @@ class MeshVS_MapIteratorOfMapOfTwoNodes : public TCollection_BasicMapIterator {
 };
 
 
-%feature("shadow") MeshVS_MapIteratorOfMapOfTwoNodes::~MeshVS_MapIteratorOfMapOfTwoNodes %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_MapIteratorOfMapOfTwoNodes {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_MapOfTwoNodes;
 class MeshVS_MapOfTwoNodes : public TCollection_BasicMap {
 	public:
@@ -3487,6 +2914,12 @@ class MeshVS_MapOfTwoNodes : public TCollection_BasicMap {
 	:rtype: None
 ") MeshVS_MapOfTwoNodes;
 		 MeshVS_MapOfTwoNodes (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") MeshVS_MapOfTwoNodes;
+		%feature("autodoc", "	:param Other:
+	:type Other: MeshVS_MapOfTwoNodes &
+	:rtype: None
+") MeshVS_MapOfTwoNodes;
+		 MeshVS_MapOfTwoNodes (const MeshVS_MapOfTwoNodes & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: MeshVS_MapOfTwoNodes &
@@ -3530,20 +2963,6 @@ class MeshVS_MapOfTwoNodes : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") MeshVS_MapOfTwoNodes::~MeshVS_MapOfTwoNodes %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_MapOfTwoNodes {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_Mesh;
 class MeshVS_Mesh : public AIS_InteractiveObject {
 	public:
@@ -3774,7 +3193,7 @@ class MeshVS_Mesh : public AIS_InteractiveObject {
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetHiddenNodes;
-		const Handle_TColStd_HPackedMapOfInteger & GetHiddenNodes ();
+		Handle_TColStd_HPackedMapOfInteger GetHiddenNodes ();
 		%feature("compactdefaultargs") SetHiddenNodes;
 		%feature("autodoc", "	* Sets map of hidden nodes, which shall not be displayed individually. If nodes shared by some elements shall not be drawn, they should be included into that map
 
@@ -3788,7 +3207,7 @@ class MeshVS_Mesh : public AIS_InteractiveObject {
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetHiddenElems;
-		const Handle_TColStd_HPackedMapOfInteger & GetHiddenElems ();
+		Handle_TColStd_HPackedMapOfInteger GetHiddenElems ();
 		%feature("compactdefaultargs") SetHiddenElems;
 		%feature("autodoc", "	* Sets map of hidden elements
 
@@ -3802,7 +3221,7 @@ class MeshVS_Mesh : public AIS_InteractiveObject {
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetSelectableNodes;
-		const Handle_TColStd_HPackedMapOfInteger & GetSelectableNodes ();
+		Handle_TColStd_HPackedMapOfInteger GetSelectableNodes ();
 		%feature("compactdefaultargs") SetSelectableNodes;
 		%feature("autodoc", "	* Sets map of selectable nodes.
 
@@ -3842,25 +3261,23 @@ class MeshVS_Mesh : public AIS_InteractiveObject {
 };
 
 
-%feature("shadow") MeshVS_Mesh::~MeshVS_Mesh %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_Mesh {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_Mesh(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_Mesh {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_Mesh {
-	Handle_MeshVS_Mesh GetHandle() {
-	return *(Handle_MeshVS_Mesh*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_Mesh::Handle_MeshVS_Mesh %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_Mesh;
 class Handle_MeshVS_Mesh : public Handle_AIS_InteractiveObject {
@@ -3878,20 +3295,6 @@ class Handle_MeshVS_Mesh : public Handle_AIS_InteractiveObject {
 %extend Handle_MeshVS_Mesh {
     MeshVS_Mesh* GetObject() {
     return (MeshVS_Mesh*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_Mesh::~Handle_MeshVS_Mesh %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_Mesh {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3997,25 +3400,23 @@ class MeshVS_MeshEntityOwner : public SelectMgr_EntityOwner {
 };
 
 
-%feature("shadow") MeshVS_MeshEntityOwner::~MeshVS_MeshEntityOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_MeshEntityOwner {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_MeshEntityOwner(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_MeshEntityOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_MeshEntityOwner {
-	Handle_MeshVS_MeshEntityOwner GetHandle() {
-	return *(Handle_MeshVS_MeshEntityOwner*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_MeshEntityOwner::Handle_MeshVS_MeshEntityOwner %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_MeshEntityOwner;
 class Handle_MeshVS_MeshEntityOwner : public Handle_SelectMgr_EntityOwner {
@@ -4035,20 +3436,6 @@ class Handle_MeshVS_MeshEntityOwner : public Handle_SelectMgr_EntityOwner {
     return (MeshVS_MeshEntityOwner*)$self->Access();
     }
 };
-%feature("shadow") Handle_MeshVS_MeshEntityOwner::~Handle_MeshVS_MeshEntityOwner %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_MeshEntityOwner {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor MeshVS_MeshOwner;
 class MeshVS_MeshOwner : public SelectMgr_EntityOwner {
@@ -4066,19 +3453,19 @@ class MeshVS_MeshOwner : public SelectMgr_EntityOwner {
 		%feature("compactdefaultargs") GetDataSource;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_DataSource
 ") GetDataSource;
-		const Handle_MeshVS_DataSource & GetDataSource ();
+		Handle_MeshVS_DataSource GetDataSource ();
 		%feature("compactdefaultargs") GetSelectedNodes;
 		%feature("autodoc", "	* Returns ids of selected mesh nodes
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetSelectedNodes;
-		const Handle_TColStd_HPackedMapOfInteger & GetSelectedNodes ();
+		Handle_TColStd_HPackedMapOfInteger GetSelectedNodes ();
 		%feature("compactdefaultargs") GetSelectedElements;
 		%feature("autodoc", "	* Returns ids of selected mesh elements
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetSelectedElements;
-		const Handle_TColStd_HPackedMapOfInteger & GetSelectedElements ();
+		Handle_TColStd_HPackedMapOfInteger GetSelectedElements ();
 		%feature("compactdefaultargs") AddSelectedEntities;
 		%feature("autodoc", "	* Saves ids of selected mesh entities
 
@@ -4100,13 +3487,13 @@ class MeshVS_MeshOwner : public SelectMgr_EntityOwner {
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetDetectedNodes;
-		const Handle_TColStd_HPackedMapOfInteger & GetDetectedNodes ();
+		Handle_TColStd_HPackedMapOfInteger GetDetectedNodes ();
 		%feature("compactdefaultargs") GetDetectedElements;
 		%feature("autodoc", "	* Returns ids of hilighted mesh elements
 
 	:rtype: Handle_TColStd_HPackedMapOfInteger
 ") GetDetectedElements;
-		const Handle_TColStd_HPackedMapOfInteger & GetDetectedElements ();
+		Handle_TColStd_HPackedMapOfInteger GetDetectedElements ();
 		%feature("compactdefaultargs") SetDetectedEntities;
 		%feature("autodoc", "	* Saves ids of hilighted mesh entities
 
@@ -4142,25 +3529,23 @@ class MeshVS_MeshOwner : public SelectMgr_EntityOwner {
 };
 
 
-%feature("shadow") MeshVS_MeshOwner::~MeshVS_MeshOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_MeshOwner {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_MeshOwner(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_MeshOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_MeshOwner {
-	Handle_MeshVS_MeshOwner GetHandle() {
-	return *(Handle_MeshVS_MeshOwner*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_MeshOwner::Handle_MeshVS_MeshOwner %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_MeshOwner;
 class Handle_MeshVS_MeshOwner : public Handle_SelectMgr_EntityOwner {
@@ -4178,20 +3563,6 @@ class Handle_MeshVS_MeshOwner : public Handle_SelectMgr_EntityOwner {
 %extend Handle_MeshVS_MeshOwner {
     MeshVS_MeshOwner* GetObject() {
     return (MeshVS_MeshOwner*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_MeshOwner::~Handle_MeshVS_MeshOwner %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_MeshOwner {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4323,25 +3694,23 @@ class MeshVS_PrsBuilder : public MMgt_TShared {
 };
 
 
-%feature("shadow") MeshVS_PrsBuilder::~MeshVS_PrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_PrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_PrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_PrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_PrsBuilder {
-	Handle_MeshVS_PrsBuilder GetHandle() {
-	return *(Handle_MeshVS_PrsBuilder*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_PrsBuilder::Handle_MeshVS_PrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_PrsBuilder;
 class Handle_MeshVS_PrsBuilder : public Handle_MMgt_TShared {
@@ -4359,20 +3728,6 @@ class Handle_MeshVS_PrsBuilder : public Handle_MMgt_TShared {
 %extend Handle_MeshVS_PrsBuilder {
     MeshVS_PrsBuilder* GetObject() {
     return (MeshVS_PrsBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_PrsBuilder::~Handle_MeshVS_PrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_PrsBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4422,25 +3777,23 @@ class MeshVS_SensitiveFace : public Select3D_SensitiveFace {
 };
 
 
-%feature("shadow") MeshVS_SensitiveFace::~MeshVS_SensitiveFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_SensitiveFace {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_SensitiveFace(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_SensitiveFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_SensitiveFace {
-	Handle_MeshVS_SensitiveFace GetHandle() {
-	return *(Handle_MeshVS_SensitiveFace*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_SensitiveFace::Handle_MeshVS_SensitiveFace %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_SensitiveFace;
 class Handle_MeshVS_SensitiveFace : public Handle_Select3D_SensitiveFace {
@@ -4458,20 +3811,6 @@ class Handle_MeshVS_SensitiveFace : public Handle_Select3D_SensitiveFace {
 %extend Handle_MeshVS_SensitiveFace {
     MeshVS_SensitiveFace* GetObject() {
     return (MeshVS_SensitiveFace*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_SensitiveFace::~Handle_MeshVS_SensitiveFace %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_SensitiveFace {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4545,25 +3884,23 @@ class MeshVS_SensitiveMesh : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") MeshVS_SensitiveMesh::~MeshVS_SensitiveMesh %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_SensitiveMesh {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_SensitiveMesh(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_SensitiveMesh {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_SensitiveMesh {
-	Handle_MeshVS_SensitiveMesh GetHandle() {
-	return *(Handle_MeshVS_SensitiveMesh*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_SensitiveMesh::Handle_MeshVS_SensitiveMesh %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_SensitiveMesh;
 class Handle_MeshVS_SensitiveMesh : public Handle_Select3D_SensitiveEntity {
@@ -4581,20 +3918,6 @@ class Handle_MeshVS_SensitiveMesh : public Handle_Select3D_SensitiveEntity {
 %extend Handle_MeshVS_SensitiveMesh {
     MeshVS_SensitiveMesh* GetObject() {
     return (MeshVS_SensitiveMesh*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_SensitiveMesh::~Handle_MeshVS_SensitiveMesh %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_SensitiveMesh {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4672,25 +3995,23 @@ class MeshVS_SensitivePolyhedron : public Select3D_SensitiveEntity {
 };
 
 
-%feature("shadow") MeshVS_SensitivePolyhedron::~MeshVS_SensitivePolyhedron %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_SensitivePolyhedron {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_SensitivePolyhedron(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_SensitivePolyhedron {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_SensitivePolyhedron {
-	Handle_MeshVS_SensitivePolyhedron GetHandle() {
-	return *(Handle_MeshVS_SensitivePolyhedron*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_SensitivePolyhedron::Handle_MeshVS_SensitivePolyhedron %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_SensitivePolyhedron;
 class Handle_MeshVS_SensitivePolyhedron : public Handle_Select3D_SensitiveEntity {
@@ -4708,20 +4029,6 @@ class Handle_MeshVS_SensitivePolyhedron : public Handle_Select3D_SensitiveEntity
 %extend Handle_MeshVS_SensitivePolyhedron {
     MeshVS_SensitivePolyhedron* GetObject() {
     return (MeshVS_SensitivePolyhedron*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_SensitivePolyhedron::~Handle_MeshVS_SensitivePolyhedron %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_SensitivePolyhedron {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4773,25 +4080,23 @@ class MeshVS_SensitiveSegment : public Select3D_SensitiveSegment {
 };
 
 
-%feature("shadow") MeshVS_SensitiveSegment::~MeshVS_SensitiveSegment %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_SensitiveSegment {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_SensitiveSegment(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_SensitiveSegment {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_SensitiveSegment {
-	Handle_MeshVS_SensitiveSegment GetHandle() {
-	return *(Handle_MeshVS_SensitiveSegment*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_SensitiveSegment::Handle_MeshVS_SensitiveSegment %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_SensitiveSegment;
 class Handle_MeshVS_SensitiveSegment : public Handle_Select3D_SensitiveSegment {
@@ -4811,20 +4116,6 @@ class Handle_MeshVS_SensitiveSegment : public Handle_Select3D_SensitiveSegment {
     return (MeshVS_SensitiveSegment*)$self->Access();
     }
 };
-%feature("shadow") Handle_MeshVS_SensitiveSegment::~Handle_MeshVS_SensitiveSegment %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_SensitiveSegment {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor MeshVS_SequenceNodeOfSequenceOfPrsBuilder;
 class MeshVS_SequenceNodeOfSequenceOfPrsBuilder : public TCollection_SeqNode {
@@ -4842,29 +4133,27 @@ class MeshVS_SequenceNodeOfSequenceOfPrsBuilder : public TCollection_SeqNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_PrsBuilder
 ") Value;
-		Handle_MeshVS_PrsBuilder & Value ();
+		Handle_MeshVS_PrsBuilder Value ();
 };
 
 
-%feature("shadow") MeshVS_SequenceNodeOfSequenceOfPrsBuilder::~MeshVS_SequenceNodeOfSequenceOfPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend MeshVS_SequenceNodeOfSequenceOfPrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder::Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend MeshVS_SequenceNodeOfSequenceOfPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_SequenceNodeOfSequenceOfPrsBuilder {
-	Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder GetHandle() {
-	return *(Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder*) &$self;
-	}
-};
 
 %nodefaultctor Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder;
 class Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder : public Handle_TCollection_SeqNode {
@@ -4884,20 +4173,6 @@ class Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder : public Handle_TCollecti
     return (MeshVS_SequenceNodeOfSequenceOfPrsBuilder*)$self->Access();
     }
 };
-%feature("shadow") Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder::~Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_SequenceNodeOfSequenceOfPrsBuilder {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor MeshVS_SequenceOfPrsBuilder;
 class MeshVS_SequenceOfPrsBuilder : public TCollection_BaseSequence {
@@ -4906,6 +4181,12 @@ class MeshVS_SequenceOfPrsBuilder : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") MeshVS_SequenceOfPrsBuilder;
 		 MeshVS_SequenceOfPrsBuilder ();
+		%feature("compactdefaultargs") MeshVS_SequenceOfPrsBuilder;
+		%feature("autodoc", "	:param Other:
+	:type Other: MeshVS_SequenceOfPrsBuilder &
+	:rtype: None
+") MeshVS_SequenceOfPrsBuilder;
+		 MeshVS_SequenceOfPrsBuilder (const MeshVS_SequenceOfPrsBuilder & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -4981,11 +4262,11 @@ class MeshVS_SequenceOfPrsBuilder : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_PrsBuilder
 ") First;
-		const Handle_MeshVS_PrsBuilder & First ();
+		Handle_MeshVS_PrsBuilder First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_MeshVS_PrsBuilder
 ") Last;
-		const Handle_MeshVS_PrsBuilder & Last ();
+		Handle_MeshVS_PrsBuilder Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -4999,7 +4280,7 @@ class MeshVS_SequenceOfPrsBuilder : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_MeshVS_PrsBuilder
 ") Value;
-		const Handle_MeshVS_PrsBuilder & Value (const Standard_Integer Index);
+		Handle_MeshVS_PrsBuilder Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -5013,7 +4294,7 @@ class MeshVS_SequenceOfPrsBuilder : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_MeshVS_PrsBuilder
 ") ChangeValue;
-		Handle_MeshVS_PrsBuilder & ChangeValue (const Standard_Integer Index);
+		Handle_MeshVS_PrsBuilder ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -5031,20 +4312,6 @@ class MeshVS_SequenceOfPrsBuilder : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") MeshVS_SequenceOfPrsBuilder::~MeshVS_SequenceOfPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_SequenceOfPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_StdMapNodeOfMapOfTwoNodes;
 class MeshVS_StdMapNodeOfMapOfTwoNodes : public TCollection_MapNode {
 	public:
@@ -5063,25 +4330,23 @@ class MeshVS_StdMapNodeOfMapOfTwoNodes : public TCollection_MapNode {
 };
 
 
-%feature("shadow") MeshVS_StdMapNodeOfMapOfTwoNodes::~MeshVS_StdMapNodeOfMapOfTwoNodes %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_StdMapNodeOfMapOfTwoNodes {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_StdMapNodeOfMapOfTwoNodes(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_StdMapNodeOfMapOfTwoNodes {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_StdMapNodeOfMapOfTwoNodes {
-	Handle_MeshVS_StdMapNodeOfMapOfTwoNodes GetHandle() {
-	return *(Handle_MeshVS_StdMapNodeOfMapOfTwoNodes*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_StdMapNodeOfMapOfTwoNodes::Handle_MeshVS_StdMapNodeOfMapOfTwoNodes %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_StdMapNodeOfMapOfTwoNodes;
 class Handle_MeshVS_StdMapNodeOfMapOfTwoNodes : public Handle_TCollection_MapNode {
@@ -5101,20 +4366,28 @@ class Handle_MeshVS_StdMapNodeOfMapOfTwoNodes : public Handle_TCollection_MapNod
     return (MeshVS_StdMapNodeOfMapOfTwoNodes*)$self->Access();
     }
 };
-%feature("shadow") Handle_MeshVS_StdMapNodeOfMapOfTwoNodes::~Handle_MeshVS_StdMapNodeOfMapOfTwoNodes %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
 
-%extend Handle_MeshVS_StdMapNodeOfMapOfTwoNodes {
-    void _kill_pointed() {
-        delete $self;
-    }
+%nodefaultctor MeshVS_SymmetricPairHasher;
+class MeshVS_SymmetricPairHasher {
+	public:
+		%feature("compactdefaultargs") HashCode;
+		%feature("autodoc", "	:param thePair:
+	:type thePair: MeshVS_NodePair &
+	:param theMaxCode:
+	:type theMaxCode: int
+	:rtype: int
+") HashCode;
+		static Standard_Integer HashCode (const MeshVS_NodePair & thePair,const Standard_Integer theMaxCode);
+		%feature("compactdefaultargs") IsEqual;
+		%feature("autodoc", "	:param thePair1:
+	:type thePair1: MeshVS_NodePair &
+	:param thePair2:
+	:type thePair2: MeshVS_NodePair &
+	:rtype: bool
+") IsEqual;
+		static Standard_Boolean IsEqual (const MeshVS_NodePair & thePair1,const MeshVS_NodePair & thePair2);
 };
+
 
 class MeshVS_Tool {
 	public:
@@ -5193,40 +4466,12 @@ class MeshVS_Tool {
 };
 
 
-%feature("shadow") MeshVS_Tool::~MeshVS_Tool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_Tool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_TwoColors;
 class MeshVS_TwoColors {
 	public:
 };
 
 
-%feature("shadow") MeshVS_TwoColors::~MeshVS_TwoColors %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_TwoColors {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class MeshVS_TwoColorsHasher {
 	public:
 		%feature("compactdefaultargs") HashCode;
@@ -5248,20 +4493,6 @@ class MeshVS_TwoColorsHasher {
 };
 
 
-%feature("shadow") MeshVS_TwoColorsHasher::~MeshVS_TwoColorsHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_TwoColorsHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_TwoNodes;
 class MeshVS_TwoNodes {
 	public:
@@ -5276,20 +4507,6 @@ class MeshVS_TwoNodes {
 };
 
 
-%feature("shadow") MeshVS_TwoNodes::~MeshVS_TwoNodes %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_TwoNodes {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class MeshVS_TwoNodesHasher {
 	public:
 		%feature("compactdefaultargs") HashCode;
@@ -5311,20 +4528,6 @@ class MeshVS_TwoNodesHasher {
 };
 
 
-%feature("shadow") MeshVS_TwoNodesHasher::~MeshVS_TwoNodesHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend MeshVS_TwoNodesHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor MeshVS_DataSource3D;
 class MeshVS_DataSource3D : public MeshVS_DataSource {
 	public:
@@ -5355,25 +4558,23 @@ class MeshVS_DataSource3D : public MeshVS_DataSource {
 };
 
 
-%feature("shadow") MeshVS_DataSource3D::~MeshVS_DataSource3D %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DataSource3D {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DataSource3D(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DataSource3D {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DataSource3D {
-	Handle_MeshVS_DataSource3D GetHandle() {
-	return *(Handle_MeshVS_DataSource3D*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DataSource3D::Handle_MeshVS_DataSource3D %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DataSource3D;
 class Handle_MeshVS_DataSource3D : public Handle_MeshVS_DataSource {
@@ -5391,20 +4592,6 @@ class Handle_MeshVS_DataSource3D : public Handle_MeshVS_DataSource {
 %extend Handle_MeshVS_DataSource3D {
     MeshVS_DataSource3D* GetObject() {
     return (MeshVS_DataSource3D*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DataSource3D::~Handle_MeshVS_DataSource3D %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DataSource3D {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5542,25 +4729,23 @@ class MeshVS_DeformedDataSource : public MeshVS_DataSource {
 };
 
 
-%feature("shadow") MeshVS_DeformedDataSource::~MeshVS_DeformedDataSource %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_DeformedDataSource {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_DeformedDataSource(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_DeformedDataSource {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_DeformedDataSource {
-	Handle_MeshVS_DeformedDataSource GetHandle() {
-	return *(Handle_MeshVS_DeformedDataSource*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_DeformedDataSource::Handle_MeshVS_DeformedDataSource %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_DeformedDataSource;
 class Handle_MeshVS_DeformedDataSource : public Handle_MeshVS_DataSource {
@@ -5578,20 +4763,6 @@ class Handle_MeshVS_DeformedDataSource : public Handle_MeshVS_DataSource {
 %extend Handle_MeshVS_DeformedDataSource {
     MeshVS_DeformedDataSource* GetObject() {
     return (MeshVS_DeformedDataSource*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_DeformedDataSource::~Handle_MeshVS_DeformedDataSource %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_DeformedDataSource {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5737,25 +4908,23 @@ class MeshVS_ElementalColorPrsBuilder : public MeshVS_PrsBuilder {
 };
 
 
-%feature("shadow") MeshVS_ElementalColorPrsBuilder::~MeshVS_ElementalColorPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_ElementalColorPrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_ElementalColorPrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_ElementalColorPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_ElementalColorPrsBuilder {
-	Handle_MeshVS_ElementalColorPrsBuilder GetHandle() {
-	return *(Handle_MeshVS_ElementalColorPrsBuilder*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_ElementalColorPrsBuilder::Handle_MeshVS_ElementalColorPrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_ElementalColorPrsBuilder;
 class Handle_MeshVS_ElementalColorPrsBuilder : public Handle_MeshVS_PrsBuilder {
@@ -5773,20 +4942,6 @@ class Handle_MeshVS_ElementalColorPrsBuilder : public Handle_MeshVS_PrsBuilder {
 %extend Handle_MeshVS_ElementalColorPrsBuilder {
     MeshVS_ElementalColorPrsBuilder* GetObject() {
     return (MeshVS_ElementalColorPrsBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_ElementalColorPrsBuilder::~Handle_MeshVS_ElementalColorPrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_ElementalColorPrsBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5908,25 +5063,23 @@ class MeshVS_MeshPrsBuilder : public MeshVS_PrsBuilder {
 };
 
 
-%feature("shadow") MeshVS_MeshPrsBuilder::~MeshVS_MeshPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_MeshPrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_MeshPrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_MeshPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_MeshPrsBuilder {
-	Handle_MeshVS_MeshPrsBuilder GetHandle() {
-	return *(Handle_MeshVS_MeshPrsBuilder*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_MeshPrsBuilder::Handle_MeshVS_MeshPrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_MeshPrsBuilder;
 class Handle_MeshVS_MeshPrsBuilder : public Handle_MeshVS_PrsBuilder {
@@ -5944,20 +5097,6 @@ class Handle_MeshVS_MeshPrsBuilder : public Handle_MeshVS_PrsBuilder {
 %extend Handle_MeshVS_MeshPrsBuilder {
     MeshVS_MeshPrsBuilder* GetObject() {
     return (MeshVS_MeshPrsBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_MeshPrsBuilder::~Handle_MeshVS_MeshPrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_MeshPrsBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6108,28 +5247,48 @@ class MeshVS_NodalColorPrsBuilder : public MeshVS_PrsBuilder {
 	:rtype: float
 ") GetTextureCoord;
 		Standard_Real GetTextureCoord (const Standard_Integer theID);
+		%feature("compactdefaultargs") AddVolumePrs;
+		%feature("autodoc", "	* Add to array polygons or polylines representing volume
+
+	:param theTopo:
+	:type theTopo: Handle_MeshVS_HArray1OfSequenceOfInteger &
+	:param theNodes:
+	:type theNodes: TColStd_Array1OfInteger &
+	:param theCoords:
+	:type theCoords: TColStd_Array1OfReal &
+	:param theArray:
+	:type theArray: Handle_Graphic3d_ArrayOfPrimitives &
+	:param theIsShaded:
+	:type theIsShaded: bool
+	:param theNbColors:
+	:type theNbColors: int
+	:param theNbTexColors:
+	:type theNbTexColors: int
+	:param theColorRatio:
+	:type theColorRatio: float
+	:rtype: None
+") AddVolumePrs;
+		void AddVolumePrs (const Handle_MeshVS_HArray1OfSequenceOfInteger & theTopo,const TColStd_Array1OfInteger & theNodes,const TColStd_Array1OfReal & theCoords,const Handle_Graphic3d_ArrayOfPrimitives & theArray,const Standard_Boolean theIsShaded,const Standard_Integer theNbColors,const Standard_Integer theNbTexColors,const Standard_Real theColorRatio);
 };
 
 
-%feature("shadow") MeshVS_NodalColorPrsBuilder::~MeshVS_NodalColorPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend MeshVS_NodalColorPrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_NodalColorPrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_MeshVS_NodalColorPrsBuilder::Handle_MeshVS_NodalColorPrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend MeshVS_NodalColorPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_NodalColorPrsBuilder {
-	Handle_MeshVS_NodalColorPrsBuilder GetHandle() {
-	return *(Handle_MeshVS_NodalColorPrsBuilder*) &$self;
-	}
-};
 
 %nodefaultctor Handle_MeshVS_NodalColorPrsBuilder;
 class Handle_MeshVS_NodalColorPrsBuilder : public Handle_MeshVS_PrsBuilder {
@@ -6147,20 +5306,6 @@ class Handle_MeshVS_NodalColorPrsBuilder : public Handle_MeshVS_PrsBuilder {
 %extend Handle_MeshVS_NodalColorPrsBuilder {
     MeshVS_NodalColorPrsBuilder* GetObject() {
     return (MeshVS_NodalColorPrsBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_NodalColorPrsBuilder::~Handle_MeshVS_NodalColorPrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_NodalColorPrsBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6254,25 +5399,23 @@ class MeshVS_TextPrsBuilder : public MeshVS_PrsBuilder {
 };
 
 
-%feature("shadow") MeshVS_TextPrsBuilder::~MeshVS_TextPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_TextPrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_TextPrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_TextPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_TextPrsBuilder {
-	Handle_MeshVS_TextPrsBuilder GetHandle() {
-	return *(Handle_MeshVS_TextPrsBuilder*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_TextPrsBuilder::Handle_MeshVS_TextPrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_TextPrsBuilder;
 class Handle_MeshVS_TextPrsBuilder : public Handle_MeshVS_PrsBuilder {
@@ -6290,20 +5433,6 @@ class Handle_MeshVS_TextPrsBuilder : public Handle_MeshVS_PrsBuilder {
 %extend Handle_MeshVS_TextPrsBuilder {
     MeshVS_TextPrsBuilder* GetObject() {
     return (MeshVS_TextPrsBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_TextPrsBuilder::~Handle_MeshVS_TextPrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_TextPrsBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6463,25 +5592,23 @@ class MeshVS_VectorPrsBuilder : public MeshVS_PrsBuilder {
 };
 
 
-%feature("shadow") MeshVS_VectorPrsBuilder::~MeshVS_VectorPrsBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend MeshVS_VectorPrsBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_MeshVS_VectorPrsBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend MeshVS_VectorPrsBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend MeshVS_VectorPrsBuilder {
-	Handle_MeshVS_VectorPrsBuilder GetHandle() {
-	return *(Handle_MeshVS_VectorPrsBuilder*) &$self;
-	}
-};
+%pythonappend Handle_MeshVS_VectorPrsBuilder::Handle_MeshVS_VectorPrsBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_MeshVS_VectorPrsBuilder;
 class Handle_MeshVS_VectorPrsBuilder : public Handle_MeshVS_PrsBuilder {
@@ -6499,20 +5626,6 @@ class Handle_MeshVS_VectorPrsBuilder : public Handle_MeshVS_PrsBuilder {
 %extend Handle_MeshVS_VectorPrsBuilder {
     MeshVS_VectorPrsBuilder* GetObject() {
     return (MeshVS_VectorPrsBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_MeshVS_VectorPrsBuilder::~Handle_MeshVS_VectorPrsBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_MeshVS_VectorPrsBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

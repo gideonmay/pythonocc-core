@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Precision_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -62,7 +78,7 @@ class Precision {
 ") SquareConfusion;
 		static Standard_Real SquareConfusion ();
 		%feature("compactdefaultargs") Intersection;
-		%feature("autodoc", "	* //!Returns the precision value in real space, frequently used by intersection algorithms to decide that a solution is reached. This function provides an acceptable level of precision for an intersection process to define the adjustment limits. The tolerance of intersection is designed to ensure that a point computed by an iterative algorithm as the intersection between two curves is indeed on the intersection. It is obvious that two tangent curves are close to each other, on a large distance. An iterative algorithm of intersection may find points on these curves within the scope of the confusion tolerance, but still far from the true intersection point. In order to force the intersection algorithm to continue the iteration process until a correct point is found on the tangent objects, the tolerance of intersection must be smaller than the tolerance of confusion. On the other hand, the tolerance of intersection must be large enough to minimize the time required by the process to converge to a solution. The tolerance of intersection is equal to : Precision::Confusion() / 100. (that is, 1.e-9).
+		%feature("autodoc", "	* Returns the precision value in real space, frequently used by intersection algorithms to decide that a solution is reached. This function provides an acceptable level of precision for an intersection process to define the adjustment limits. The tolerance of intersection is designed to ensure that a point computed by an iterative algorithm as the intersection between two curves is indeed on the intersection. It is obvious that two tangent curves are close to each other, on a large distance. An iterative algorithm of intersection may find points on these curves within the scope of the confusion tolerance, but still far from the true intersection point. In order to force the intersection algorithm to continue the iteration process until a correct point is found on the tangent objects, the tolerance of intersection must be smaller than the tolerance of confusion. On the other hand, the tolerance of intersection must be large enough to minimize the time required by the process to converge to a solution. The tolerance of intersection is equal to : Precision::Confusion() / 100. (that is, 1.e-9).
 
 	:rtype: float
 ") Intersection;
@@ -74,7 +90,7 @@ class Precision {
 ") Approximation;
 		static Standard_Real Approximation ();
 		%feature("compactdefaultargs") Parametric;
-		%feature("autodoc", "	* Convert a real space precision to a parametric space precision. <T> is the mean value of the length of the tangent of the curve or the surface.  Value is P / T
+		%feature("autodoc", "	* Convert a real space precision to a parametric space precision. <T> is the mean value of the length of the tangent of the curve or the surface. //! Value is P / T
 
 	:param P:
 	:type P: float
@@ -108,7 +124,7 @@ class Precision {
 ") PApproximation;
 		static Standard_Real PApproximation (const Standard_Real T);
 		%feature("compactdefaultargs") Parametric;
-		%feature("autodoc", "	* Convert a real space precision to a parametric space precision on a default curve.  Value is Parametric(P,1.e+2)
+		%feature("autodoc", "	* Convert a real space precision to a parametric space precision on a default curve. //! Value is Parametric(P,1.e+2)
 
 	:param P:
 	:type P: float
@@ -116,19 +132,19 @@ class Precision {
 ") Parametric;
 		static Standard_Real Parametric (const Standard_Real P);
 		%feature("compactdefaultargs") PConfusion;
-		%feature("autodoc", "	* Used to test distances in parametric space on a default curve.  This is Precision::Parametric(Precision::Confusion())
+		%feature("autodoc", "	* Used to test distances in parametric space on a default curve. //! This is Precision::Parametric(Precision::Confusion())
 
 	:rtype: float
 ") PConfusion;
 		static Standard_Real PConfusion ();
 		%feature("compactdefaultargs") PIntersection;
-		%feature("autodoc", "	* Used for Intersections in parametric space on a default curve.  This is Precision::Parametric(Precision::Intersection())
+		%feature("autodoc", "	* Used for Intersections in parametric space on a default curve. //! This is Precision::Parametric(Precision::Intersection())
 
 	:rtype: float
 ") PIntersection;
 		static Standard_Real PIntersection ();
 		%feature("compactdefaultargs") PApproximation;
-		%feature("autodoc", "	* Used for Approximations in parametric space on a default curve.  This is Precision::Parametric(Precision::Approximation())
+		%feature("autodoc", "	* Used for Approximations in parametric space on a default curve. //! This is Precision::Parametric(Precision::Approximation())
 
 	:rtype: float
 ") PApproximation;
@@ -166,17 +182,3 @@ class Precision {
 };
 
 
-%feature("shadow") Precision::~Precision %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Precision {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

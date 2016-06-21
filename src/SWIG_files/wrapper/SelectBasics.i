@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include SelectBasics_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -56,20 +72,6 @@ class SelectBasics {
 };
 
 
-%feature("shadow") SelectBasics::~SelectBasics %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class SelectBasics_BasicTool {
 	public:
 		%feature("compactdefaultargs") MatchSegments;
@@ -131,20 +133,6 @@ class SelectBasics_BasicTool {
 };
 
 
-%feature("shadow") SelectBasics_BasicTool::~SelectBasics_BasicTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_BasicTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_EntityOwner;
 class SelectBasics_EntityOwner : public MMgt_TShared {
 	public:
@@ -177,29 +165,27 @@ class SelectBasics_EntityOwner : public MMgt_TShared {
 		%feature("compactdefaultargs") Location;
 		%feature("autodoc", "	:rtype: TopLoc_Location
 ") Location;
-		virtual const TopLoc_Location & Location ();
+		virtual TopLoc_Location Location ();
 };
 
 
-%feature("shadow") SelectBasics_EntityOwner::~SelectBasics_EntityOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend SelectBasics_EntityOwner {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_SelectBasics_EntityOwner(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_SelectBasics_EntityOwner::Handle_SelectBasics_EntityOwner %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend SelectBasics_EntityOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend SelectBasics_EntityOwner {
-	Handle_SelectBasics_EntityOwner GetHandle() {
-	return *(Handle_SelectBasics_EntityOwner*) &$self;
-	}
-};
 
 %nodefaultctor Handle_SelectBasics_EntityOwner;
 class Handle_SelectBasics_EntityOwner : public Handle_MMgt_TShared {
@@ -217,20 +203,6 @@ class Handle_SelectBasics_EntityOwner : public Handle_MMgt_TShared {
 %extend Handle_SelectBasics_EntityOwner {
     SelectBasics_EntityOwner* GetObject() {
     return (SelectBasics_EntityOwner*)$self->Access();
-    }
-};
-%feature("shadow") Handle_SelectBasics_EntityOwner::~Handle_SelectBasics_EntityOwner %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_SelectBasics_EntityOwner {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -268,20 +240,6 @@ class SelectBasics_ListIteratorOfListOfBox2d {
 };
 
 
-%feature("shadow") SelectBasics_ListIteratorOfListOfBox2d::~SelectBasics_ListIteratorOfListOfBox2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_ListIteratorOfListOfBox2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_ListIteratorOfListOfSensitive;
 class SelectBasics_ListIteratorOfListOfSensitive {
 	public:
@@ -312,24 +270,10 @@ class SelectBasics_ListIteratorOfListOfSensitive {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_SensitiveEntity
 ") Value;
-		Handle_SelectBasics_SensitiveEntity & Value ();
+		Handle_SelectBasics_SensitiveEntity Value ();
 };
 
 
-%feature("shadow") SelectBasics_ListIteratorOfListOfSensitive::~SelectBasics_ListIteratorOfListOfSensitive %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_ListIteratorOfListOfSensitive {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_ListNodeOfListOfBox2d;
 class SelectBasics_ListNodeOfListOfBox2d : public TCollection_MapNode {
 	public:
@@ -348,25 +292,23 @@ class SelectBasics_ListNodeOfListOfBox2d : public TCollection_MapNode {
 };
 
 
-%feature("shadow") SelectBasics_ListNodeOfListOfBox2d::~SelectBasics_ListNodeOfListOfBox2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend SelectBasics_ListNodeOfListOfBox2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_SelectBasics_ListNodeOfListOfBox2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend SelectBasics_ListNodeOfListOfBox2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend SelectBasics_ListNodeOfListOfBox2d {
-	Handle_SelectBasics_ListNodeOfListOfBox2d GetHandle() {
-	return *(Handle_SelectBasics_ListNodeOfListOfBox2d*) &$self;
-	}
-};
+%pythonappend Handle_SelectBasics_ListNodeOfListOfBox2d::Handle_SelectBasics_ListNodeOfListOfBox2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_SelectBasics_ListNodeOfListOfBox2d;
 class Handle_SelectBasics_ListNodeOfListOfBox2d : public Handle_TCollection_MapNode {
@@ -386,20 +328,6 @@ class Handle_SelectBasics_ListNodeOfListOfBox2d : public Handle_TCollection_MapN
     return (SelectBasics_ListNodeOfListOfBox2d*)$self->Access();
     }
 };
-%feature("shadow") Handle_SelectBasics_ListNodeOfListOfBox2d::~Handle_SelectBasics_ListNodeOfListOfBox2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_SelectBasics_ListNodeOfListOfBox2d {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor SelectBasics_ListNodeOfListOfSensitive;
 class SelectBasics_ListNodeOfListOfSensitive : public TCollection_MapNode {
@@ -415,29 +343,27 @@ class SelectBasics_ListNodeOfListOfSensitive : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_SensitiveEntity
 ") Value;
-		Handle_SelectBasics_SensitiveEntity & Value ();
+		Handle_SelectBasics_SensitiveEntity Value ();
 };
 
 
-%feature("shadow") SelectBasics_ListNodeOfListOfSensitive::~SelectBasics_ListNodeOfListOfSensitive %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend SelectBasics_ListNodeOfListOfSensitive {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_SelectBasics_ListNodeOfListOfSensitive(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_SelectBasics_ListNodeOfListOfSensitive::Handle_SelectBasics_ListNodeOfListOfSensitive %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend SelectBasics_ListNodeOfListOfSensitive {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend SelectBasics_ListNodeOfListOfSensitive {
-	Handle_SelectBasics_ListNodeOfListOfSensitive GetHandle() {
-	return *(Handle_SelectBasics_ListNodeOfListOfSensitive*) &$self;
-	}
-};
 
 %nodefaultctor Handle_SelectBasics_ListNodeOfListOfSensitive;
 class Handle_SelectBasics_ListNodeOfListOfSensitive : public Handle_TCollection_MapNode {
@@ -457,20 +383,6 @@ class Handle_SelectBasics_ListNodeOfListOfSensitive : public Handle_TCollection_
     return (SelectBasics_ListNodeOfListOfSensitive*)$self->Access();
     }
 };
-%feature("shadow") Handle_SelectBasics_ListNodeOfListOfSensitive::~Handle_SelectBasics_ListNodeOfListOfSensitive %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_SelectBasics_ListNodeOfListOfSensitive {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor SelectBasics_ListOfBox2d;
 class SelectBasics_ListOfBox2d {
@@ -479,6 +391,12 @@ class SelectBasics_ListOfBox2d {
 		%feature("autodoc", "	:rtype: None
 ") SelectBasics_ListOfBox2d;
 		 SelectBasics_ListOfBox2d ();
+		%feature("compactdefaultargs") SelectBasics_ListOfBox2d;
+		%feature("autodoc", "	:param Other:
+	:type Other: SelectBasics_ListOfBox2d &
+	:rtype: None
+") SelectBasics_ListOfBox2d;
+		 SelectBasics_ListOfBox2d (const SelectBasics_ListOfBox2d & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: SelectBasics_ListOfBox2d &
@@ -596,20 +514,6 @@ class SelectBasics_ListOfBox2d {
 };
 
 
-%feature("shadow") SelectBasics_ListOfBox2d::~SelectBasics_ListOfBox2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_ListOfBox2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_ListOfSensitive;
 class SelectBasics_ListOfSensitive {
 	public:
@@ -617,6 +521,12 @@ class SelectBasics_ListOfSensitive {
 		%feature("autodoc", "	:rtype: None
 ") SelectBasics_ListOfSensitive;
 		 SelectBasics_ListOfSensitive ();
+		%feature("compactdefaultargs") SelectBasics_ListOfSensitive;
+		%feature("autodoc", "	:param Other:
+	:type Other: SelectBasics_ListOfSensitive &
+	:rtype: None
+") SelectBasics_ListOfSensitive;
+		 SelectBasics_ListOfSensitive (const SelectBasics_ListOfSensitive & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: SelectBasics_ListOfSensitive &
@@ -684,11 +594,11 @@ class SelectBasics_ListOfSensitive {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_SensitiveEntity
 ") First;
-		Handle_SelectBasics_SensitiveEntity & First ();
+		Handle_SelectBasics_SensitiveEntity First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_SensitiveEntity
 ") Last;
-		Handle_SelectBasics_SensitiveEntity & Last ();
+		Handle_SelectBasics_SensitiveEntity Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -734,20 +644,6 @@ class SelectBasics_ListOfSensitive {
 };
 
 
-%feature("shadow") SelectBasics_ListOfSensitive::~SelectBasics_ListOfSensitive %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_ListOfSensitive {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_PickArgs;
 class SelectBasics_PickArgs {
 	public:
@@ -804,20 +700,6 @@ class SelectBasics_PickArgs {
 };
 
 
-%feature("shadow") SelectBasics_PickArgs::~SelectBasics_PickArgs %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_PickArgs {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_SensitiveEntity;
 class SelectBasics_SensitiveEntity : public MMgt_TShared {
 	public:
@@ -830,7 +712,7 @@ class SelectBasics_SensitiveEntity : public MMgt_TShared {
 		%feature("compactdefaultargs") OwnerId;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_EntityOwner
 ") OwnerId;
-		const Handle_SelectBasics_EntityOwner & OwnerId ();
+		Handle_SelectBasics_EntityOwner OwnerId ();
 		%feature("compactdefaultargs") Areas;
 		%feature("autodoc", "	* to be implemented specifically by each type of sensitive primitive .
 
@@ -840,7 +722,7 @@ class SelectBasics_SensitiveEntity : public MMgt_TShared {
 ") Areas;
 		virtual void Areas (SelectBasics_ListOfBox2d & aresult);
 		%feature("compactdefaultargs") Matches;
-		%feature("autodoc", "	* Checks whether the sensitive entity matches the picking detection area (close to the picking line). This method takes into account depth limits produced by abstract view: far/near planes, clippings. Please port existing implementations of your picking detection, which were done at Matches (X, Y, Tol, DMin) method to this one, introducing the depth checks. Please note that the previous method is suppressed and the virtual implementations are not used by OCC selection framework. The porting procedure for simple sensitives (or if you are not interested in implementing full scale depth checks) can be simplified to writing the following code snippet: @code { // example code for porting descendants of Select3D_SensitiveEntity // invoke implementation of obsolete matches method (if implemented)... if (!Matches (thePickArgs.X(), thePickArgs.Y(), thePickArgs.Tolerance(), theMatchDMin)) return Standard_False; // invoke your implementation of computing depth (if implemented)... Standard_Real aDetectDepth = ComputeDepth (thePickArgs.PickLine()); return !thePickArgs.IsClipped(aDetectDepth); } @endcode @param thePickArgs [in] the picking arguments. @param theMatchDMin [out] the minimum distance on xy plane from point of picking to center of gravity of the detected sub-part of sensitive entity or the whole sensitive (e.g. used for resolving selection of coinciding circles, selection will be set to the one whose center is closest to the picking point). @param theMatchDepth [out] the minimum detected depth: depth of the closest detected sub-part of sensitive entity (or the whole sensitive). returns True if the sensitive matches the detection area. This method is an entry point for picking detection framework. The method is triggered when it is required to compose list of detected sensitive entities. The sensitives are filtered out from detection result if returned value is False. The passed entities are then can be sorted by 'theDetectDist', 'theDetectDepth' parameters.
+		%feature("autodoc", "	* Checks whether the sensitive entity matches the picking detection area (close to the picking line). This method takes into account depth limits produced by abstract view: far/near planes, clippings. Please port existing implementations of your picking detection, which were done at Matches (X, Y, Tol, DMin) method to this one, introducing the depth checks. Please note that the previous method is suppressed and the virtual implementations are not used by OCC selection framework. The porting procedure for simple sensitives (or if you are not interested in implementing full scale depth checks) can be simplified to writing the following code snippet: @code { // example code for porting descendants of Select3D_SensitiveEntity //! // invoke implementation of obsolete matches method (if implemented)... if (!Matches (thePickArgs.X(), thePickArgs.Y(), thePickArgs.Tolerance(), theMatchDMin)) return Standard_False; //! // invoke your implementation of computing depth (if implemented)... Standard_Real aDetectDepth = ComputeDepth (thePickArgs.PickLine()); //! return !thePickArgs.IsClipped(aDetectDepth); } @endcode @param thePickArgs [in] the picking arguments. @param theMatchDMin [out] the minimum distance on xy plane from point of picking to center of gravity of the detected sub-part of sensitive entity or the whole sensitive (e.g. used for resolving selection of coinciding circles, selection will be set to the one whose center is closest to the picking point). @param theMatchDepth [out] the minimum detected depth: depth of the closest detected sub-part of sensitive entity (or the whole sensitive). returns True if the sensitive matches the detection area. This method is an entry point for picking detection framework. The method is triggered when it is required to compose list of detected sensitive entities. The sensitives are filtered out from detection result if returned value is False. The passed entities are then can be sorted by 'theDetectDist', 'theDetectDepth' parameters.
 
 	:param thePickArgs:
 	:type thePickArgs: SelectBasics_PickArgs &
@@ -910,25 +792,23 @@ class SelectBasics_SensitiveEntity : public MMgt_TShared {
 };
 
 
-%feature("shadow") SelectBasics_SensitiveEntity::~SelectBasics_SensitiveEntity %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend SelectBasics_SensitiveEntity {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_SelectBasics_SensitiveEntity(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend SelectBasics_SensitiveEntity {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend SelectBasics_SensitiveEntity {
-	Handle_SelectBasics_SensitiveEntity GetHandle() {
-	return *(Handle_SelectBasics_SensitiveEntity*) &$self;
-	}
-};
+%pythonappend Handle_SelectBasics_SensitiveEntity::Handle_SelectBasics_SensitiveEntity %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_SelectBasics_SensitiveEntity;
 class Handle_SelectBasics_SensitiveEntity : public Handle_MMgt_TShared {
@@ -948,20 +828,6 @@ class Handle_SelectBasics_SensitiveEntity : public Handle_MMgt_TShared {
     return (SelectBasics_SensitiveEntity*)$self->Access();
     }
 };
-%feature("shadow") Handle_SelectBasics_SensitiveEntity::~Handle_SelectBasics_SensitiveEntity %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_SelectBasics_SensitiveEntity {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor SelectBasics_SequenceNodeOfSequenceOfOwner;
 class SelectBasics_SequenceNodeOfSequenceOfOwner : public TCollection_SeqNode {
@@ -979,29 +845,27 @@ class SelectBasics_SequenceNodeOfSequenceOfOwner : public TCollection_SeqNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_EntityOwner
 ") Value;
-		Handle_SelectBasics_EntityOwner & Value ();
+		Handle_SelectBasics_EntityOwner Value ();
 };
 
 
-%feature("shadow") SelectBasics_SequenceNodeOfSequenceOfOwner::~SelectBasics_SequenceNodeOfSequenceOfOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend SelectBasics_SequenceNodeOfSequenceOfOwner {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_SelectBasics_SequenceNodeOfSequenceOfOwner(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_SelectBasics_SequenceNodeOfSequenceOfOwner::Handle_SelectBasics_SequenceNodeOfSequenceOfOwner %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend SelectBasics_SequenceNodeOfSequenceOfOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend SelectBasics_SequenceNodeOfSequenceOfOwner {
-	Handle_SelectBasics_SequenceNodeOfSequenceOfOwner GetHandle() {
-	return *(Handle_SelectBasics_SequenceNodeOfSequenceOfOwner*) &$self;
-	}
-};
 
 %nodefaultctor Handle_SelectBasics_SequenceNodeOfSequenceOfOwner;
 class Handle_SelectBasics_SequenceNodeOfSequenceOfOwner : public Handle_TCollection_SeqNode {
@@ -1021,20 +885,6 @@ class Handle_SelectBasics_SequenceNodeOfSequenceOfOwner : public Handle_TCollect
     return (SelectBasics_SequenceNodeOfSequenceOfOwner*)$self->Access();
     }
 };
-%feature("shadow") Handle_SelectBasics_SequenceNodeOfSequenceOfOwner::~Handle_SelectBasics_SequenceNodeOfSequenceOfOwner %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_SelectBasics_SequenceNodeOfSequenceOfOwner {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor SelectBasics_SequenceOfOwner;
 class SelectBasics_SequenceOfOwner : public TCollection_BaseSequence {
@@ -1043,6 +893,12 @@ class SelectBasics_SequenceOfOwner : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") SelectBasics_SequenceOfOwner;
 		 SelectBasics_SequenceOfOwner ();
+		%feature("compactdefaultargs") SelectBasics_SequenceOfOwner;
+		%feature("autodoc", "	:param Other:
+	:type Other: SelectBasics_SequenceOfOwner &
+	:rtype: None
+") SelectBasics_SequenceOfOwner;
+		 SelectBasics_SequenceOfOwner (const SelectBasics_SequenceOfOwner & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -1118,11 +974,11 @@ class SelectBasics_SequenceOfOwner : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_EntityOwner
 ") First;
-		const Handle_SelectBasics_EntityOwner & First ();
+		Handle_SelectBasics_EntityOwner First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_SelectBasics_EntityOwner
 ") Last;
-		const Handle_SelectBasics_EntityOwner & Last ();
+		Handle_SelectBasics_EntityOwner Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1136,7 +992,7 @@ class SelectBasics_SequenceOfOwner : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_SelectBasics_EntityOwner
 ") Value;
-		const Handle_SelectBasics_EntityOwner & Value (const Standard_Integer Index);
+		Handle_SelectBasics_EntityOwner Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1150,7 +1006,7 @@ class SelectBasics_SequenceOfOwner : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_SelectBasics_EntityOwner
 ") ChangeValue;
-		Handle_SelectBasics_EntityOwner & ChangeValue (const Standard_Integer Index);
+		Handle_SelectBasics_EntityOwner ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1168,20 +1024,6 @@ class SelectBasics_SequenceOfOwner : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") SelectBasics_SequenceOfOwner::~SelectBasics_SequenceOfOwner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_SequenceOfOwner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor SelectBasics_SortAlgo;
 class SelectBasics_SortAlgo {
 	public:
@@ -1254,17 +1096,3 @@ class SelectBasics_SortAlgo {
 };
 
 
-%feature("shadow") SelectBasics_SortAlgo::~SelectBasics_SortAlgo %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend SelectBasics_SortAlgo {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

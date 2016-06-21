@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include ShapeBuild_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -52,20 +68,6 @@ class ShapeBuild {
 };
 
 
-%feature("shadow") ShapeBuild::~ShapeBuild %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeBuild {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class ShapeBuild_Edge {
 	public:
 		%feature("compactdefaultargs") CopyReplaceVertices;
@@ -305,20 +307,6 @@ class ShapeBuild_Edge {
 };
 
 
-%feature("shadow") ShapeBuild_Edge::~ShapeBuild_Edge %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeBuild_Edge {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ShapeBuild_ReShape;
 class ShapeBuild_ReShape : public BRepTools_ReShape {
 	public:
@@ -329,7 +317,7 @@ class ShapeBuild_ReShape : public BRepTools_ReShape {
 ") ShapeBuild_ReShape;
 		 ShapeBuild_ReShape ();
 		%feature("compactdefaultargs") Apply;
-		%feature("autodoc", "	* Applies the substitutions requests to a shape  <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done. ACTUALLY, NOT IMPLEMENTED BELOW TopAbs_FACE  <buildmode> says how to do on a SOLID,SHELL ... if one of its sub-shapes has been changed: 0: at least one Replace or Remove -> COMPOUND, else as such 1: at least one Remove (Replace are ignored) -> COMPOUND 2: Replace and Remove are both ignored If Replace/Remove are ignored or absent, the result as same type as the starting shape
+		%feature("autodoc", "	* Applies the substitutions requests to a shape //! <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done. ACTUALLY, NOT IMPLEMENTED BELOW TopAbs_FACE //! <buildmode> says how to do on a SOLID,SHELL ... if one of its sub-shapes has been changed: 0: at least one Replace or Remove -> COMPOUND, else as such 1: at least one Remove (Replace are ignored) -> COMPOUND 2: Replace and Remove are both ignored If Replace/Remove are ignored or absent, the result as same type as the starting shape
 
 	:param shape:
 	:type shape: TopoDS_Shape &
@@ -341,7 +329,7 @@ class ShapeBuild_ReShape : public BRepTools_ReShape {
 ") Apply;
 		virtual TopoDS_Shape Apply (const TopoDS_Shape & shape,const TopAbs_ShapeEnum until,const Standard_Integer buildmode);
 		%feature("compactdefaultargs") Apply;
-		%feature("autodoc", "	* Applies the substitutions requests to a shape.  <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done.  NOTE: each subshape can be replaced by shape of the same type or by shape containing only shapes of that type (for example, TopoDS_Edge can be replaced by TopoDS_Edge, TopoDS_Wire or TopoDS_Compound containing TopoDS_Edges). If incompatible shape type is encountered, it is ignored and flag FAIL1 is set in Status.
+		%feature("autodoc", "	* Applies the substitutions requests to a shape. //! <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done. //! NOTE: each subshape can be replaced by shape of the same type or by shape containing only shapes of that type (for example, TopoDS_Edge can be replaced by TopoDS_Edge, TopoDS_Wire or TopoDS_Compound containing TopoDS_Edges). If incompatible shape type is encountered, it is ignored and flag FAIL1 is set in Status.
 
 	:param shape:
 	:type shape: TopoDS_Shape &
@@ -373,25 +361,23 @@ class ShapeBuild_ReShape : public BRepTools_ReShape {
 };
 
 
-%feature("shadow") ShapeBuild_ReShape::~ShapeBuild_ReShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend ShapeBuild_ReShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_ShapeBuild_ReShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend ShapeBuild_ReShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend ShapeBuild_ReShape {
-	Handle_ShapeBuild_ReShape GetHandle() {
-	return *(Handle_ShapeBuild_ReShape*) &$self;
-	}
-};
+%pythonappend Handle_ShapeBuild_ReShape::Handle_ShapeBuild_ReShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_ShapeBuild_ReShape;
 class Handle_ShapeBuild_ReShape : public Handle_BRepTools_ReShape {
@@ -409,20 +395,6 @@ class Handle_ShapeBuild_ReShape : public Handle_BRepTools_ReShape {
 %extend Handle_ShapeBuild_ReShape {
     ShapeBuild_ReShape* GetObject() {
     return (ShapeBuild_ReShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_ShapeBuild_ReShape::~Handle_ShapeBuild_ReShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_ShapeBuild_ReShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -459,17 +431,3 @@ class ShapeBuild_Vertex {
 };
 
 
-%feature("shadow") ShapeBuild_Vertex::~ShapeBuild_Vertex %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeBuild_Vertex {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

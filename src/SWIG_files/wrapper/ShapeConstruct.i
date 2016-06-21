@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include ShapeConstruct_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -104,7 +120,7 @@ class ShapeConstruct {
 ") ConvertSurfaceToBSpline;
 		static Handle_Geom_BSplineSurface ConvertSurfaceToBSpline (const Handle_Geom_Surface & surf,const Standard_Real UF,const Standard_Real UL,const Standard_Real VF,const Standard_Real VL,const Standard_Real Tol3d,const GeomAbs_Shape Continuity,const Standard_Integer MaxSegments,const Standard_Integer MaxDegree);
 		%feature("compactdefaultargs") JoinPCurves;
-		%feature("autodoc", "	* join pcurves of the <theEdge> on the <theFace> 	 try to use pcurves from originas edges <theEdges> Returns false if cannot join pcurves
+		%feature("autodoc", "	* join pcurves of the <theEdge> on the <theFace> try to use pcurves from originas edges <theEdges> Returns false if cannot join pcurves
 
 	:param theEdges:
 	:type theEdges: Handle_TopTools_HSequenceOfShape &
@@ -116,7 +132,7 @@ class ShapeConstruct {
 ") JoinPCurves;
 		static Standard_Boolean JoinPCurves (const Handle_TopTools_HSequenceOfShape & theEdges,const TopoDS_Face & theFace,TopoDS_Edge & theEdge);
 		%feature("compactdefaultargs") JoinCurves;
-		%feature("autodoc", "	* //!Method for joininig curves 3D. Parameters : c3d1,ac3d2 - initial curves //!	 Orient1, Orient2 - initial edges orientations.  first1,last1,first2,last2 - parameters for trimming curves //!	 	 (re-calculate with account of orientation edges)  c3dOut - result curve  isRev1,isRev2 - out parameters indicative on possible errors. Return value : True - if curves were joined successfully,  else - False.
+		%feature("autodoc", "	* Method for joininig curves 3D. Parameters : c3d1,ac3d2 - initial curves Orient1, Orient2 - initial edges orientations. first1,last1,first2,last2 - parameters for trimming curves (re-calculate with account of orientation edges) c3dOut - result curve isRev1,isRev2 - out parameters indicative on possible errors. Return value : True - if curves were joined successfully, else - False.
 
 	:param c3d1:
 	:type c3d1: Handle_Geom_Curve &
@@ -144,7 +160,7 @@ class ShapeConstruct {
 ") JoinCurves;
 		static Standard_Boolean JoinCurves (const Handle_Geom_Curve & c3d1,const Handle_Geom_Curve & ac3d2,const TopAbs_Orientation Orient1,const TopAbs_Orientation Orient2,Standard_Real &OutValue,Standard_Real &OutValue,Standard_Real &OutValue,Standard_Real &OutValue,Handle_Geom_Curve & c3dOut,Standard_Boolean &OutValue,Standard_Boolean &OutValue);
 		%feature("compactdefaultargs") JoinCurves;
-		%feature("autodoc", "	* //!Method for joininig curves 3D. Parameters : c3d1,ac3d2 - initial curves //!	 Orient1, Orient2 - initial edges orientations.  first1,last1,first2,last2 - parameters for trimming curves //!	 	 (re-calculate with account of orientation edges)  c3dOut - result curve  isRev1,isRev2 - out parameters indicative on possible errors.  isError - input parameter indicative possible errors due to that one from edges have one vertex  Return value : True - if curves were joined successfully,  else - False.
+		%feature("autodoc", "	* Method for joininig curves 3D. Parameters : c3d1,ac3d2 - initial curves Orient1, Orient2 - initial edges orientations. first1,last1,first2,last2 - parameters for trimming curves (re-calculate with account of orientation edges) c3dOut - result curve isRev1,isRev2 - out parameters indicative on possible errors. isError - input parameter indicative possible errors due to that one from edges have one vertex Return value : True - if curves were joined successfully, else - False.
 
 	:param c2d1:
 	:type c2d1: Handle_Geom2d_Curve &
@@ -176,20 +192,6 @@ class ShapeConstruct {
 };
 
 
-%feature("shadow") ShapeConstruct::~ShapeConstruct %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeConstruct {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ShapeConstruct_CompBezierCurves2dToBSplineCurve2d;
 class ShapeConstruct_CompBezierCurves2dToBSplineCurve2d {
 	public:
@@ -240,20 +242,6 @@ class ShapeConstruct_CompBezierCurves2dToBSplineCurve2d {
 };
 
 
-%feature("shadow") ShapeConstruct_CompBezierCurves2dToBSplineCurve2d::~ShapeConstruct_CompBezierCurves2dToBSplineCurve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeConstruct_CompBezierCurves2dToBSplineCurve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ShapeConstruct_CompBezierCurvesToBSplineCurve;
 class ShapeConstruct_CompBezierCurvesToBSplineCurve {
 	public:
@@ -304,24 +292,10 @@ class ShapeConstruct_CompBezierCurvesToBSplineCurve {
 };
 
 
-%feature("shadow") ShapeConstruct_CompBezierCurvesToBSplineCurve::~ShapeConstruct_CompBezierCurvesToBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeConstruct_CompBezierCurvesToBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class ShapeConstruct_Curve {
 	public:
 		%feature("compactdefaultargs") AdjustCurve;
-		%feature("autodoc", "	* Modifies a curve in order to make its bounds confused with given points. Works only on lines and B-Splines, returns True in this case, else returns False. For line considers both bounding points, for B-Splines only specified. Warning : Does not check if curve should be reversed
+		%feature("autodoc", "	* Modifies a curve in order to make its bounds confused with given points. Works only on lines and B-Splines, returns True in this case, else returns False. For line considers both bounding points, for B-Splines only specified. //! Warning : Does not check if curve should be reversed
 
 	:param C3D:
 	:type C3D: Handle_Geom_Curve &
@@ -337,7 +311,7 @@ class ShapeConstruct_Curve {
 ") AdjustCurve;
 		Standard_Boolean AdjustCurve (const Handle_Geom_Curve & C3D,const gp_Pnt & P1,const gp_Pnt & P2,const Standard_Boolean take1 = Standard_True,const Standard_Boolean take2 = Standard_True);
 		%feature("compactdefaultargs") AdjustCurveSegment;
-		%feature("autodoc", "	* Modifies a curve in order to make its bounds confused with given points. Works only on lines and B-Splines. For lines works as previous method, B-Splines are segmented at the given values and then are adjusted to the points.
+		%feature("autodoc", "	* Modifies a curve in order to make its bounds confused with given points. Works only on lines and B-Splines. //! For lines works as previous method, B-Splines are segmented at the given values and then are adjusted to the points.
 
 	:param C3D:
 	:type C3D: Handle_Geom_Curve &
@@ -353,7 +327,7 @@ class ShapeConstruct_Curve {
 ") AdjustCurveSegment;
 		Standard_Boolean AdjustCurveSegment (const Handle_Geom_Curve & C3D,const gp_Pnt & P1,const gp_Pnt & P2,const Standard_Real U1,const Standard_Real U2);
 		%feature("compactdefaultargs") AdjustCurve2d;
-		%feature("autodoc", "	* Modifies a curve in order to make its bounds confused with given points. Works only on lines and B-Splines, returns True in this case, else returns False. For line considers both bounding points, for B-Splines only specified. Warning : Does not check if curve should be reversed
+		%feature("autodoc", "	* Modifies a curve in order to make its bounds confused with given points. Works only on lines and B-Splines, returns True in this case, else returns False. //! For line considers both bounding points, for B-Splines only specified. //! Warning : Does not check if curve should be reversed
 
 	:param C2D:
 	:type C2D: Handle_Geom2d_Curve &
@@ -413,20 +387,6 @@ class ShapeConstruct_Curve {
 };
 
 
-%feature("shadow") ShapeConstruct_Curve::~ShapeConstruct_Curve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeConstruct_Curve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ShapeConstruct_MakeTriangulation;
 class ShapeConstruct_MakeTriangulation : public BRepBuilderAPI_MakeShape {
 	public:
@@ -457,20 +417,6 @@ class ShapeConstruct_MakeTriangulation : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") ShapeConstruct_MakeTriangulation::~ShapeConstruct_MakeTriangulation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ShapeConstruct_MakeTriangulation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ShapeConstruct_ProjectCurveOnSurface;
 class ShapeConstruct_ProjectCurveOnSurface : public MMgt_TShared {
 	public:
@@ -615,25 +561,23 @@ class ShapeConstruct_ProjectCurveOnSurface : public MMgt_TShared {
 };
 
 
-%feature("shadow") ShapeConstruct_ProjectCurveOnSurface::~ShapeConstruct_ProjectCurveOnSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend ShapeConstruct_ProjectCurveOnSurface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_ShapeConstruct_ProjectCurveOnSurface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend ShapeConstruct_ProjectCurveOnSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend ShapeConstruct_ProjectCurveOnSurface {
-	Handle_ShapeConstruct_ProjectCurveOnSurface GetHandle() {
-	return *(Handle_ShapeConstruct_ProjectCurveOnSurface*) &$self;
-	}
-};
+%pythonappend Handle_ShapeConstruct_ProjectCurveOnSurface::Handle_ShapeConstruct_ProjectCurveOnSurface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_ShapeConstruct_ProjectCurveOnSurface;
 class Handle_ShapeConstruct_ProjectCurveOnSurface : public Handle_MMgt_TShared {
@@ -651,20 +595,6 @@ class Handle_ShapeConstruct_ProjectCurveOnSurface : public Handle_MMgt_TShared {
 %extend Handle_ShapeConstruct_ProjectCurveOnSurface {
     ShapeConstruct_ProjectCurveOnSurface* GetObject() {
     return (ShapeConstruct_ProjectCurveOnSurface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_ShapeConstruct_ProjectCurveOnSurface::~Handle_ShapeConstruct_ProjectCurveOnSurface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_ShapeConstruct_ProjectCurveOnSurface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

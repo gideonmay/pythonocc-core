@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include AdvApprox_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class AdvApprox_ApproxAFunction {
 	public:
 		%feature("compactdefaultargs") AdvApprox_ApproxAFunction;
-		%feature("autodoc", "	* Constructs approximator tool. Warning: the Func should be valid reference to object of type inherited from class EvaluatorFunction from Approx with life time longer than that of the approximator tool; //!	 the result should be formatted in the following way : <--Num1DSS--> <--2 * Num2DSS--> <--3 * Num3DSS--> R[0] .... R[Num1DSS].....  R[Dimension-1] the order in which each Subspace appears should be consistent with the tolerances given in the create function and the results will be given in that order as well that is : Curve2d(n) will correspond to the nth entry described by Num2DSS, Curve(n) will correspond to the nth entry described by Num3DSS The same type of schema applies to the Poles1d, Poles2d and Poles.
+		%feature("autodoc", "	* Constructs approximator tool. //! Warning: the Func should be valid reference to object of type inherited from class EvaluatorFunction from Approx with life time longer than that of the approximator tool; //! the result should be formatted in the following way : <--Num1DSS--> <--2 * Num2DSS--> <--3 * Num3DSS--> R[0] .... R[Num1DSS].....  R[Dimension-1] //! the order in which each Subspace appears should be consistent with the tolerances given in the create function and the results will be given in that order as well that is : Curve2d(n) will correspond to the nth entry described by Num2DSS, Curve(n) will correspond to the nth entry described by Num3DSS The same type of schema applies to the Poles1d, Poles2d and Poles.
 
 	:param Num1DSS:
 	:type Num1DSS: int
@@ -274,20 +290,6 @@ class AdvApprox_ApproxAFunction {
         };
 
 
-%feature("shadow") AdvApprox_ApproxAFunction::~AdvApprox_ApproxAFunction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend AdvApprox_ApproxAFunction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor AdvApprox_Cutting;
 class AdvApprox_Cutting {
 	public:
@@ -308,20 +310,6 @@ class AdvApprox_Cutting {
 };
 
 
-%feature("shadow") AdvApprox_Cutting::~AdvApprox_Cutting %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend AdvApprox_Cutting {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor AdvApprox_SimpleApprox;
 class AdvApprox_SimpleApprox {
 	public:
@@ -344,7 +332,7 @@ class AdvApprox_SimpleApprox {
 ") AdvApprox_SimpleApprox;
 		 AdvApprox_SimpleApprox (const Standard_Integer TotalDimension,const Standard_Integer TotalNumSS,const GeomAbs_Shape Continuity,const Standard_Integer WorkDegree,const Standard_Integer NbGaussPoints,const Handle_PLib_JacobiPolynomial & JacobiBase,const AdvApprox_EvaluatorFunction & Func);
 		%feature("compactdefaultargs") Perform;
-		%feature("autodoc", "	* Constructs approximator tool. Warning: the Func should be valid reference to object of type inherited from class EvaluatorFunction from Approx with life time longer than that of the approximator tool;
+		%feature("autodoc", "	* Constructs approximator tool. //! Warning: the Func should be valid reference to object of type inherited from class EvaluatorFunction from Approx with life time longer than that of the approximator tool;
 
 	:param LocalDimension:
 	:type LocalDimension: TColStd_Array1OfInteger &
@@ -416,20 +404,6 @@ class AdvApprox_SimpleApprox {
         };
 
 
-%feature("shadow") AdvApprox_SimpleApprox::~AdvApprox_SimpleApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend AdvApprox_SimpleApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor AdvApprox_DichoCutting;
 class AdvApprox_DichoCutting : public AdvApprox_Cutting {
 	public:
@@ -450,20 +424,6 @@ class AdvApprox_DichoCutting : public AdvApprox_Cutting {
 };
 
 
-%feature("shadow") AdvApprox_DichoCutting::~AdvApprox_DichoCutting %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend AdvApprox_DichoCutting {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor AdvApprox_PrefAndRec;
 class AdvApprox_PrefAndRec : public AdvApprox_Cutting {
 	public:
@@ -492,20 +452,6 @@ class AdvApprox_PrefAndRec : public AdvApprox_Cutting {
 };
 
 
-%feature("shadow") AdvApprox_PrefAndRec::~AdvApprox_PrefAndRec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend AdvApprox_PrefAndRec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor AdvApprox_PrefCutting;
 class AdvApprox_PrefCutting : public AdvApprox_Cutting {
 	public:
@@ -528,17 +474,3 @@ class AdvApprox_PrefCutting : public AdvApprox_Cutting {
 };
 
 
-%feature("shadow") AdvApprox_PrefCutting::~AdvApprox_PrefCutting %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend AdvApprox_PrefCutting {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

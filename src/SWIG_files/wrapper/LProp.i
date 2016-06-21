@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include LProp_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -75,20 +91,6 @@ class LProp_AnalyticCurInf {
 };
 
 
-%feature("shadow") LProp_AnalyticCurInf::~LProp_AnalyticCurInf %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LProp_AnalyticCurInf {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LProp_CurAndInf;
 class LProp_CurAndInf {
 	public:
@@ -143,20 +145,6 @@ class LProp_CurAndInf {
 };
 
 
-%feature("shadow") LProp_CurAndInf::~LProp_CurAndInf %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LProp_CurAndInf {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LProp_SequenceNodeOfSequenceOfCIType;
 class LProp_SequenceNodeOfSequenceOfCIType : public TCollection_SeqNode {
 	public:
@@ -177,25 +165,23 @@ class LProp_SequenceNodeOfSequenceOfCIType : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") LProp_SequenceNodeOfSequenceOfCIType::~LProp_SequenceNodeOfSequenceOfCIType %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LProp_SequenceNodeOfSequenceOfCIType {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LProp_SequenceNodeOfSequenceOfCIType(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LProp_SequenceNodeOfSequenceOfCIType {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LProp_SequenceNodeOfSequenceOfCIType {
-	Handle_LProp_SequenceNodeOfSequenceOfCIType GetHandle() {
-	return *(Handle_LProp_SequenceNodeOfSequenceOfCIType*) &$self;
-	}
-};
+%pythonappend Handle_LProp_SequenceNodeOfSequenceOfCIType::Handle_LProp_SequenceNodeOfSequenceOfCIType %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LProp_SequenceNodeOfSequenceOfCIType;
 class Handle_LProp_SequenceNodeOfSequenceOfCIType : public Handle_TCollection_SeqNode {
@@ -215,20 +201,6 @@ class Handle_LProp_SequenceNodeOfSequenceOfCIType : public Handle_TCollection_Se
     return (LProp_SequenceNodeOfSequenceOfCIType*)$self->Access();
     }
 };
-%feature("shadow") Handle_LProp_SequenceNodeOfSequenceOfCIType::~Handle_LProp_SequenceNodeOfSequenceOfCIType %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LProp_SequenceNodeOfSequenceOfCIType {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor LProp_SequenceOfCIType;
 class LProp_SequenceOfCIType : public TCollection_BaseSequence {
@@ -237,6 +209,12 @@ class LProp_SequenceOfCIType : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") LProp_SequenceOfCIType;
 		 LProp_SequenceOfCIType ();
+		%feature("compactdefaultargs") LProp_SequenceOfCIType;
+		%feature("autodoc", "	:param Other:
+	:type Other: LProp_SequenceOfCIType &
+	:rtype: None
+") LProp_SequenceOfCIType;
+		 LProp_SequenceOfCIType (const LProp_SequenceOfCIType & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -362,17 +340,3 @@ class LProp_SequenceOfCIType : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") LProp_SequenceOfCIType::~LProp_SequenceOfCIType %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LProp_SequenceOfCIType {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

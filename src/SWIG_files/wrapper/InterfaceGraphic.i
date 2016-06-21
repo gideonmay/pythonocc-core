@@ -32,17 +32,33 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include InterfaceGraphic_headers.i
 
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
+
 /* typedefs */
-typedef int Tint;
+typedef TEL_TRANSFORM_PERSISTENCE * tel_transform_persistence;
 typedef TEL_TEXTURE_COORD * tel_texture_coord;
 typedef double Tdouble;
 typedef unsigned short Techar;
 typedef TEL_POINT * tel_point;
 typedef TEL_COLOUR * tel_colour;
 typedef signed char Tchar;
-typedef TEL_TRANSFORM_PERSISTENCE * tel_transform_persistence;
+typedef int Tint;
 typedef float Tfloat;
 typedef unsigned int Tuint;
 typedef TEL_POFFSET_PARAM * tel_poffset_param;
@@ -51,20 +67,8 @@ typedef char Tbool;
 /* end typedefs declaration */
 
 /* public enums */
-enum TelPrimitivesArrayType {
-	TelUnknownArrayType = 0,
-	TelPointsArrayType = 1,
-	TelPolylinesArrayType = 2,
-	TelSegmentsArrayType = 3,
-	TelPolygonsArrayType = 4,
-	TelTrianglesArrayType = 5,
-	TelQuadranglesArrayType = 6,
-	TelTriangleStripsArrayType = 7,
-	TelQuadrangleStripsArrayType = 8,
-	TelTriangleFansArrayType = 9,
-};
-
 enum TelCullMode {
+	TelCullUndefined = - 1,
 	TelCullNone = 0,
 	TelCullFront = 1,
 	TelCullBack = 2,

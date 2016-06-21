@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepApprox_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -112,20 +128,6 @@ class BRepApprox_Approx {
 };
 
 
-%feature("shadow") BRepApprox_Approx::~BRepApprox_Approx %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_Approx {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ApproxLine;
 class BRepApprox_ApproxLine : public MMgt_TShared {
 	public:
@@ -160,25 +162,23 @@ class BRepApprox_ApproxLine : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepApprox_ApproxLine::~BRepApprox_ApproxLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepApprox_ApproxLine {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepApprox_ApproxLine(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepApprox_ApproxLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepApprox_ApproxLine {
-	Handle_BRepApprox_ApproxLine GetHandle() {
-	return *(Handle_BRepApprox_ApproxLine*) &$self;
-	}
-};
+%pythonappend Handle_BRepApprox_ApproxLine::Handle_BRepApprox_ApproxLine %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepApprox_ApproxLine;
 class Handle_BRepApprox_ApproxLine : public Handle_MMgt_TShared {
@@ -196,20 +196,6 @@ class Handle_BRepApprox_ApproxLine : public Handle_MMgt_TShared {
 %extend Handle_BRepApprox_ApproxLine {
     BRepApprox_ApproxLine* GetObject() {
     return (BRepApprox_ApproxLine*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepApprox_ApproxLine::~Handle_BRepApprox_ApproxLine %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepApprox_ApproxLine {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -241,20 +227,6 @@ class BRepApprox_BSpGradient_BFGSOfMyBSplGradientOfTheComputeLineOfApprox : publ
 };
 
 
-%feature("shadow") BRepApprox_BSpGradient_BFGSOfMyBSplGradientOfTheComputeLineOfApprox::~BRepApprox_BSpGradient_BFGSOfMyBSplGradientOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_BSpGradient_BFGSOfMyBSplGradientOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_BSpParFunctionOfMyBSplGradientOfTheComputeLineOfApprox;
 class BRepApprox_BSpParFunctionOfMyBSplGradientOfTheComputeLineOfApprox : public math_MultipleVarFunctionWithGradient {
 	public:
@@ -375,20 +347,6 @@ class BRepApprox_BSpParFunctionOfMyBSplGradientOfTheComputeLineOfApprox : public
 };
 
 
-%feature("shadow") BRepApprox_BSpParFunctionOfMyBSplGradientOfTheComputeLineOfApprox::~BRepApprox_BSpParFunctionOfMyBSplGradientOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_BSpParFunctionOfMyBSplGradientOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_BSpParLeastSquareOfMyBSplGradientOfTheComputeLineOfApprox;
 class BRepApprox_BSpParLeastSquareOfMyBSplGradientOfTheComputeLineOfApprox {
 	public:
@@ -585,20 +543,6 @@ class BRepApprox_BSpParLeastSquareOfMyBSplGradientOfTheComputeLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_BSpParLeastSquareOfMyBSplGradientOfTheComputeLineOfApprox::~BRepApprox_BSpParLeastSquareOfMyBSplGradientOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_BSpParLeastSquareOfMyBSplGradientOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_Gradient_BFGSOfMyGradientOfTheComputeLineBezierOfApprox;
 class BRepApprox_Gradient_BFGSOfMyGradientOfTheComputeLineBezierOfApprox : public math_BFGS {
 	public:
@@ -627,20 +571,6 @@ class BRepApprox_Gradient_BFGSOfMyGradientOfTheComputeLineBezierOfApprox : publi
 };
 
 
-%feature("shadow") BRepApprox_Gradient_BFGSOfMyGradientOfTheComputeLineBezierOfApprox::~BRepApprox_Gradient_BFGSOfMyGradientOfTheComputeLineBezierOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_Gradient_BFGSOfMyGradientOfTheComputeLineBezierOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_Gradient_BFGSOfMyGradientbisOfTheComputeLineOfApprox;
 class BRepApprox_Gradient_BFGSOfMyGradientbisOfTheComputeLineOfApprox : public math_BFGS {
 	public:
@@ -669,20 +599,6 @@ class BRepApprox_Gradient_BFGSOfMyGradientbisOfTheComputeLineOfApprox : public m
 };
 
 
-%feature("shadow") BRepApprox_Gradient_BFGSOfMyGradientbisOfTheComputeLineOfApprox::~BRepApprox_Gradient_BFGSOfMyGradientbisOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_Gradient_BFGSOfMyGradientbisOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_MyBSplGradientOfTheComputeLineOfApprox;
 class BRepApprox_MyBSplGradientOfTheComputeLineOfApprox {
 	public:
@@ -771,20 +687,6 @@ class BRepApprox_MyBSplGradientOfTheComputeLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_MyBSplGradientOfTheComputeLineOfApprox::~BRepApprox_MyBSplGradientOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_MyBSplGradientOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_MyGradientOfTheComputeLineBezierOfApprox;
 class BRepApprox_MyGradientOfTheComputeLineBezierOfApprox {
 	public:
@@ -839,20 +741,6 @@ class BRepApprox_MyGradientOfTheComputeLineBezierOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_MyGradientOfTheComputeLineBezierOfApprox::~BRepApprox_MyGradientOfTheComputeLineBezierOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_MyGradientOfTheComputeLineBezierOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_MyGradientbisOfTheComputeLineOfApprox;
 class BRepApprox_MyGradientbisOfTheComputeLineOfApprox {
 	public:
@@ -907,20 +795,6 @@ class BRepApprox_MyGradientbisOfTheComputeLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_MyGradientbisOfTheComputeLineOfApprox::~BRepApprox_MyGradientbisOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_MyGradientbisOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ParFunctionOfMyGradientOfTheComputeLineBezierOfApprox;
 class BRepApprox_ParFunctionOfMyGradientOfTheComputeLineBezierOfApprox : public math_MultipleVarFunctionWithGradient {
 	public:
@@ -1013,20 +887,6 @@ class BRepApprox_ParFunctionOfMyGradientOfTheComputeLineBezierOfApprox : public 
 };
 
 
-%feature("shadow") BRepApprox_ParFunctionOfMyGradientOfTheComputeLineBezierOfApprox::~BRepApprox_ParFunctionOfMyGradientOfTheComputeLineBezierOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ParFunctionOfMyGradientOfTheComputeLineBezierOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ParFunctionOfMyGradientbisOfTheComputeLineOfApprox;
 class BRepApprox_ParFunctionOfMyGradientbisOfTheComputeLineOfApprox : public math_MultipleVarFunctionWithGradient {
 	public:
@@ -1119,20 +979,6 @@ class BRepApprox_ParFunctionOfMyGradientbisOfTheComputeLineOfApprox : public mat
 };
 
 
-%feature("shadow") BRepApprox_ParFunctionOfMyGradientbisOfTheComputeLineOfApprox::~BRepApprox_ParFunctionOfMyGradientbisOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ParFunctionOfMyGradientbisOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ParLeastSquareOfMyGradientOfTheComputeLineBezierOfApprox;
 class BRepApprox_ParLeastSquareOfMyGradientOfTheComputeLineBezierOfApprox {
 	public:
@@ -1329,20 +1175,6 @@ class BRepApprox_ParLeastSquareOfMyGradientOfTheComputeLineBezierOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_ParLeastSquareOfMyGradientOfTheComputeLineBezierOfApprox::~BRepApprox_ParLeastSquareOfMyGradientOfTheComputeLineBezierOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ParLeastSquareOfMyGradientOfTheComputeLineBezierOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ParLeastSquareOfMyGradientbisOfTheComputeLineOfApprox;
 class BRepApprox_ParLeastSquareOfMyGradientbisOfTheComputeLineOfApprox {
 	public:
@@ -1539,20 +1371,6 @@ class BRepApprox_ParLeastSquareOfMyGradientbisOfTheComputeLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_ParLeastSquareOfMyGradientbisOfTheComputeLineOfApprox::~BRepApprox_ParLeastSquareOfMyGradientbisOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ParLeastSquareOfMyGradientbisOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ResConstraintOfMyGradientOfTheComputeLineBezierOfApprox;
 class BRepApprox_ResConstraintOfMyGradientOfTheComputeLineBezierOfApprox {
 	public:
@@ -1607,20 +1425,6 @@ class BRepApprox_ResConstraintOfMyGradientOfTheComputeLineBezierOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_ResConstraintOfMyGradientOfTheComputeLineBezierOfApprox::~BRepApprox_ResConstraintOfMyGradientOfTheComputeLineBezierOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ResConstraintOfMyGradientOfTheComputeLineBezierOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ResConstraintOfMyGradientbisOfTheComputeLineOfApprox;
 class BRepApprox_ResConstraintOfMyGradientbisOfTheComputeLineOfApprox {
 	public:
@@ -1675,377 +1479,6 @@ class BRepApprox_ResConstraintOfMyGradientbisOfTheComputeLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_ResConstraintOfMyGradientbisOfTheComputeLineOfApprox::~BRepApprox_ResConstraintOfMyGradientbisOfTheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ResConstraintOfMyGradientbisOfTheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-class BRepApprox_SurfaceTool {
-	public:
-		%feature("compactdefaultargs") FirstUParameter;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: float
-") FirstUParameter;
-		static Standard_Real FirstUParameter (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") FirstVParameter;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: float
-") FirstVParameter;
-		static Standard_Real FirstVParameter (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") LastUParameter;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: float
-") LastUParameter;
-		static Standard_Real LastUParameter (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") LastVParameter;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: float
-") LastVParameter;
-		static Standard_Real LastVParameter (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") NbUIntervals;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param Sh:
-	:type Sh: GeomAbs_Shape
-	:rtype: int
-") NbUIntervals;
-		static Standard_Integer NbUIntervals (const BRepAdaptor_Surface & S,const GeomAbs_Shape Sh);
-		%feature("compactdefaultargs") NbVIntervals;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param Sh:
-	:type Sh: GeomAbs_Shape
-	:rtype: int
-") NbVIntervals;
-		static Standard_Integer NbVIntervals (const BRepAdaptor_Surface & S,const GeomAbs_Shape Sh);
-		%feature("compactdefaultargs") UIntervals;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param T:
-	:type T: TColStd_Array1OfReal &
-	:param Sh:
-	:type Sh: GeomAbs_Shape
-	:rtype: void
-") UIntervals;
-		static void UIntervals (const BRepAdaptor_Surface & S,TColStd_Array1OfReal & T,const GeomAbs_Shape Sh);
-		%feature("compactdefaultargs") VIntervals;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param T:
-	:type T: TColStd_Array1OfReal &
-	:param Sh:
-	:type Sh: GeomAbs_Shape
-	:rtype: void
-") VIntervals;
-		static void VIntervals (const BRepAdaptor_Surface & S,TColStd_Array1OfReal & T,const GeomAbs_Shape Sh);
-		%feature("compactdefaultargs") UTrim;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param First:
-	:type First: float
-	:param Last:
-	:type Last: float
-	:param Tol:
-	:type Tol: float
-	:rtype: Handle_Adaptor3d_HSurface
-") UTrim;
-		static Handle_Adaptor3d_HSurface UTrim (const BRepAdaptor_Surface & S,const Standard_Real First,const Standard_Real Last,const Standard_Real Tol);
-		%feature("compactdefaultargs") VTrim;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param First:
-	:type First: float
-	:param Last:
-	:type Last: float
-	:param Tol:
-	:type Tol: float
-	:rtype: Handle_Adaptor3d_HSurface
-") VTrim;
-		static Handle_Adaptor3d_HSurface VTrim (const BRepAdaptor_Surface & S,const Standard_Real First,const Standard_Real Last,const Standard_Real Tol);
-		%feature("compactdefaultargs") IsUClosed;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: bool
-") IsUClosed;
-		static Standard_Boolean IsUClosed (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") IsVClosed;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: bool
-") IsVClosed;
-		static Standard_Boolean IsVClosed (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") IsUPeriodic;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: bool
-") IsUPeriodic;
-		static Standard_Boolean IsUPeriodic (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") UPeriod;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: float
-") UPeriod;
-		static Standard_Real UPeriod (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") IsVPeriodic;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: bool
-") IsVPeriodic;
-		static Standard_Boolean IsVPeriodic (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") VPeriod;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: float
-") VPeriod;
-		static Standard_Real VPeriod (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u:
-	:type u: float
-	:param v:
-	:type v: float
-	:rtype: gp_Pnt
-") Value;
-		static gp_Pnt Value (const BRepAdaptor_Surface & S,const Standard_Real u,const Standard_Real v);
-		%feature("compactdefaultargs") D0;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u:
-	:type u: float
-	:param v:
-	:type v: float
-	:param P:
-	:type P: gp_Pnt
-	:rtype: void
-") D0;
-		static void D0 (const BRepAdaptor_Surface & S,const Standard_Real u,const Standard_Real v,gp_Pnt & P);
-		%feature("compactdefaultargs") D1;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u:
-	:type u: float
-	:param v:
-	:type v: float
-	:param P:
-	:type P: gp_Pnt
-	:param D1u:
-	:type D1u: gp_Vec
-	:param D1v:
-	:type D1v: gp_Vec
-	:rtype: void
-") D1;
-		static void D1 (const BRepAdaptor_Surface & S,const Standard_Real u,const Standard_Real v,gp_Pnt & P,gp_Vec & D1u,gp_Vec & D1v);
-		%feature("compactdefaultargs") D2;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u:
-	:type u: float
-	:param v:
-	:type v: float
-	:param P:
-	:type P: gp_Pnt
-	:param D1U:
-	:type D1U: gp_Vec
-	:param D1V:
-	:type D1V: gp_Vec
-	:param D2U:
-	:type D2U: gp_Vec
-	:param D2V:
-	:type D2V: gp_Vec
-	:param D2UV:
-	:type D2UV: gp_Vec
-	:rtype: void
-") D2;
-		static void D2 (const BRepAdaptor_Surface & S,const Standard_Real u,const Standard_Real v,gp_Pnt & P,gp_Vec & D1U,gp_Vec & D1V,gp_Vec & D2U,gp_Vec & D2V,gp_Vec & D2UV);
-		%feature("compactdefaultargs") D3;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u:
-	:type u: float
-	:param v:
-	:type v: float
-	:param P:
-	:type P: gp_Pnt
-	:param D1U:
-	:type D1U: gp_Vec
-	:param D1V:
-	:type D1V: gp_Vec
-	:param D2U:
-	:type D2U: gp_Vec
-	:param D2V:
-	:type D2V: gp_Vec
-	:param D2UV:
-	:type D2UV: gp_Vec
-	:param D3U:
-	:type D3U: gp_Vec
-	:param D3V:
-	:type D3V: gp_Vec
-	:param D3UUV:
-	:type D3UUV: gp_Vec
-	:param D3UVV:
-	:type D3UVV: gp_Vec
-	:rtype: void
-") D3;
-		static void D3 (const BRepAdaptor_Surface & S,const Standard_Real u,const Standard_Real v,gp_Pnt & P,gp_Vec & D1U,gp_Vec & D1V,gp_Vec & D2U,gp_Vec & D2V,gp_Vec & D2UV,gp_Vec & D3U,gp_Vec & D3V,gp_Vec & D3UUV,gp_Vec & D3UVV);
-		%feature("compactdefaultargs") DN;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u:
-	:type u: float
-	:param v:
-	:type v: float
-	:param Nu:
-	:type Nu: int
-	:param Nv:
-	:type Nv: int
-	:rtype: gp_Vec
-") DN;
-		static gp_Vec DN (const BRepAdaptor_Surface & S,const Standard_Real u,const Standard_Real v,const Standard_Integer Nu,const Standard_Integer Nv);
-		%feature("compactdefaultargs") UResolution;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param R3d:
-	:type R3d: float
-	:rtype: float
-") UResolution;
-		static Standard_Real UResolution (const BRepAdaptor_Surface & S,const Standard_Real R3d);
-		%feature("compactdefaultargs") VResolution;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param R3d:
-	:type R3d: float
-	:rtype: float
-") VResolution;
-		static Standard_Real VResolution (const BRepAdaptor_Surface & S,const Standard_Real R3d);
-		%feature("compactdefaultargs") GetType;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: GeomAbs_SurfaceType
-") GetType;
-		static GeomAbs_SurfaceType GetType (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Plane;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Pln
-") Plane;
-		static gp_Pln Plane (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Cylinder;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Cylinder
-") Cylinder;
-		static gp_Cylinder Cylinder (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Cone;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Cone
-") Cone;
-		static gp_Cone Cone (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Torus;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Torus
-") Torus;
-		static gp_Torus Torus (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Sphere;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Sphere
-") Sphere;
-		static gp_Sphere Sphere (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Bezier;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: Handle_Geom_BezierSurface
-") Bezier;
-		static Handle_Geom_BezierSurface Bezier (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") BSpline;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: Handle_Geom_BSplineSurface
-") BSpline;
-		static Handle_Geom_BSplineSurface BSpline (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") AxeOfRevolution;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Ax1
-") AxeOfRevolution;
-		static gp_Ax1 AxeOfRevolution (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") Direction;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: gp_Dir
-") Direction;
-		static gp_Dir Direction (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") BasisCurve;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: Handle_Adaptor3d_HCurve
-") BasisCurve;
-		static Handle_Adaptor3d_HCurve BasisCurve (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") NbSamplesU;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: int
-") NbSamplesU;
-		static Standard_Integer NbSamplesU (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") NbSamplesV;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:rtype: int
-") NbSamplesV;
-		static Standard_Integer NbSamplesV (const BRepAdaptor_Surface & S);
-		%feature("compactdefaultargs") NbSamplesU;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param u1:
-	:type u1: float
-	:param u2:
-	:type u2: float
-	:rtype: int
-") NbSamplesU;
-		static Standard_Integer NbSamplesU (const BRepAdaptor_Surface & S,const Standard_Real u1,const Standard_Real u2);
-		%feature("compactdefaultargs") NbSamplesV;
-		%feature("autodoc", "	:param S:
-	:type S: BRepAdaptor_Surface &
-	:param v1:
-	:type v1: float
-	:param v2:
-	:type v2: float
-	:rtype: int
-") NbSamplesV;
-		static Standard_Integer NbSamplesV (const BRepAdaptor_Surface & S,const Standard_Real v1,const Standard_Real v2);
-};
-
-
-%feature("shadow") BRepApprox_SurfaceTool::~BRepApprox_SurfaceTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_SurfaceTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheComputeLineBezierOfApprox;
 class BRepApprox_TheComputeLineBezierOfApprox {
 	public:
@@ -2236,20 +1669,6 @@ class BRepApprox_TheComputeLineBezierOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_TheComputeLineBezierOfApprox::~BRepApprox_TheComputeLineBezierOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheComputeLineBezierOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheComputeLineOfApprox;
 class BRepApprox_TheComputeLineOfApprox {
 	public:
@@ -2450,20 +1869,6 @@ class BRepApprox_TheComputeLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_TheComputeLineOfApprox::~BRepApprox_TheComputeLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheComputeLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheFunctionOfTheInt2SOfThePrmPrmSvSurfacesOfApprox;
 class BRepApprox_TheFunctionOfTheInt2SOfThePrmPrmSvSurfacesOfApprox : public math_FunctionSetWithDerivatives {
 	public:
@@ -2570,20 +1975,6 @@ class BRepApprox_TheFunctionOfTheInt2SOfThePrmPrmSvSurfacesOfApprox : public mat
 };
 
 
-%feature("shadow") BRepApprox_TheFunctionOfTheInt2SOfThePrmPrmSvSurfacesOfApprox::~BRepApprox_TheFunctionOfTheInt2SOfThePrmPrmSvSurfacesOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheFunctionOfTheInt2SOfThePrmPrmSvSurfacesOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheImpPrmSvSurfacesOfApprox;
 class BRepApprox_TheImpPrmSvSurfacesOfApprox : public ApproxInt_SvSurfaces {
 	public:
@@ -2682,20 +2073,6 @@ class BRepApprox_TheImpPrmSvSurfacesOfApprox : public ApproxInt_SvSurfaces {
 };
 
 
-%feature("shadow") BRepApprox_TheImpPrmSvSurfacesOfApprox::~BRepApprox_TheImpPrmSvSurfacesOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheImpPrmSvSurfacesOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheInt2SOfThePrmPrmSvSurfacesOfApprox;
 class BRepApprox_TheInt2SOfThePrmPrmSvSurfacesOfApprox {
 	public:
@@ -2778,20 +2155,6 @@ class BRepApprox_TheInt2SOfThePrmPrmSvSurfacesOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_TheInt2SOfThePrmPrmSvSurfacesOfApprox::~BRepApprox_TheInt2SOfThePrmPrmSvSurfacesOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheInt2SOfThePrmPrmSvSurfacesOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheMultiLineOfApprox;
 class BRepApprox_TheMultiLineOfApprox {
 	public:
@@ -2970,20 +2333,6 @@ class BRepApprox_TheMultiLineOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_TheMultiLineOfApprox::~BRepApprox_TheMultiLineOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheMultiLineOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BRepApprox_TheMultiLineToolOfApprox {
 	public:
 		%feature("compactdefaultargs") FirstPoint;
@@ -3131,20 +2480,6 @@ class BRepApprox_TheMultiLineToolOfApprox {
 };
 
 
-%feature("shadow") BRepApprox_TheMultiLineToolOfApprox::~BRepApprox_TheMultiLineToolOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheMultiLineToolOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_ThePrmPrmSvSurfacesOfApprox;
 class BRepApprox_ThePrmPrmSvSurfacesOfApprox : public ApproxInt_SvSurfaces {
 	public:
@@ -3235,20 +2570,6 @@ class BRepApprox_ThePrmPrmSvSurfacesOfApprox : public ApproxInt_SvSurfaces {
 };
 
 
-%feature("shadow") BRepApprox_ThePrmPrmSvSurfacesOfApprox::~BRepApprox_ThePrmPrmSvSurfacesOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_ThePrmPrmSvSurfacesOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepApprox_TheZerImpFuncOfTheImpPrmSvSurfacesOfApprox;
 class BRepApprox_TheZerImpFuncOfTheImpPrmSvSurfacesOfApprox : public math_FunctionSetWithDerivatives {
 	public:
@@ -3357,17 +2678,3 @@ class BRepApprox_TheZerImpFuncOfTheImpPrmSvSurfacesOfApprox : public math_Functi
 };
 
 
-%feature("shadow") BRepApprox_TheZerImpFuncOfTheImpPrmSvSurfacesOfApprox::~BRepApprox_TheZerImpFuncOfTheImpPrmSvSurfacesOfApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepApprox_TheZerImpFuncOfTheImpPrmSvSurfacesOfApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

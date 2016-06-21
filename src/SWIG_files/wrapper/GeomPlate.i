@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include GeomPlate_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -60,20 +76,6 @@ class GeomPlate_Aij {
 };
 
 
-%feature("shadow") GeomPlate_Aij::~GeomPlate_Aij %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_Aij {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_Array1OfHCurveOnSurface;
 class GeomPlate_Array1OfHCurveOnSurface {
 	public:
@@ -146,30 +148,16 @@ class GeomPlate_Array1OfHCurveOnSurface {
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HCurveOnSurface
 ") Value;
-		const Handle_Adaptor3d_HCurveOnSurface & Value (const Standard_Integer Index);
+		Handle_Adaptor3d_HCurveOnSurface Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HCurveOnSurface
 ") ChangeValue;
-		Handle_Adaptor3d_HCurveOnSurface & ChangeValue (const Standard_Integer Index);
+		Handle_Adaptor3d_HCurveOnSurface ChangeValue (const Standard_Integer Index);
 };
 
 
-%feature("shadow") GeomPlate_Array1OfHCurveOnSurface::~GeomPlate_Array1OfHCurveOnSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_Array1OfHCurveOnSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_Array1OfSequenceOfReal;
 class GeomPlate_Array1OfSequenceOfReal {
 	public:
@@ -252,20 +240,6 @@ class GeomPlate_Array1OfSequenceOfReal {
 };
 
 
-%feature("shadow") GeomPlate_Array1OfSequenceOfReal::~GeomPlate_Array1OfSequenceOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_Array1OfSequenceOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_BuildAveragePlane;
 class GeomPlate_BuildAveragePlane {
 	public:
@@ -350,20 +324,6 @@ class GeomPlate_BuildAveragePlane {
 };
 
 
-%feature("shadow") GeomPlate_BuildAveragePlane::~GeomPlate_BuildAveragePlane %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_BuildAveragePlane {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_BuildPlateSurface;
 class GeomPlate_BuildPlateSurface {
 	public:
@@ -594,20 +554,6 @@ class GeomPlate_BuildPlateSurface {
 };
 
 
-%feature("shadow") GeomPlate_BuildPlateSurface::~GeomPlate_BuildPlateSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_BuildPlateSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_CurveConstraint;
 class GeomPlate_CurveConstraint : public MMgt_TShared {
 	public:
@@ -818,25 +764,23 @@ class GeomPlate_CurveConstraint : public MMgt_TShared {
 };
 
 
-%feature("shadow") GeomPlate_CurveConstraint::~GeomPlate_CurveConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend GeomPlate_CurveConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_CurveConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend GeomPlate_CurveConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_CurveConstraint {
-	Handle_GeomPlate_CurveConstraint GetHandle() {
-	return *(Handle_GeomPlate_CurveConstraint*) &$self;
-	}
-};
+%pythonappend Handle_GeomPlate_CurveConstraint::Handle_GeomPlate_CurveConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_GeomPlate_CurveConstraint;
 class Handle_GeomPlate_CurveConstraint : public Handle_MMgt_TShared {
@@ -854,20 +798,6 @@ class Handle_GeomPlate_CurveConstraint : public Handle_MMgt_TShared {
 %extend Handle_GeomPlate_CurveConstraint {
     GeomPlate_CurveConstraint* GetObject() {
     return (GeomPlate_CurveConstraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_CurveConstraint::~Handle_GeomPlate_CurveConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_CurveConstraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -923,13 +853,13 @@ class GeomPlate_HArray1OfHCurveOnSurface : public MMgt_TShared {
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HCurveOnSurface
 ") Value;
-		const Handle_Adaptor3d_HCurveOnSurface & Value (const Standard_Integer Index);
+		Handle_Adaptor3d_HCurveOnSurface Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HCurveOnSurface
 ") ChangeValue;
-		Handle_Adaptor3d_HCurveOnSurface & ChangeValue (const Standard_Integer Index);
+		Handle_Adaptor3d_HCurveOnSurface ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Array1;
 		%feature("autodoc", "	:rtype: GeomPlate_Array1OfHCurveOnSurface
 ") Array1;
@@ -941,25 +871,23 @@ class GeomPlate_HArray1OfHCurveOnSurface : public MMgt_TShared {
 };
 
 
-%feature("shadow") GeomPlate_HArray1OfHCurveOnSurface::~GeomPlate_HArray1OfHCurveOnSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend GeomPlate_HArray1OfHCurveOnSurface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_HArray1OfHCurveOnSurface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend GeomPlate_HArray1OfHCurveOnSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_HArray1OfHCurveOnSurface {
-	Handle_GeomPlate_HArray1OfHCurveOnSurface GetHandle() {
-	return *(Handle_GeomPlate_HArray1OfHCurveOnSurface*) &$self;
-	}
-};
+%pythonappend Handle_GeomPlate_HArray1OfHCurveOnSurface::Handle_GeomPlate_HArray1OfHCurveOnSurface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_GeomPlate_HArray1OfHCurveOnSurface;
 class Handle_GeomPlate_HArray1OfHCurveOnSurface : public Handle_MMgt_TShared {
@@ -977,20 +905,6 @@ class Handle_GeomPlate_HArray1OfHCurveOnSurface : public Handle_MMgt_TShared {
 %extend Handle_GeomPlate_HArray1OfHCurveOnSurface {
     GeomPlate_HArray1OfHCurveOnSurface* GetObject() {
     return (GeomPlate_HArray1OfHCurveOnSurface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_HArray1OfHCurveOnSurface::~Handle_GeomPlate_HArray1OfHCurveOnSurface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_HArray1OfHCurveOnSurface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1064,25 +978,23 @@ class GeomPlate_HArray1OfSequenceOfReal : public MMgt_TShared {
 };
 
 
-%feature("shadow") GeomPlate_HArray1OfSequenceOfReal::~GeomPlate_HArray1OfSequenceOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend GeomPlate_HArray1OfSequenceOfReal {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_HArray1OfSequenceOfReal(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend GeomPlate_HArray1OfSequenceOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_HArray1OfSequenceOfReal {
-	Handle_GeomPlate_HArray1OfSequenceOfReal GetHandle() {
-	return *(Handle_GeomPlate_HArray1OfSequenceOfReal*) &$self;
-	}
-};
+%pythonappend Handle_GeomPlate_HArray1OfSequenceOfReal::Handle_GeomPlate_HArray1OfSequenceOfReal %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_GeomPlate_HArray1OfSequenceOfReal;
 class Handle_GeomPlate_HArray1OfSequenceOfReal : public Handle_MMgt_TShared {
@@ -1100,20 +1012,6 @@ class Handle_GeomPlate_HArray1OfSequenceOfReal : public Handle_MMgt_TShared {
 %extend Handle_GeomPlate_HArray1OfSequenceOfReal {
     GeomPlate_HArray1OfSequenceOfReal* GetObject() {
     return (GeomPlate_HArray1OfSequenceOfReal*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_HArray1OfSequenceOfReal::~Handle_GeomPlate_HArray1OfSequenceOfReal %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_HArray1OfSequenceOfReal {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1223,13 +1121,13 @@ class GeomPlate_HSequenceOfCurveConstraint : public MMgt_TShared {
 	:type anIndex: int
 	:rtype: Handle_GeomPlate_CurveConstraint
 ") Value;
-		const Handle_GeomPlate_CurveConstraint & Value (const Standard_Integer anIndex);
+		Handle_GeomPlate_CurveConstraint Value (const Standard_Integer anIndex);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param anIndex:
 	:type anIndex: int
 	:rtype: Handle_GeomPlate_CurveConstraint
 ") ChangeValue;
-		Handle_GeomPlate_CurveConstraint & ChangeValue (const Standard_Integer anIndex);
+		Handle_GeomPlate_CurveConstraint ChangeValue (const Standard_Integer anIndex);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param anIndex:
 	:type anIndex: int
@@ -1252,32 +1150,26 @@ class GeomPlate_HSequenceOfCurveConstraint : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: GeomPlate_SequenceOfCurveConstraint
 ") ChangeSequence;
 		GeomPlate_SequenceOfCurveConstraint & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_GeomPlate_HSequenceOfCurveConstraint
-") ShallowCopy;
-		Handle_GeomPlate_HSequenceOfCurveConstraint ShallowCopy ();
 };
 
 
-%feature("shadow") GeomPlate_HSequenceOfCurveConstraint::~GeomPlate_HSequenceOfCurveConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend GeomPlate_HSequenceOfCurveConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_HSequenceOfCurveConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_GeomPlate_HSequenceOfCurveConstraint::Handle_GeomPlate_HSequenceOfCurveConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend GeomPlate_HSequenceOfCurveConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_HSequenceOfCurveConstraint {
-	Handle_GeomPlate_HSequenceOfCurveConstraint GetHandle() {
-	return *(Handle_GeomPlate_HSequenceOfCurveConstraint*) &$self;
-	}
-};
 
 %nodefaultctor Handle_GeomPlate_HSequenceOfCurveConstraint;
 class Handle_GeomPlate_HSequenceOfCurveConstraint : public Handle_MMgt_TShared {
@@ -1295,20 +1187,6 @@ class Handle_GeomPlate_HSequenceOfCurveConstraint : public Handle_MMgt_TShared {
 %extend Handle_GeomPlate_HSequenceOfCurveConstraint {
     GeomPlate_HSequenceOfCurveConstraint* GetObject() {
     return (GeomPlate_HSequenceOfCurveConstraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_HSequenceOfCurveConstraint::~Handle_GeomPlate_HSequenceOfCurveConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_HSequenceOfCurveConstraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1418,13 +1296,13 @@ class GeomPlate_HSequenceOfPointConstraint : public MMgt_TShared {
 	:type anIndex: int
 	:rtype: Handle_GeomPlate_PointConstraint
 ") Value;
-		const Handle_GeomPlate_PointConstraint & Value (const Standard_Integer anIndex);
+		Handle_GeomPlate_PointConstraint Value (const Standard_Integer anIndex);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param anIndex:
 	:type anIndex: int
 	:rtype: Handle_GeomPlate_PointConstraint
 ") ChangeValue;
-		Handle_GeomPlate_PointConstraint & ChangeValue (const Standard_Integer anIndex);
+		Handle_GeomPlate_PointConstraint ChangeValue (const Standard_Integer anIndex);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param anIndex:
 	:type anIndex: int
@@ -1447,32 +1325,26 @@ class GeomPlate_HSequenceOfPointConstraint : public MMgt_TShared {
 		%feature("autodoc", "	:rtype: GeomPlate_SequenceOfPointConstraint
 ") ChangeSequence;
 		GeomPlate_SequenceOfPointConstraint & ChangeSequence ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_GeomPlate_HSequenceOfPointConstraint
-") ShallowCopy;
-		Handle_GeomPlate_HSequenceOfPointConstraint ShallowCopy ();
 };
 
 
-%feature("shadow") GeomPlate_HSequenceOfPointConstraint::~GeomPlate_HSequenceOfPointConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend GeomPlate_HSequenceOfPointConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_HSequenceOfPointConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_GeomPlate_HSequenceOfPointConstraint::Handle_GeomPlate_HSequenceOfPointConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend GeomPlate_HSequenceOfPointConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_HSequenceOfPointConstraint {
-	Handle_GeomPlate_HSequenceOfPointConstraint GetHandle() {
-	return *(Handle_GeomPlate_HSequenceOfPointConstraint*) &$self;
-	}
-};
 
 %nodefaultctor Handle_GeomPlate_HSequenceOfPointConstraint;
 class Handle_GeomPlate_HSequenceOfPointConstraint : public Handle_MMgt_TShared {
@@ -1490,20 +1362,6 @@ class Handle_GeomPlate_HSequenceOfPointConstraint : public Handle_MMgt_TShared {
 %extend Handle_GeomPlate_HSequenceOfPointConstraint {
     GeomPlate_HSequenceOfPointConstraint* GetObject() {
     return (GeomPlate_HSequenceOfPointConstraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_HSequenceOfPointConstraint::~Handle_GeomPlate_HSequenceOfPointConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_HSequenceOfPointConstraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1531,7 +1389,7 @@ class GeomPlate_MakeApprox {
 ") GeomPlate_MakeApprox;
 		 GeomPlate_MakeApprox (const Handle_GeomPlate_Surface & SurfPlate,const AdvApp2Var_Criterion & PlateCrit,const Standard_Real Tol3d,const Standard_Integer Nbmax,const Standard_Integer dgmax,const GeomAbs_Shape Continuity = GeomAbs_C1,const Standard_Real EnlargeCoeff = 1.1);
 		%feature("compactdefaultargs") GeomPlate_MakeApprox;
-		%feature("autodoc", "	* Converts SurfPlate into a Geom_BSplineSurface with n Bezier pieces (n<=Nbmax) of degree <= dgmax and an approximation error < Tol3d if possible if CritOrder = -1 , no criterion is used if CritOrder = 0 , a PlateG0Criterion is used with max value > 10*dmax if CritOrder = 1 , a PlateG1Criterion is used with max value > 10*dmax WARNING : for CritOrder = 0 or 1, only the constraints points of SurfPlate  are used to evaluate the value of the criterion
+		%feature("autodoc", "	* Converts SurfPlate into a Geom_BSplineSurface with n Bezier pieces (n<=Nbmax) of degree <= dgmax and an approximation error < Tol3d if possible if CritOrder = -1 , no criterion is used if CritOrder = 0 , a PlateG0Criterion is used with max value > 10*dmax if CritOrder = 1 , a PlateG1Criterion is used with max value > 10*dmax WARNING : for CritOrder = 0 or 1, only the constraints points of SurfPlate are used to evaluate the value of the criterion
 
 	:param SurfPlate:
 	:type SurfPlate: Handle_GeomPlate_Surface &
@@ -1573,20 +1431,6 @@ class GeomPlate_MakeApprox {
 };
 
 
-%feature("shadow") GeomPlate_MakeApprox::~GeomPlate_MakeApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_MakeApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_PlateG0Criterion;
 class GeomPlate_PlateG0Criterion : public AdvApp2Var_Criterion {
 	public:
@@ -1621,20 +1465,6 @@ class GeomPlate_PlateG0Criterion : public AdvApp2Var_Criterion {
 };
 
 
-%feature("shadow") GeomPlate_PlateG0Criterion::~GeomPlate_PlateG0Criterion %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_PlateG0Criterion {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_PlateG1Criterion;
 class GeomPlate_PlateG1Criterion : public AdvApp2Var_Criterion {
 	public:
@@ -1669,20 +1499,6 @@ class GeomPlate_PlateG1Criterion : public AdvApp2Var_Criterion {
 };
 
 
-%feature("shadow") GeomPlate_PlateG1Criterion::~GeomPlate_PlateG1Criterion %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_PlateG1Criterion {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_PointConstraint;
 class GeomPlate_PointConstraint : public MMgt_TShared {
 	public:
@@ -1825,25 +1641,23 @@ class GeomPlate_PointConstraint : public MMgt_TShared {
 };
 
 
-%feature("shadow") GeomPlate_PointConstraint::~GeomPlate_PointConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend GeomPlate_PointConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_PointConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend GeomPlate_PointConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_PointConstraint {
-	Handle_GeomPlate_PointConstraint GetHandle() {
-	return *(Handle_GeomPlate_PointConstraint*) &$self;
-	}
-};
+%pythonappend Handle_GeomPlate_PointConstraint::Handle_GeomPlate_PointConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_GeomPlate_PointConstraint;
 class Handle_GeomPlate_PointConstraint : public Handle_MMgt_TShared {
@@ -1861,20 +1675,6 @@ class Handle_GeomPlate_PointConstraint : public Handle_MMgt_TShared {
 %extend Handle_GeomPlate_PointConstraint {
     GeomPlate_PointConstraint* GetObject() {
     return (GeomPlate_PointConstraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_PointConstraint::~Handle_GeomPlate_PointConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_PointConstraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1898,25 +1698,23 @@ class GeomPlate_SequenceNodeOfSequenceOfAij : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") GeomPlate_SequenceNodeOfSequenceOfAij::~GeomPlate_SequenceNodeOfSequenceOfAij %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend GeomPlate_SequenceNodeOfSequenceOfAij {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_SequenceNodeOfSequenceOfAij(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend GeomPlate_SequenceNodeOfSequenceOfAij {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_SequenceNodeOfSequenceOfAij {
-	Handle_GeomPlate_SequenceNodeOfSequenceOfAij GetHandle() {
-	return *(Handle_GeomPlate_SequenceNodeOfSequenceOfAij*) &$self;
-	}
-};
+%pythonappend Handle_GeomPlate_SequenceNodeOfSequenceOfAij::Handle_GeomPlate_SequenceNodeOfSequenceOfAij %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_GeomPlate_SequenceNodeOfSequenceOfAij;
 class Handle_GeomPlate_SequenceNodeOfSequenceOfAij : public Handle_TCollection_SeqNode {
@@ -1936,20 +1734,6 @@ class Handle_GeomPlate_SequenceNodeOfSequenceOfAij : public Handle_TCollection_S
     return (GeomPlate_SequenceNodeOfSequenceOfAij*)$self->Access();
     }
 };
-%feature("shadow") Handle_GeomPlate_SequenceNodeOfSequenceOfAij::~Handle_GeomPlate_SequenceNodeOfSequenceOfAij %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_SequenceNodeOfSequenceOfAij {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor GeomPlate_SequenceNodeOfSequenceOfCurveConstraint;
 class GeomPlate_SequenceNodeOfSequenceOfCurveConstraint : public TCollection_SeqNode {
@@ -1967,29 +1751,27 @@ class GeomPlate_SequenceNodeOfSequenceOfCurveConstraint : public TCollection_Seq
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_GeomPlate_CurveConstraint
 ") Value;
-		Handle_GeomPlate_CurveConstraint & Value ();
+		Handle_GeomPlate_CurveConstraint Value ();
 };
 
 
-%feature("shadow") GeomPlate_SequenceNodeOfSequenceOfCurveConstraint::~GeomPlate_SequenceNodeOfSequenceOfCurveConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend GeomPlate_SequenceNodeOfSequenceOfCurveConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint::Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend GeomPlate_SequenceNodeOfSequenceOfCurveConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_SequenceNodeOfSequenceOfCurveConstraint {
-	Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint GetHandle() {
-	return *(Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint*) &$self;
-	}
-};
 
 %nodefaultctor Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint;
 class Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint : public Handle_TCollection_SeqNode {
@@ -2009,20 +1791,6 @@ class Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint : public Handle_T
     return (GeomPlate_SequenceNodeOfSequenceOfCurveConstraint*)$self->Access();
     }
 };
-%feature("shadow") Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint::~Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_SequenceNodeOfSequenceOfCurveConstraint {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor GeomPlate_SequenceNodeOfSequenceOfPointConstraint;
 class GeomPlate_SequenceNodeOfSequenceOfPointConstraint : public TCollection_SeqNode {
@@ -2040,29 +1808,27 @@ class GeomPlate_SequenceNodeOfSequenceOfPointConstraint : public TCollection_Seq
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_GeomPlate_PointConstraint
 ") Value;
-		Handle_GeomPlate_PointConstraint & Value ();
+		Handle_GeomPlate_PointConstraint Value ();
 };
 
 
-%feature("shadow") GeomPlate_SequenceNodeOfSequenceOfPointConstraint::~GeomPlate_SequenceNodeOfSequenceOfPointConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend GeomPlate_SequenceNodeOfSequenceOfPointConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint::Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend GeomPlate_SequenceNodeOfSequenceOfPointConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_SequenceNodeOfSequenceOfPointConstraint {
-	Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint GetHandle() {
-	return *(Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint*) &$self;
-	}
-};
 
 %nodefaultctor Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint;
 class Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint : public Handle_TCollection_SeqNode {
@@ -2082,20 +1848,6 @@ class Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint : public Handle_T
     return (GeomPlate_SequenceNodeOfSequenceOfPointConstraint*)$self->Access();
     }
 };
-%feature("shadow") Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint::~Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_SequenceNodeOfSequenceOfPointConstraint {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor GeomPlate_SequenceOfAij;
 class GeomPlate_SequenceOfAij : public TCollection_BaseSequence {
@@ -2104,6 +1856,12 @@ class GeomPlate_SequenceOfAij : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") GeomPlate_SequenceOfAij;
 		 GeomPlate_SequenceOfAij ();
+		%feature("compactdefaultargs") GeomPlate_SequenceOfAij;
+		%feature("autodoc", "	:param Other:
+	:type Other: GeomPlate_SequenceOfAij &
+	:rtype: None
+") GeomPlate_SequenceOfAij;
+		 GeomPlate_SequenceOfAij (const GeomPlate_SequenceOfAij & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -2229,20 +1987,6 @@ class GeomPlate_SequenceOfAij : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") GeomPlate_SequenceOfAij::~GeomPlate_SequenceOfAij %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_SequenceOfAij {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_SequenceOfCurveConstraint;
 class GeomPlate_SequenceOfCurveConstraint : public TCollection_BaseSequence {
 	public:
@@ -2250,6 +1994,12 @@ class GeomPlate_SequenceOfCurveConstraint : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") GeomPlate_SequenceOfCurveConstraint;
 		 GeomPlate_SequenceOfCurveConstraint ();
+		%feature("compactdefaultargs") GeomPlate_SequenceOfCurveConstraint;
+		%feature("autodoc", "	:param Other:
+	:type Other: GeomPlate_SequenceOfCurveConstraint &
+	:rtype: None
+") GeomPlate_SequenceOfCurveConstraint;
+		 GeomPlate_SequenceOfCurveConstraint (const GeomPlate_SequenceOfCurveConstraint & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -2325,11 +2075,11 @@ class GeomPlate_SequenceOfCurveConstraint : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_GeomPlate_CurveConstraint
 ") First;
-		const Handle_GeomPlate_CurveConstraint & First ();
+		Handle_GeomPlate_CurveConstraint First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_GeomPlate_CurveConstraint
 ") Last;
-		const Handle_GeomPlate_CurveConstraint & Last ();
+		Handle_GeomPlate_CurveConstraint Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -2343,7 +2093,7 @@ class GeomPlate_SequenceOfCurveConstraint : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_GeomPlate_CurveConstraint
 ") Value;
-		const Handle_GeomPlate_CurveConstraint & Value (const Standard_Integer Index);
+		Handle_GeomPlate_CurveConstraint Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -2357,7 +2107,7 @@ class GeomPlate_SequenceOfCurveConstraint : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_GeomPlate_CurveConstraint
 ") ChangeValue;
-		Handle_GeomPlate_CurveConstraint & ChangeValue (const Standard_Integer Index);
+		Handle_GeomPlate_CurveConstraint ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -2375,20 +2125,6 @@ class GeomPlate_SequenceOfCurveConstraint : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") GeomPlate_SequenceOfCurveConstraint::~GeomPlate_SequenceOfCurveConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_SequenceOfCurveConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_SequenceOfPointConstraint;
 class GeomPlate_SequenceOfPointConstraint : public TCollection_BaseSequence {
 	public:
@@ -2396,6 +2132,12 @@ class GeomPlate_SequenceOfPointConstraint : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") GeomPlate_SequenceOfPointConstraint;
 		 GeomPlate_SequenceOfPointConstraint ();
+		%feature("compactdefaultargs") GeomPlate_SequenceOfPointConstraint;
+		%feature("autodoc", "	:param Other:
+	:type Other: GeomPlate_SequenceOfPointConstraint &
+	:rtype: None
+") GeomPlate_SequenceOfPointConstraint;
+		 GeomPlate_SequenceOfPointConstraint (const GeomPlate_SequenceOfPointConstraint & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -2471,11 +2213,11 @@ class GeomPlate_SequenceOfPointConstraint : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_GeomPlate_PointConstraint
 ") First;
-		const Handle_GeomPlate_PointConstraint & First ();
+		Handle_GeomPlate_PointConstraint First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_GeomPlate_PointConstraint
 ") Last;
-		const Handle_GeomPlate_PointConstraint & Last ();
+		Handle_GeomPlate_PointConstraint Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -2489,7 +2231,7 @@ class GeomPlate_SequenceOfPointConstraint : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_GeomPlate_PointConstraint
 ") Value;
-		const Handle_GeomPlate_PointConstraint & Value (const Standard_Integer Index);
+		Handle_GeomPlate_PointConstraint Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -2503,7 +2245,7 @@ class GeomPlate_SequenceOfPointConstraint : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_GeomPlate_PointConstraint
 ") ChangeValue;
-		Handle_GeomPlate_PointConstraint & ChangeValue (const Standard_Integer Index);
+		Handle_GeomPlate_PointConstraint ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -2521,20 +2263,6 @@ class GeomPlate_SequenceOfPointConstraint : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") GeomPlate_SequenceOfPointConstraint::~GeomPlate_SequenceOfPointConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomPlate_SequenceOfPointConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomPlate_Surface;
 class GeomPlate_Surface : public Geom_Surface {
 	public:
@@ -2553,7 +2281,7 @@ class GeomPlate_Surface : public Geom_Surface {
 ") UReverse;
 		void UReverse ();
 		%feature("compactdefaultargs") UReversedParameter;
-		%feature("autodoc", "	* Return the parameter on the Ureversed surface for the point of parameter U on <self>.  me->UReversed()->Value(me->UReversedParameter(U),V)  is the same point as  me->Value(U,V)
+		%feature("autodoc", "	* Return the parameter on the Ureversed surface for the point of parameter U on <self>. //! me->UReversed()->Value(me->UReversedParameter(U),V) //! is the same point as //! me->Value(U,V)
 
 	:param U:
 	:type U: float
@@ -2567,7 +2295,7 @@ class GeomPlate_Surface : public Geom_Surface {
 ") VReverse;
 		void VReverse ();
 		%feature("compactdefaultargs") VReversedParameter;
-		%feature("autodoc", "	* Return the parameter on the Vreversed surface for the point of parameter V on <self>.  me->VReversed()->Value(U,me->VReversedParameter(V))  is the same point as  me->Value(U,V)
+		%feature("autodoc", "	* Return the parameter on the Vreversed surface for the point of parameter V on <self>. //! me->VReversed()->Value(U,me->VReversedParameter(V)) //! is the same point as //! me->Value(U,V)
 
 	:param V:
 	:type V: float
@@ -2575,7 +2303,7 @@ class GeomPlate_Surface : public Geom_Surface {
 ") VReversedParameter;
 		Standard_Real VReversedParameter (const Standard_Real V);
 		%feature("compactdefaultargs") TransformParameters;
-		%feature("autodoc", "	* Computes the parameters on the transformed surface for the transform of the point of parameters U,V on <self>.  me->Transformed(T)->Value(U',V')  is the same point as  me->Value(U,V).Transformed(T)  Where U',V' are the new values of U,V after calling  me->TranformParameters(U,V,T)  This methods does not change <U> and <V>  It can be redefined. For example on the Plane, Cylinder, Cone, Revolved and Extruded surfaces.
+		%feature("autodoc", "	* Computes the parameters on the transformed surface for the transform of the point of parameters U,V on <self>. //! me->Transformed(T)->Value(U',V') //! is the same point as //! me->Value(U,V).Transformed(T) //! Where U',V' are the new values of U,V after calling //! me->TranformParameters(U,V,T) //! This methods does not change <U> and <V> //! It can be redefined. For example on the Plane, Cylinder, Cone, Revolved and Extruded surfaces.
 
 	:param U:
 	:type U: float &
@@ -2587,7 +2315,7 @@ class GeomPlate_Surface : public Geom_Surface {
 ") TransformParameters;
 		virtual void TransformParameters (Standard_Real &OutValue,Standard_Real &OutValue,const gp_Trsf & T);
 		%feature("compactdefaultargs") ParametricTransformation;
-		%feature("autodoc", "	* Returns a 2d transformation used to find the new parameters of a point on the transformed surface.  me->Transformed(T)->Value(U',V')  is the same point as  me->Value(U,V).Transformed(T)  Where U',V' are obtained by transforming U,V with th 2d transformation returned by  me->ParametricTransformation(T)  This methods returns an identity transformation  It can be redefined. For example on the Plane, Cylinder, Cone, Revolved and Extruded surfaces.
+		%feature("autodoc", "	* Returns a 2d transformation used to find the new parameters of a point on the transformed surface. //! me->Transformed(T)->Value(U',V') //! is the same point as //! me->Value(U,V).Transformed(T) //! Where U',V' are obtained by transforming U,V with th 2d transformation returned by //! me->ParametricTransformation(T) //! This methods returns an identity transformation //! It can be redefined. For example on the Plane, Cylinder, Cone, Revolved and Extruded surfaces.
 
 	:param T:
 	:type T: gp_Trsf
@@ -2681,7 +2409,7 @@ class GeomPlate_Surface : public Geom_Surface {
 ") IsCNv;
 		Standard_Boolean IsCNv (const Standard_Integer N);
 		%feature("compactdefaultargs") D0;
-		%feature("autodoc", "	* Computes the point of parameter U,V on the surface. Raised only for an 'OffsetSurface' if it is not possible to compute the current point.
+		%feature("autodoc", "	* Computes the point of parameter U,V on the surface. //! Raised only for an 'OffsetSurface' if it is not possible to compute the current point.
 
 	:param U:
 	:type U: float
@@ -2761,7 +2489,7 @@ class GeomPlate_Surface : public Geom_Surface {
 ") D3;
 		void D3 (const Standard_Real U,const Standard_Real V,gp_Pnt & P,gp_Vec & D1U,gp_Vec & D1V,gp_Vec & D2U,gp_Vec & D2V,gp_Vec & D2UV,gp_Vec & D3U,gp_Vec & D3V,gp_Vec & D3UUV,gp_Vec & D3UVV);
 		%feature("compactdefaultargs") DN;
-		%feature("autodoc", "	* //!---Purpose ; Computes the derivative of order Nu in the direction U and Nv in the direction V at the point P(U, V). Raised if the continuity of the surface is not CNu in the U direction or not CNv in the V direction. Raised if Nu + Nv < 1 or Nu < 0 or Nv < 0.
+		%feature("autodoc", "	* ---Purpose ; Computes the derivative of order Nu in the direction U and Nv in the direction V at the point P(U, V). //! Raised if the continuity of the surface is not CNu in the U direction or not CNv in the V direction. Raised if Nu + Nv < 1 or Nu < 0 or Nv < 0.
 
 	:param U:
 	:type U: float
@@ -2823,25 +2551,23 @@ class GeomPlate_Surface : public Geom_Surface {
 };
 
 
-%feature("shadow") GeomPlate_Surface::~GeomPlate_Surface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend GeomPlate_Surface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_GeomPlate_Surface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend GeomPlate_Surface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend GeomPlate_Surface {
-	Handle_GeomPlate_Surface GetHandle() {
-	return *(Handle_GeomPlate_Surface*) &$self;
-	}
-};
+%pythonappend Handle_GeomPlate_Surface::Handle_GeomPlate_Surface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_GeomPlate_Surface;
 class Handle_GeomPlate_Surface : public Handle_Geom_Surface {
@@ -2859,20 +2585,6 @@ class Handle_GeomPlate_Surface : public Handle_Geom_Surface {
 %extend Handle_GeomPlate_Surface {
     GeomPlate_Surface* GetObject() {
     return (GeomPlate_Surface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_GeomPlate_Surface::~Handle_GeomPlate_Surface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_GeomPlate_Surface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

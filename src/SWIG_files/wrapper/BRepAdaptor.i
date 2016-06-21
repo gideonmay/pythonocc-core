@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepAdaptor_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -122,20 +138,6 @@ class BRepAdaptor_Array1OfCurve {
 };
 
 
-%feature("shadow") BRepAdaptor_Array1OfCurve::~BRepAdaptor_Array1OfCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepAdaptor_Array1OfCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepAdaptor_CompCurve;
 class BRepAdaptor_CompCurve : public Adaptor3d_Curve {
 	public:
@@ -242,7 +244,7 @@ class BRepAdaptor_CompCurve : public Adaptor3d_Curve {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -404,20 +406,6 @@ class BRepAdaptor_CompCurve : public Adaptor3d_Curve {
 };
 
 
-%feature("shadow") BRepAdaptor_CompCurve::~BRepAdaptor_CompCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepAdaptor_CompCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepAdaptor_Curve;
 class BRepAdaptor_Curve : public Adaptor3d_Curve {
 	public:
@@ -526,7 +514,7 @@ class BRepAdaptor_Curve : public Adaptor3d_Curve {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -678,13 +666,13 @@ class BRepAdaptor_Curve : public Adaptor3d_Curve {
 ") NbKnots;
 		Standard_Integer NbKnots ();
 		%feature("compactdefaultargs") Bezier;
-		%feature("autodoc", "	* Warning :  This will make a copy of the Bezier Curve  since it applies to it myTsrf . Be carefull when  using this method
+		%feature("autodoc", "	* Warning : This will make a copy of the Bezier Curve since it applies to it myTsrf . Be carefull when using this method
 
 	:rtype: Handle_Geom_BezierCurve
 ") Bezier;
 		Handle_Geom_BezierCurve Bezier ();
 		%feature("compactdefaultargs") BSpline;
-		%feature("autodoc", "	* Warning :  This will make a copy of the BSpline Curve  since it applies to it myTsrf . Be carefull when  using this method
+		%feature("autodoc", "	* Warning : This will make a copy of the BSpline Curve since it applies to it myTsrf . Be carefull when using this method
 
 	:rtype: Handle_Geom_BSplineCurve
 ") BSpline;
@@ -692,20 +680,6 @@ class BRepAdaptor_Curve : public Adaptor3d_Curve {
 };
 
 
-%feature("shadow") BRepAdaptor_Curve::~BRepAdaptor_Curve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepAdaptor_Curve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepAdaptor_Curve2d;
 class BRepAdaptor_Curve2d : public Geom2dAdaptor_Curve {
 	public:
@@ -750,20 +724,6 @@ class BRepAdaptor_Curve2d : public Geom2dAdaptor_Curve {
 };
 
 
-%feature("shadow") BRepAdaptor_Curve2d::~BRepAdaptor_Curve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepAdaptor_Curve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepAdaptor_HArray1OfCurve;
 class BRepAdaptor_HArray1OfCurve : public MMgt_TShared {
 	public:
@@ -834,25 +794,23 @@ class BRepAdaptor_HArray1OfCurve : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepAdaptor_HArray1OfCurve::~BRepAdaptor_HArray1OfCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepAdaptor_HArray1OfCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepAdaptor_HArray1OfCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepAdaptor_HArray1OfCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepAdaptor_HArray1OfCurve {
-	Handle_BRepAdaptor_HArray1OfCurve GetHandle() {
-	return *(Handle_BRepAdaptor_HArray1OfCurve*) &$self;
-	}
-};
+%pythonappend Handle_BRepAdaptor_HArray1OfCurve::Handle_BRepAdaptor_HArray1OfCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepAdaptor_HArray1OfCurve;
 class Handle_BRepAdaptor_HArray1OfCurve : public Handle_MMgt_TShared {
@@ -870,20 +828,6 @@ class Handle_BRepAdaptor_HArray1OfCurve : public Handle_MMgt_TShared {
 %extend Handle_BRepAdaptor_HArray1OfCurve {
     BRepAdaptor_HArray1OfCurve* GetObject() {
     return (BRepAdaptor_HArray1OfCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepAdaptor_HArray1OfCurve::~Handle_BRepAdaptor_HArray1OfCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepAdaptor_HArray1OfCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -921,25 +865,23 @@ class BRepAdaptor_HCompCurve : public Adaptor3d_HCurve {
 };
 
 
-%feature("shadow") BRepAdaptor_HCompCurve::~BRepAdaptor_HCompCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepAdaptor_HCompCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepAdaptor_HCompCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepAdaptor_HCompCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepAdaptor_HCompCurve {
-	Handle_BRepAdaptor_HCompCurve GetHandle() {
-	return *(Handle_BRepAdaptor_HCompCurve*) &$self;
-	}
-};
+%pythonappend Handle_BRepAdaptor_HCompCurve::Handle_BRepAdaptor_HCompCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepAdaptor_HCompCurve;
 class Handle_BRepAdaptor_HCompCurve : public Handle_Adaptor3d_HCurve {
@@ -957,20 +899,6 @@ class Handle_BRepAdaptor_HCompCurve : public Handle_Adaptor3d_HCurve {
 %extend Handle_BRepAdaptor_HCompCurve {
     BRepAdaptor_HCompCurve* GetObject() {
     return (BRepAdaptor_HCompCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepAdaptor_HCompCurve::~Handle_BRepAdaptor_HCompCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepAdaptor_HCompCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1008,25 +936,23 @@ class BRepAdaptor_HCurve : public Adaptor3d_HCurve {
 };
 
 
-%feature("shadow") BRepAdaptor_HCurve::~BRepAdaptor_HCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepAdaptor_HCurve {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepAdaptor_HCurve(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepAdaptor_HCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepAdaptor_HCurve {
-	Handle_BRepAdaptor_HCurve GetHandle() {
-	return *(Handle_BRepAdaptor_HCurve*) &$self;
-	}
-};
+%pythonappend Handle_BRepAdaptor_HCurve::Handle_BRepAdaptor_HCurve %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepAdaptor_HCurve;
 class Handle_BRepAdaptor_HCurve : public Handle_Adaptor3d_HCurve {
@@ -1044,20 +970,6 @@ class Handle_BRepAdaptor_HCurve : public Handle_Adaptor3d_HCurve {
 %extend Handle_BRepAdaptor_HCurve {
     BRepAdaptor_HCurve* GetObject() {
     return (BRepAdaptor_HCurve*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepAdaptor_HCurve::~Handle_BRepAdaptor_HCurve %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepAdaptor_HCurve {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1091,25 +1003,23 @@ class BRepAdaptor_HCurve2d : public Adaptor2d_HCurve2d {
 };
 
 
-%feature("shadow") BRepAdaptor_HCurve2d::~BRepAdaptor_HCurve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepAdaptor_HCurve2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepAdaptor_HCurve2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepAdaptor_HCurve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepAdaptor_HCurve2d {
-	Handle_BRepAdaptor_HCurve2d GetHandle() {
-	return *(Handle_BRepAdaptor_HCurve2d*) &$self;
-	}
-};
+%pythonappend Handle_BRepAdaptor_HCurve2d::Handle_BRepAdaptor_HCurve2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepAdaptor_HCurve2d;
 class Handle_BRepAdaptor_HCurve2d : public Handle_Adaptor2d_HCurve2d {
@@ -1127,20 +1037,6 @@ class Handle_BRepAdaptor_HCurve2d : public Handle_Adaptor2d_HCurve2d {
 %extend Handle_BRepAdaptor_HCurve2d {
     BRepAdaptor_HCurve2d* GetObject() {
     return (BRepAdaptor_HCurve2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepAdaptor_HCurve2d::~Handle_BRepAdaptor_HCurve2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepAdaptor_HCurve2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1174,25 +1070,23 @@ class BRepAdaptor_HSurface : public Adaptor3d_HSurface {
 };
 
 
-%feature("shadow") BRepAdaptor_HSurface::~BRepAdaptor_HSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepAdaptor_HSurface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepAdaptor_HSurface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepAdaptor_HSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepAdaptor_HSurface {
-	Handle_BRepAdaptor_HSurface GetHandle() {
-	return *(Handle_BRepAdaptor_HSurface*) &$self;
-	}
-};
+%pythonappend Handle_BRepAdaptor_HSurface::Handle_BRepAdaptor_HSurface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepAdaptor_HSurface;
 class Handle_BRepAdaptor_HSurface : public Handle_Adaptor3d_HSurface {
@@ -1210,20 +1104,6 @@ class Handle_BRepAdaptor_HSurface : public Handle_Adaptor3d_HSurface {
 %extend Handle_BRepAdaptor_HSurface {
     BRepAdaptor_HSurface* GetObject() {
     return (BRepAdaptor_HSurface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepAdaptor_HSurface::~Handle_BRepAdaptor_HSurface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepAdaptor_HSurface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1499,7 +1379,7 @@ class BRepAdaptor_Surface : public Adaptor3d_Surface {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Real V,const Standard_Integer Nu,const Standard_Integer Nv);
 		%feature("compactdefaultargs") UResolution;
-		%feature("autodoc", "	* Returns the parametric U resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric U resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -1507,7 +1387,7 @@ class BRepAdaptor_Surface : public Adaptor3d_Surface {
 ") UResolution;
 		Standard_Real UResolution (const Standard_Real R3d);
 		%feature("compactdefaultargs") VResolution;
-		%feature("autodoc", "	* Returns the parametric V resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric V resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -1607,17 +1487,3 @@ class BRepAdaptor_Surface : public Adaptor3d_Surface {
 };
 
 
-%feature("shadow") BRepAdaptor_Surface::~BRepAdaptor_Surface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepAdaptor_Surface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

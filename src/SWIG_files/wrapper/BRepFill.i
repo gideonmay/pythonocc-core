@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepFill_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -116,20 +132,6 @@ class BRepFill {
 };
 
 
-%feature("shadow") BRepFill::~BRepFill %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_ApproxSeewing;
 class BRepFill_ApproxSeewing {
 	public:
@@ -158,36 +160,22 @@ class BRepFill_ApproxSeewing {
 
 	:rtype: Handle_Geom_Curve
 ") Curve;
-		const Handle_Geom_Curve & Curve ();
+		Handle_Geom_Curve Curve ();
 		%feature("compactdefaultargs") CurveOnF1;
 		%feature("autodoc", "	* returns the approximation of the PCurve on the first face of the MultiLine
 
 	:rtype: Handle_Geom2d_Curve
 ") CurveOnF1;
-		const Handle_Geom2d_Curve & CurveOnF1 ();
+		Handle_Geom2d_Curve CurveOnF1 ();
 		%feature("compactdefaultargs") CurveOnF2;
 		%feature("autodoc", "	* returns the approximation of the PCurve on the first face of the MultiLine
 
 	:rtype: Handle_Geom2d_Curve
 ") CurveOnF2;
-		const Handle_Geom2d_Curve & CurveOnF2 ();
+		Handle_Geom2d_Curve CurveOnF2 ();
 };
 
 
-%feature("shadow") BRepFill_ApproxSeewing::~BRepFill_ApproxSeewing %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_ApproxSeewing {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_CompatibleWires;
 class BRepFill_CompatibleWires {
 	public:
@@ -246,20 +234,6 @@ class BRepFill_CompatibleWires {
 };
 
 
-%feature("shadow") BRepFill_CompatibleWires::~BRepFill_CompatibleWires %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_CompatibleWires {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_ComputeCLine;
 class BRepFill_ComputeCLine {
 	public:
@@ -372,20 +346,6 @@ class BRepFill_ComputeCLine {
 };
 
 
-%feature("shadow") BRepFill_ComputeCLine::~BRepFill_ComputeCLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_ComputeCLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_CurveConstraint;
 class BRepFill_CurveConstraint : public GeomPlate_CurveConstraint {
 	public:
@@ -422,25 +382,23 @@ class BRepFill_CurveConstraint : public GeomPlate_CurveConstraint {
 };
 
 
-%feature("shadow") BRepFill_CurveConstraint::~BRepFill_CurveConstraint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_CurveConstraint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_CurveConstraint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_CurveConstraint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_CurveConstraint {
-	Handle_BRepFill_CurveConstraint GetHandle() {
-	return *(Handle_BRepFill_CurveConstraint*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_CurveConstraint::Handle_BRepFill_CurveConstraint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_CurveConstraint;
 class Handle_BRepFill_CurveConstraint : public Handle_GeomPlate_CurveConstraint {
@@ -458,20 +416,6 @@ class Handle_BRepFill_CurveConstraint : public Handle_GeomPlate_CurveConstraint 
 %extend Handle_BRepFill_CurveConstraint {
     BRepFill_CurveConstraint* GetObject() {
     return (BRepFill_CurveConstraint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_CurveConstraint::~Handle_BRepFill_CurveConstraint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_CurveConstraint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -497,7 +441,7 @@ class BRepFill_DataMapIteratorOfDataMapOfNodeDataMapOfShapeShape : public TColle
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_MAT_Node
 ") Key;
-		const Handle_MAT_Node & Key ();
+		Handle_MAT_Node Key ();
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: TopTools_DataMapOfShapeShape
 ") Value;
@@ -505,20 +449,6 @@ class BRepFill_DataMapIteratorOfDataMapOfNodeDataMapOfShapeShape : public TColle
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfNodeDataMapOfShapeShape::~BRepFill_DataMapIteratorOfDataMapOfNodeDataMapOfShapeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfNodeDataMapOfShapeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapIteratorOfDataMapOfNodeShape;
 class BRepFill_DataMapIteratorOfDataMapOfNodeShape : public TCollection_BasicMapIterator {
 	public:
@@ -541,7 +471,7 @@ class BRepFill_DataMapIteratorOfDataMapOfNodeShape : public TCollection_BasicMap
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_MAT_Node
 ") Key;
-		const Handle_MAT_Node & Key ();
+		Handle_MAT_Node Key ();
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: TopoDS_Shape
 ") Value;
@@ -549,20 +479,6 @@ class BRepFill_DataMapIteratorOfDataMapOfNodeShape : public TCollection_BasicMap
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfNodeShape::~BRepFill_DataMapIteratorOfDataMapOfNodeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfNodeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapIteratorOfDataMapOfOrientedShapeListOfShape;
 class BRepFill_DataMapIteratorOfDataMapOfOrientedShapeListOfShape : public TCollection_BasicMapIterator {
 	public:
@@ -593,20 +509,6 @@ class BRepFill_DataMapIteratorOfDataMapOfOrientedShapeListOfShape : public TColl
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfOrientedShapeListOfShape::~BRepFill_DataMapIteratorOfDataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfOrientedShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapIteratorOfDataMapOfShapeDataMapOfShapeListOfShape;
 class BRepFill_DataMapIteratorOfDataMapOfShapeDataMapOfShapeListOfShape : public TCollection_BasicMapIterator {
 	public:
@@ -637,20 +539,6 @@ class BRepFill_DataMapIteratorOfDataMapOfShapeDataMapOfShapeListOfShape : public
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfShapeDataMapOfShapeListOfShape::~BRepFill_DataMapIteratorOfDataMapOfShapeDataMapOfShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfShapeDataMapOfShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapIteratorOfDataMapOfShapeHArray2OfShape;
 class BRepFill_DataMapIteratorOfDataMapOfShapeHArray2OfShape : public TCollection_BasicMapIterator {
 	public:
@@ -677,24 +565,10 @@ class BRepFill_DataMapIteratorOfDataMapOfShapeHArray2OfShape : public TCollectio
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TopTools_HArray2OfShape
 ") Value;
-		const Handle_TopTools_HArray2OfShape & Value ();
+		Handle_TopTools_HArray2OfShape Value ();
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfShapeHArray2OfShape::~BRepFill_DataMapIteratorOfDataMapOfShapeHArray2OfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfShapeHArray2OfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfPnt;
 class BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfPnt : public TCollection_BasicMapIterator {
 	public:
@@ -725,20 +599,6 @@ class BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfPnt : public TCollection
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfPnt::~BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfReal;
 class BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfReal : public TCollection_BasicMapIterator {
 	public:
@@ -769,20 +629,6 @@ class BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfReal : public TCollectio
 };
 
 
-%feature("shadow") BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfReal::~BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapIteratorOfDataMapOfShapeSequenceOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape;
 class BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape : public TCollection_MapNode {
 	public:
@@ -799,7 +645,7 @@ class BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape : public TCollectio
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_MAT_Node
 ") Key;
-		Handle_MAT_Node & Key ();
+		Handle_MAT_Node Key ();
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: TopTools_DataMapOfShapeShape
 ") Value;
@@ -807,25 +653,23 @@ class BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape : public TCollectio
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape::~BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape {
-	Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape::Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape;
 class Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape : public Handle_TCollection_MapNode {
@@ -845,20 +689,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape : public Han
     return (BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape*)$self->Access();
     }
 };
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape::~Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfNodeDataMapOfShapeShape {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor BRepFill_DataMapNodeOfDataMapOfNodeShape;
 class BRepFill_DataMapNodeOfDataMapOfNodeShape : public TCollection_MapNode {
@@ -876,7 +706,7 @@ class BRepFill_DataMapNodeOfDataMapOfNodeShape : public TCollection_MapNode {
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_MAT_Node
 ") Key;
-		Handle_MAT_Node & Key ();
+		Handle_MAT_Node Key ();
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: TopoDS_Shape
 ") Value;
@@ -884,25 +714,23 @@ class BRepFill_DataMapNodeOfDataMapOfNodeShape : public TCollection_MapNode {
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfNodeShape::~BRepFill_DataMapNodeOfDataMapOfNodeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DataMapNodeOfDataMapOfNodeShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DataMapNodeOfDataMapOfNodeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfNodeShape {
-	Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape::Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape;
 class Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape : public Handle_TCollection_MapNode {
@@ -920,20 +748,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape : public Handle_TCollectio
 %extend Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape {
     BRepFill_DataMapNodeOfDataMapOfNodeShape* GetObject() {
     return (BRepFill_DataMapNodeOfDataMapOfNodeShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape::~Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfNodeShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -961,25 +775,23 @@ class BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape : public TCollecti
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape::~BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape {
-	Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape::Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape;
 class Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape : public Handle_TCollection_MapNode {
@@ -997,20 +809,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape : public Ha
 %extend Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape {
     BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape* GetObject() {
     return (BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape::~Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfOrientedShapeListOfShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1038,25 +836,23 @@ class BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape : public TCo
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape::~BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape {
-	Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape::Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape;
 class Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape : public Handle_TCollection_MapNode {
@@ -1074,20 +870,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape : pub
 %extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape {
     BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape* GetObject() {
     return (BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape::~Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeDataMapOfShapeListOfShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1111,29 +893,27 @@ class BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape : public TCollection_Ma
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TopTools_HArray2OfShape
 ") Value;
-		Handle_TopTools_HArray2OfShape & Value ();
+		Handle_TopTools_HArray2OfShape Value ();
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape::~BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape::Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape {
-	Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape*) &$self;
-	}
-};
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape;
 class Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape : public Handle_TCollection_MapNode {
@@ -1151,20 +931,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape : public Handle_
 %extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape {
     BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape* GetObject() {
     return (BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape::~Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeHArray2OfShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1192,25 +958,23 @@ class BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt : public TCollection_Map
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt::~BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt {
-	Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt::Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt;
 class Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt : public Handle_TCollection_MapNode {
@@ -1228,20 +992,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt : public Handle_T
 %extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt {
     BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt* GetObject() {
     return (BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt::~Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfPnt {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1269,25 +1019,23 @@ class BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal : public TCollection_Ma
 };
 
 
-%feature("shadow") BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal::~BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal {
-	Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal GetHandle() {
-	return *(Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal::Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal;
 class Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal : public Handle_TCollection_MapNode {
@@ -1305,20 +1053,6 @@ class Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal : public Handle_
 %extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal {
     BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal* GetObject() {
     return (BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal::~Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DataMapNodeOfDataMapOfShapeSequenceOfReal {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1400,20 +1134,6 @@ class BRepFill_DataMapOfNodeDataMapOfShapeShape : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepFill_DataMapOfNodeDataMapOfShapeShape::~BRepFill_DataMapOfNodeDataMapOfShapeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfNodeDataMapOfShapeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapOfNodeShape;
 class BRepFill_DataMapOfNodeShape : public TCollection_BasicMap {
 	public:
@@ -1492,20 +1212,6 @@ class BRepFill_DataMapOfNodeShape : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepFill_DataMapOfNodeShape::~BRepFill_DataMapOfNodeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfNodeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapOfOrientedShapeListOfShape;
 class BRepFill_DataMapOfOrientedShapeListOfShape : public TCollection_BasicMap {
 	public:
@@ -1584,20 +1290,6 @@ class BRepFill_DataMapOfOrientedShapeListOfShape : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepFill_DataMapOfOrientedShapeListOfShape::~BRepFill_DataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfOrientedShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapOfShapeDataMapOfShapeListOfShape;
 class BRepFill_DataMapOfShapeDataMapOfShapeListOfShape : public TCollection_BasicMap {
 	public:
@@ -1676,20 +1368,6 @@ class BRepFill_DataMapOfShapeDataMapOfShapeListOfShape : public TCollection_Basi
 };
 
 
-%feature("shadow") BRepFill_DataMapOfShapeDataMapOfShapeListOfShape::~BRepFill_DataMapOfShapeDataMapOfShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfShapeDataMapOfShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapOfShapeHArray2OfShape;
 class BRepFill_DataMapOfShapeHArray2OfShape : public TCollection_BasicMap {
 	public:
@@ -1746,13 +1424,13 @@ class BRepFill_DataMapOfShapeHArray2OfShape : public TCollection_BasicMap {
 	:type K: TopoDS_Shape &
 	:rtype: Handle_TopTools_HArray2OfShape
 ") Find;
-		const Handle_TopTools_HArray2OfShape & Find (const TopoDS_Shape & K);
+		Handle_TopTools_HArray2OfShape Find (const TopoDS_Shape & K);
 		%feature("compactdefaultargs") ChangeFind;
 		%feature("autodoc", "	:param K:
 	:type K: TopoDS_Shape &
 	:rtype: Handle_TopTools_HArray2OfShape
 ") ChangeFind;
-		Handle_TopTools_HArray2OfShape & ChangeFind (const TopoDS_Shape & K);
+		Handle_TopTools_HArray2OfShape ChangeFind (const TopoDS_Shape & K);
 		%feature("compactdefaultargs") Find1;
 		%feature("autodoc", "	:param K:
 	:type K: TopoDS_Shape &
@@ -1768,20 +1446,6 @@ class BRepFill_DataMapOfShapeHArray2OfShape : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepFill_DataMapOfShapeHArray2OfShape::~BRepFill_DataMapOfShapeHArray2OfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfShapeHArray2OfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapOfShapeSequenceOfPnt;
 class BRepFill_DataMapOfShapeSequenceOfPnt : public TCollection_BasicMap {
 	public:
@@ -1860,20 +1524,6 @@ class BRepFill_DataMapOfShapeSequenceOfPnt : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepFill_DataMapOfShapeSequenceOfPnt::~BRepFill_DataMapOfShapeSequenceOfPnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfShapeSequenceOfPnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_DataMapOfShapeSequenceOfReal;
 class BRepFill_DataMapOfShapeSequenceOfReal : public TCollection_BasicMap {
 	public:
@@ -1952,20 +1602,6 @@ class BRepFill_DataMapOfShapeSequenceOfReal : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepFill_DataMapOfShapeSequenceOfReal::~BRepFill_DataMapOfShapeSequenceOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_DataMapOfShapeSequenceOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_Draft;
 class BRepFill_Draft {
 	public:
@@ -2042,20 +1678,6 @@ class BRepFill_Draft {
 };
 
 
-%feature("shadow") BRepFill_Draft::~BRepFill_Draft %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Draft {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_EdgeFaceAndOrder;
 class BRepFill_EdgeFaceAndOrder {
 	public:
@@ -2076,20 +1698,6 @@ class BRepFill_EdgeFaceAndOrder {
 };
 
 
-%feature("shadow") BRepFill_EdgeFaceAndOrder::~BRepFill_EdgeFaceAndOrder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_EdgeFaceAndOrder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_Evolved;
 class BRepFill_Evolved {
 	public:
@@ -2200,20 +1808,6 @@ class BRepFill_Evolved {
 };
 
 
-%feature("shadow") BRepFill_Evolved::~BRepFill_Evolved %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Evolved {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_FaceAndOrder;
 class BRepFill_FaceAndOrder {
 	public:
@@ -2232,20 +1826,6 @@ class BRepFill_FaceAndOrder {
 };
 
 
-%feature("shadow") BRepFill_FaceAndOrder::~BRepFill_FaceAndOrder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_FaceAndOrder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_Filling;
 class BRepFill_Filling {
 	public:
@@ -2276,7 +1856,7 @@ class BRepFill_Filling {
 ") BRepFill_Filling;
 		 BRepFill_Filling (const Standard_Integer Degree = 3,const Standard_Integer NbPtsOnCur = 15,const Standard_Integer NbIter = 2,const Standard_Boolean Anisotropie = Standard_False,const Standard_Real Tol2d = 0.00001,const Standard_Real Tol3d = 0.0001,const Standard_Real TolAng = 0.01,const Standard_Real TolCurv = 0.1,const Standard_Integer MaxDeg = 8,const Standard_Integer MaxSegments = 9);
 		%feature("compactdefaultargs") SetConstrParam;
-		%feature("autodoc", "	* Sets the values of Tolerances used to control the constraint. //!	Tol2d: //!	Tol3d: it is the maximum distance allowed between the support surface //!	 and the constraints //!	TolAng: it is the maximum angle allowed between the normal of the surface //!	 and the constraints //!	TolCurv: it is the maximum difference of curvature allowed between //!	 the surface and the constraint
+		%feature("autodoc", "	* Sets the values of Tolerances used to control the constraint. Tol2d: Tol3d: it is the maximum distance allowed between the support surface and the constraints TolAng: it is the maximum angle allowed between the normal of the surface and the constraints TolCurv: it is the maximum difference of curvature allowed between the surface and the constraint
 
 	:param Tol2d: default value is 0.00001
 	:type Tol2d: float
@@ -2290,7 +1870,7 @@ class BRepFill_Filling {
 ") SetConstrParam;
 		void SetConstrParam (const Standard_Real Tol2d = 0.00001,const Standard_Real Tol3d = 0.0001,const Standard_Real TolAng = 0.01,const Standard_Real TolCurv = 0.1);
 		%feature("compactdefaultargs") SetResolParam;
-		%feature("autodoc", "	* Sets the parameters used for resolution. //!	The default values of these parameters have been chosen for a good //!	ratio quality/performance. //!	Degree: it is the order of energy criterion to minimize for computing //!	 the deformation of the surface. //!	 The default value is 3 //!	 The recommanded value is i+2 where i is the maximum order of the //!	 constraints. //!	NbPtsOnCur: it is the average number of points for discretisation //!	 of the edges. //!	NbIter: it is the maximum number of iterations of the process. //!	 For each iteration the number of discretisation points is //!	 increased. //!	Anisotropie:
+		%feature("autodoc", "	* Sets the parameters used for resolution. The default values of these parameters have been chosen for a good ratio quality/performance. Degree: it is the order of energy criterion to minimize for computing the deformation of the surface. The default value is 3 The recommanded value is i+2 where i is the maximum order of the constraints. NbPtsOnCur: it is the average number of points for discretisation of the edges. NbIter: it is the maximum number of iterations of the process. For each iteration the number of discretisation points is increased. Anisotropie:
 
 	:param Degree: default value is 3
 	:type Degree: int
@@ -2314,7 +1894,7 @@ class BRepFill_Filling {
 ") SetApproxParam;
 		void SetApproxParam (const Standard_Integer MaxDeg = 8,const Standard_Integer MaxSegments = 9);
 		%feature("compactdefaultargs") LoadInitSurface;
-		%feature("autodoc", "	* Loads the initial Surface
+		%feature("autodoc", "	* Loads the initial Surface The initial surface must have orthogonal local coordinates, i.e. partial derivatives dS/du and dS/dv must be orthogonal at each point of surface. If this condition breaks, distortions of resulting surface are possible.
 
 	:param aFace:
 	:type aFace: TopoDS_Face &
@@ -2322,7 +1902,7 @@ class BRepFill_Filling {
 ") LoadInitSurface;
 		void LoadInitSurface (const TopoDS_Face & aFace);
 		%feature("compactdefaultargs") Add;
-		%feature("autodoc", "	* Adds a new constraint which also defines an edge of the wire //!	 of the face //!	Order: Order of the constraint: //!	 GeomAbs_C0 : the surface has to pass by 3D representation //!	  of the edge //!	 GeomAbs_G1 : the surface has to pass by 3D representation //!	  of the edge and to respect tangency with the first //!	  face of the edge //!	 GeomAbs_G2 : the surface has to pass by 3D representation //!	  of the edge and to respect tangency and curvature //!	  with the first face of the edge.
+		%feature("autodoc", "	* Adds a new constraint which also defines an edge of the wire of the face Order: Order of the constraint: GeomAbs_C0 : the surface has to pass by 3D representation of the edge GeomAbs_G1 : the surface has to pass by 3D representation of the edge and to respect tangency with the first face of the edge GeomAbs_G2 : the surface has to pass by 3D representation of the edge and to respect tangency and curvature with the first face of the edge.
 
 	:param anEdge:
 	:type anEdge: TopoDS_Edge &
@@ -2334,7 +1914,7 @@ class BRepFill_Filling {
 ") Add;
 		Standard_Integer Add (const TopoDS_Edge & anEdge,const GeomAbs_Shape Order,const Standard_Boolean IsBound = Standard_True);
 		%feature("compactdefaultargs") Add;
-		%feature("autodoc", "	* Adds a new constraint which also defines an edge of the wire //!	 of the face //!	Order: Order of the constraint: //!	 GeomAbs_C0 : the surface has to pass by 3D representation //!	  of the edge //!	 GeomAbs_G1 : the surface has to pass by 3D representation //!	  of the edge and to respect tangency with the //!	  given face //!	 GeomAbs_G2 : the surface has to pass by 3D representation //!	  of the edge and to respect tangency and curvature //!	  with the given face.
+		%feature("autodoc", "	* Adds a new constraint which also defines an edge of the wire of the face Order: Order of the constraint: GeomAbs_C0 : the surface has to pass by 3D representation of the edge GeomAbs_G1 : the surface has to pass by 3D representation of the edge and to respect tangency with the given face GeomAbs_G2 : the surface has to pass by 3D representation of the edge and to respect tangency and curvature with the given face.
 
 	:param anEdge:
 	:type anEdge: TopoDS_Edge &
@@ -2348,7 +1928,7 @@ class BRepFill_Filling {
 ") Add;
 		Standard_Integer Add (const TopoDS_Edge & anEdge,const TopoDS_Face & Support,const GeomAbs_Shape Order,const Standard_Boolean IsBound = Standard_True);
 		%feature("compactdefaultargs") Add;
-		%feature("autodoc", "	* Adds a free constraint on a face. The corresponding edge has to //!	be automatically recomputed. //!	It is always a bound.
+		%feature("autodoc", "	* Adds a free constraint on a face. The corresponding edge has to be automatically recomputed. It is always a bound.
 
 	:param Support:
 	:type Support: TopoDS_Face &
@@ -2434,20 +2014,6 @@ class BRepFill_Filling {
 };
 
 
-%feature("shadow") BRepFill_Filling::~BRepFill_Filling %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Filling {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_Generator;
 class BRepFill_Generator {
 	public:
@@ -2488,20 +2054,6 @@ class BRepFill_Generator {
 };
 
 
-%feature("shadow") BRepFill_Generator::~BRepFill_Generator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Generator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape;
 class BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape : public TCollection_MapNode {
 	public:
@@ -2547,25 +2099,23 @@ class BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape : pu
 };
 
 
-%feature("shadow") BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape::~BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape {
-	Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape GetHandle() {
-	return *(Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape::Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape;
 class Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape : public Handle_TCollection_MapNode {
@@ -2583,20 +2133,6 @@ class Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfSha
 %extend Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape {
     BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape* GetObject() {
     return (BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape::~Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_IndexedDataMapNodeOfIndexedDataMapOfOrientedShapeListOfShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2710,20 +2246,6 @@ class BRepFill_IndexedDataMapOfOrientedShapeListOfShape : public TCollection_Bas
 };
 
 
-%feature("shadow") BRepFill_IndexedDataMapOfOrientedShapeListOfShape::~BRepFill_IndexedDataMapOfOrientedShapeListOfShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_IndexedDataMapOfOrientedShapeListOfShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_ListIteratorOfListOfOffsetWire;
 class BRepFill_ListIteratorOfListOfOffsetWire {
 	public:
@@ -2758,20 +2280,6 @@ class BRepFill_ListIteratorOfListOfOffsetWire {
 };
 
 
-%feature("shadow") BRepFill_ListIteratorOfListOfOffsetWire::~BRepFill_ListIteratorOfListOfOffsetWire %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_ListIteratorOfListOfOffsetWire {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_ListNodeOfListOfOffsetWire;
 class BRepFill_ListNodeOfListOfOffsetWire : public TCollection_MapNode {
 	public:
@@ -2790,25 +2298,23 @@ class BRepFill_ListNodeOfListOfOffsetWire : public TCollection_MapNode {
 };
 
 
-%feature("shadow") BRepFill_ListNodeOfListOfOffsetWire::~BRepFill_ListNodeOfListOfOffsetWire %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_ListNodeOfListOfOffsetWire {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_ListNodeOfListOfOffsetWire(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_ListNodeOfListOfOffsetWire {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_ListNodeOfListOfOffsetWire {
-	Handle_BRepFill_ListNodeOfListOfOffsetWire GetHandle() {
-	return *(Handle_BRepFill_ListNodeOfListOfOffsetWire*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_ListNodeOfListOfOffsetWire::Handle_BRepFill_ListNodeOfListOfOffsetWire %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_ListNodeOfListOfOffsetWire;
 class Handle_BRepFill_ListNodeOfListOfOffsetWire : public Handle_TCollection_MapNode {
@@ -2828,20 +2334,6 @@ class Handle_BRepFill_ListNodeOfListOfOffsetWire : public Handle_TCollection_Map
     return (BRepFill_ListNodeOfListOfOffsetWire*)$self->Access();
     }
 };
-%feature("shadow") Handle_BRepFill_ListNodeOfListOfOffsetWire::~Handle_BRepFill_ListNodeOfListOfOffsetWire %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_ListNodeOfListOfOffsetWire {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor BRepFill_ListOfOffsetWire;
 class BRepFill_ListOfOffsetWire {
@@ -2850,6 +2342,12 @@ class BRepFill_ListOfOffsetWire {
 		%feature("autodoc", "	:rtype: None
 ") BRepFill_ListOfOffsetWire;
 		 BRepFill_ListOfOffsetWire ();
+		%feature("compactdefaultargs") BRepFill_ListOfOffsetWire;
+		%feature("autodoc", "	:param Other:
+	:type Other: BRepFill_ListOfOffsetWire &
+	:rtype: None
+") BRepFill_ListOfOffsetWire;
+		 BRepFill_ListOfOffsetWire (const BRepFill_ListOfOffsetWire & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: BRepFill_ListOfOffsetWire &
@@ -2967,20 +2465,6 @@ class BRepFill_ListOfOffsetWire {
 };
 
 
-%feature("shadow") BRepFill_ListOfOffsetWire::~BRepFill_ListOfOffsetWire %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_ListOfOffsetWire {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_LocationLaw;
 class BRepFill_LocationLaw : public MMgt_TShared {
 	public:
@@ -3033,7 +2517,7 @@ class BRepFill_LocationLaw : public MMgt_TShared {
 	:type Index: int
 	:rtype: Handle_GeomFill_LocationLaw
 ") Law;
-		const Handle_GeomFill_LocationLaw & Law (const Standard_Integer Index);
+		Handle_GeomFill_LocationLaw Law (const Standard_Integer Index);
 		%feature("compactdefaultargs") Wire;
 		%feature("autodoc", "	* return the path
 
@@ -3073,7 +2557,7 @@ class BRepFill_LocationLaw : public MMgt_TShared {
 ") PerformVertex;
 		void PerformVertex (const Standard_Integer Index,const TopoDS_Vertex & InputVertex,const Standard_Real TolMin,TopoDS_Vertex & OutputVertex,const Standard_Integer Location = 0);
 		%feature("compactdefaultargs") CurvilinearBounds;
-		%feature("autodoc", "	* //!Return the Curvilinear Bounds of the <Index> Law
+		%feature("autodoc", "	* Return the Curvilinear Bounds of the <Index> Law
 
 	:param Index:
 	:type Index: int
@@ -3123,7 +2607,7 @@ class BRepFill_LocationLaw : public MMgt_TShared {
 ") Parameter;
 		void Parameter (const Standard_Real Abscissa,Standard_Integer &OutValue,Standard_Real &OutValue);
 		%feature("compactdefaultargs") Abscissa;
-		%feature("autodoc", "	* //!Return the curvilinear abscissa corresponding to a point  of the path, defined by <Index> of Edge and a parameter on the edge.
+		%feature("autodoc", "	* Return the curvilinear abscissa corresponding to a point of the path, defined by <Index> of Edge and a parameter on the edge.
 
 	:param Index:
 	:type Index: int
@@ -3135,25 +2619,23 @@ class BRepFill_LocationLaw : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepFill_LocationLaw::~BRepFill_LocationLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_LocationLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_LocationLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_LocationLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_LocationLaw {
-	Handle_BRepFill_LocationLaw GetHandle() {
-	return *(Handle_BRepFill_LocationLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_LocationLaw::Handle_BRepFill_LocationLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_LocationLaw;
 class Handle_BRepFill_LocationLaw : public Handle_MMgt_TShared {
@@ -3171,20 +2653,6 @@ class Handle_BRepFill_LocationLaw : public Handle_MMgt_TShared {
 %extend Handle_BRepFill_LocationLaw {
     BRepFill_LocationLaw* GetObject() {
     return (BRepFill_LocationLaw*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_LocationLaw::~Handle_BRepFill_LocationLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_LocationLaw {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3288,20 +2756,6 @@ class BRepFill_MultiLine {
 };
 
 
-%feature("shadow") BRepFill_MultiLine::~BRepFill_MultiLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_MultiLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BRepFill_MultiLineTool {
 	public:
 		%feature("compactdefaultargs") FirstParameter;
@@ -3415,20 +2869,6 @@ class BRepFill_MultiLineTool {
 };
 
 
-%feature("shadow") BRepFill_MultiLineTool::~BRepFill_MultiLineTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_MultiLineTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_MyLeastSquareOfComputeCLine;
 class BRepFill_MyLeastSquareOfComputeCLine {
 	public:
@@ -3471,20 +2911,6 @@ class BRepFill_MyLeastSquareOfComputeCLine {
 };
 
 
-%feature("shadow") BRepFill_MyLeastSquareOfComputeCLine::~BRepFill_MyLeastSquareOfComputeCLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_MyLeastSquareOfComputeCLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_OffsetAncestors;
 class BRepFill_OffsetAncestors {
 	public:
@@ -3525,20 +2951,6 @@ class BRepFill_OffsetAncestors {
 };
 
 
-%feature("shadow") BRepFill_OffsetAncestors::~BRepFill_OffsetAncestors %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_OffsetAncestors {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_OffsetWire;
 class BRepFill_OffsetWire {
 	public:
@@ -3551,9 +2963,11 @@ class BRepFill_OffsetWire {
 	:type Spine: TopoDS_Face &
 	:param Join: default value is GeomAbs_Arc
 	:type Join: GeomAbs_JoinType
+	:param IsOpenResult: default value is Standard_False
+	:type IsOpenResult: bool
 	:rtype: None
 ") BRepFill_OffsetWire;
-		 BRepFill_OffsetWire (const TopoDS_Face & Spine,const GeomAbs_JoinType Join = GeomAbs_Arc);
+		 BRepFill_OffsetWire (const TopoDS_Face & Spine,const GeomAbs_JoinType Join = GeomAbs_Arc,const Standard_Boolean IsOpenResult = Standard_False);
 		%feature("compactdefaultargs") Init;
 		%feature("autodoc", "	* Initialize the evaluation of Offseting.
 
@@ -3561,9 +2975,11 @@ class BRepFill_OffsetWire {
 	:type Spine: TopoDS_Face &
 	:param Join: default value is GeomAbs_Arc
 	:type Join: GeomAbs_JoinType
+	:param IsOpenResult: default value is Standard_False
+	:type IsOpenResult: bool
 	:rtype: None
 ") Init;
-		void Init (const TopoDS_Face & Spine,const GeomAbs_JoinType Join = GeomAbs_Arc);
+		void Init (const TopoDS_Face & Spine,const GeomAbs_JoinType Join = GeomAbs_Arc,const Standard_Boolean IsOpenResult = Standard_False);
 		%feature("compactdefaultargs") Perform;
 		%feature("autodoc", "	* Performs an OffsetWire at an altitude <Alt> from the face ( According to the orientation of the face)
 
@@ -3621,20 +3037,6 @@ class BRepFill_OffsetWire {
 };
 
 
-%feature("shadow") BRepFill_OffsetWire::~BRepFill_OffsetWire %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_OffsetWire {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_Pipe;
 class BRepFill_Pipe {
 	public:
@@ -3678,6 +3080,10 @@ class BRepFill_Pipe {
 		%feature("autodoc", "	:rtype: TopoDS_Shape
 ") Shape;
 		const TopoDS_Shape  Shape ();
+		%feature("compactdefaultargs") ErrorOnSurface;
+		%feature("autodoc", "	:rtype: float
+") ErrorOnSurface;
+		Standard_Real ErrorOnSurface ();
 		%feature("compactdefaultargs") FirstShape;
 		%feature("autodoc", "	:rtype: TopoDS_Shape
 ") FirstShape;
@@ -3725,25 +3131,11 @@ class BRepFill_Pipe {
 };
 
 
-%feature("shadow") BRepFill_Pipe::~BRepFill_Pipe %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Pipe {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_PipeShell;
 class BRepFill_PipeShell : public MMgt_TShared {
 	public:
 		%feature("compactdefaultargs") BRepFill_PipeShell;
-		%feature("autodoc", "	* Set an sweep's mode  If no mode are setted, the mode use in MakePipe is used
+		%feature("autodoc", "	* Set an sweep's mode If no mode are setted, the mode use in MakePipe is used
 
 	:param Spine:
 	:type Spine: TopoDS_Wire &
@@ -3765,7 +3157,7 @@ class BRepFill_PipeShell : public MMgt_TShared {
 ") SetDiscrete;
 		void SetDiscrete ();
 		%feature("compactdefaultargs") Set;
-		%feature("autodoc", "	* Set an fixed trihedron to perform the sweeping  all sections will be parallel.
+		%feature("autodoc", "	* Set an fixed trihedron to perform the sweeping all sections will be parallel.
 
 	:param Axe:
 	:type Axe: gp_Ax2
@@ -3800,8 +3192,24 @@ class BRepFill_PipeShell : public MMgt_TShared {
 	:rtype: None
 ") Set;
 		void Set (const TopoDS_Wire & AuxiliarySpine,const Standard_Boolean CurvilinearEquivalence = Standard_True,const BRepFill_TypeOfContact KeepContact = BRepFill_NoContact);
+		%feature("compactdefaultargs") SetMaxDegree;
+		%feature("autodoc", "	* Define the maximum V degree of resulting surface
+
+	:param NewMaxDegree:
+	:type NewMaxDegree: int
+	:rtype: None
+") SetMaxDegree;
+		void SetMaxDegree (const Standard_Integer NewMaxDegree);
+		%feature("compactdefaultargs") SetMaxSegments;
+		%feature("autodoc", "	* Define the maximum number of spans in V-direction on resulting surface
+
+	:param NewMaxSegments:
+	:type NewMaxSegments: int
+	:rtype: None
+") SetMaxSegments;
+		void SetMaxSegments (const Standard_Integer NewMaxSegments);
 		%feature("compactdefaultargs") SetForceApproxC1;
-		%feature("autodoc", "	* Set the flag that indicates attempt to approximate a C1-continuous surface if a swept surface proved to be C0. Give section to sweep. Possibilities are : //!	- Give one or sevral profile - Give one profile and an homotetic law. - Automatic compute of correspondance beetween profile, and section  on the sweeped shape - correspondance beetween profile, and section on the sweeped shape defined by a vertex of the spine
+		%feature("autodoc", "	* Set the flag that indicates attempt to approximate a C1-continuous surface if a swept surface proved to be C0. Give section to sweep. Possibilities are : - Give one or sevral profile - Give one profile and an homotetic law. - Automatic compute of correspondance beetween profile, and section on the sweeped shape - correspondance beetween profile, and section on the sweeped shape defined by a vertex of the spine
 
 	:param ForceApproxC1:
 	:type ForceApproxC1: bool
@@ -3907,7 +3315,7 @@ class BRepFill_PipeShell : public MMgt_TShared {
 ") SetTransition;
 		void SetTransition (const BRepFill_TransitionStyle Mode = BRepFill_Modified,const Standard_Real Angmin = 1.0e-2,const Standard_Real Angmax = 6.0);
 		%feature("compactdefaultargs") Simulate;
-		%feature("autodoc", "	* Perform simulation of the sweep :  Somes Section are returned.
+		%feature("autodoc", "	* Perform simulation of the sweep : Somes Section are returned.
 
 	:param NumberOfSection:
 	:type NumberOfSection: int
@@ -3934,6 +3342,10 @@ class BRepFill_PipeShell : public MMgt_TShared {
 	:rtype: TopoDS_Shape
 ") Shape;
 		const TopoDS_Shape  Shape ();
+		%feature("compactdefaultargs") ErrorOnSurface;
+		%feature("autodoc", "	:rtype: float
+") ErrorOnSurface;
+		Standard_Real ErrorOnSurface ();
 		%feature("compactdefaultargs") FirstShape;
 		%feature("autodoc", "	* Returns the TopoDS Shape of the bottom of the sweep.
 
@@ -3959,25 +3371,23 @@ class BRepFill_PipeShell : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepFill_PipeShell::~BRepFill_PipeShell %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_PipeShell {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_PipeShell(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_PipeShell {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_PipeShell {
-	Handle_BRepFill_PipeShell GetHandle() {
-	return *(Handle_BRepFill_PipeShell*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_PipeShell::Handle_BRepFill_PipeShell %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_PipeShell;
 class Handle_BRepFill_PipeShell : public Handle_MMgt_TShared {
@@ -3995,20 +3405,6 @@ class Handle_BRepFill_PipeShell : public Handle_MMgt_TShared {
 %extend Handle_BRepFill_PipeShell {
     BRepFill_PipeShell* GetObject() {
     return (BRepFill_PipeShell*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_PipeShell::~Handle_BRepFill_PipeShell %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_PipeShell {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4060,20 +3456,6 @@ class BRepFill_Section {
 };
 
 
-%feature("shadow") BRepFill_Section::~BRepFill_Section %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Section {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_SectionLaw;
 class BRepFill_SectionLaw : public MMgt_TShared {
 	public:
@@ -4086,7 +3468,7 @@ class BRepFill_SectionLaw : public MMgt_TShared {
 	:type Index: int
 	:rtype: Handle_GeomFill_SectionLaw
 ") Law;
-		const Handle_GeomFill_SectionLaw & Law (const Standard_Integer Index);
+		Handle_GeomFill_SectionLaw Law (const Standard_Integer Index);
 		%feature("compactdefaultargs") IsConstant;
 		%feature("autodoc", "	:rtype: bool
 ") IsConstant;
@@ -4154,25 +3536,23 @@ class BRepFill_SectionLaw : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepFill_SectionLaw::~BRepFill_SectionLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_SectionLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_SectionLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_SectionLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_SectionLaw {
-	Handle_BRepFill_SectionLaw GetHandle() {
-	return *(Handle_BRepFill_SectionLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_SectionLaw::Handle_BRepFill_SectionLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_SectionLaw;
 class Handle_BRepFill_SectionLaw : public Handle_MMgt_TShared {
@@ -4190,20 +3570,6 @@ class Handle_BRepFill_SectionLaw : public Handle_MMgt_TShared {
 %extend Handle_BRepFill_SectionLaw {
     BRepFill_SectionLaw* GetObject() {
     return (BRepFill_SectionLaw*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_SectionLaw::~Handle_BRepFill_SectionLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_SectionLaw {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4251,20 +3617,6 @@ class BRepFill_SectionPlacement {
 };
 
 
-%feature("shadow") BRepFill_SectionPlacement::~BRepFill_SectionPlacement %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_SectionPlacement {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder;
 class BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder : public TCollection_SeqNode {
 	public:
@@ -4285,25 +3637,23 @@ class BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder : public TCollection_Seq
 };
 
 
-%feature("shadow") BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder::~BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder {
-	Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder GetHandle() {
-	return *(Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder::Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder;
 class Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder : public Handle_TCollection_SeqNode {
@@ -4321,20 +3671,6 @@ class Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder : public Handle_T
 %extend Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder {
     BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder* GetObject() {
     return (BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder::~Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_SequenceNodeOfSequenceOfEdgeFaceAndOrder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4358,25 +3694,23 @@ class BRepFill_SequenceNodeOfSequenceOfFaceAndOrder : public TCollection_SeqNode
 };
 
 
-%feature("shadow") BRepFill_SequenceNodeOfSequenceOfFaceAndOrder::~BRepFill_SequenceNodeOfSequenceOfFaceAndOrder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_SequenceNodeOfSequenceOfFaceAndOrder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_SequenceNodeOfSequenceOfFaceAndOrder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_SequenceNodeOfSequenceOfFaceAndOrder {
-	Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder GetHandle() {
-	return *(Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder::Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder;
 class Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder : public Handle_TCollection_SeqNode {
@@ -4394,20 +3728,6 @@ class Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder : public Handle_TColl
 %extend Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder {
     BRepFill_SequenceNodeOfSequenceOfFaceAndOrder* GetObject() {
     return (BRepFill_SequenceNodeOfSequenceOfFaceAndOrder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder::~Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_SequenceNodeOfSequenceOfFaceAndOrder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4431,25 +3751,23 @@ class BRepFill_SequenceNodeOfSequenceOfSection : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") BRepFill_SequenceNodeOfSequenceOfSection::~BRepFill_SequenceNodeOfSequenceOfSection %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_SequenceNodeOfSequenceOfSection {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_SequenceNodeOfSequenceOfSection(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_SequenceNodeOfSequenceOfSection {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_SequenceNodeOfSequenceOfSection {
-	Handle_BRepFill_SequenceNodeOfSequenceOfSection GetHandle() {
-	return *(Handle_BRepFill_SequenceNodeOfSequenceOfSection*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_SequenceNodeOfSequenceOfSection::Handle_BRepFill_SequenceNodeOfSequenceOfSection %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_SequenceNodeOfSequenceOfSection;
 class Handle_BRepFill_SequenceNodeOfSequenceOfSection : public Handle_TCollection_SeqNode {
@@ -4469,20 +3787,6 @@ class Handle_BRepFill_SequenceNodeOfSequenceOfSection : public Handle_TCollectio
     return (BRepFill_SequenceNodeOfSequenceOfSection*)$self->Access();
     }
 };
-%feature("shadow") Handle_BRepFill_SequenceNodeOfSequenceOfSection::~Handle_BRepFill_SequenceNodeOfSequenceOfSection %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_SequenceNodeOfSequenceOfSection {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor BRepFill_SequenceOfEdgeFaceAndOrder;
 class BRepFill_SequenceOfEdgeFaceAndOrder : public TCollection_BaseSequence {
@@ -4491,6 +3795,12 @@ class BRepFill_SequenceOfEdgeFaceAndOrder : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") BRepFill_SequenceOfEdgeFaceAndOrder;
 		 BRepFill_SequenceOfEdgeFaceAndOrder ();
+		%feature("compactdefaultargs") BRepFill_SequenceOfEdgeFaceAndOrder;
+		%feature("autodoc", "	:param Other:
+	:type Other: BRepFill_SequenceOfEdgeFaceAndOrder &
+	:rtype: None
+") BRepFill_SequenceOfEdgeFaceAndOrder;
+		 BRepFill_SequenceOfEdgeFaceAndOrder (const BRepFill_SequenceOfEdgeFaceAndOrder & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -4616,20 +3926,6 @@ class BRepFill_SequenceOfEdgeFaceAndOrder : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") BRepFill_SequenceOfEdgeFaceAndOrder::~BRepFill_SequenceOfEdgeFaceAndOrder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_SequenceOfEdgeFaceAndOrder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_SequenceOfFaceAndOrder;
 class BRepFill_SequenceOfFaceAndOrder : public TCollection_BaseSequence {
 	public:
@@ -4637,6 +3933,12 @@ class BRepFill_SequenceOfFaceAndOrder : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") BRepFill_SequenceOfFaceAndOrder;
 		 BRepFill_SequenceOfFaceAndOrder ();
+		%feature("compactdefaultargs") BRepFill_SequenceOfFaceAndOrder;
+		%feature("autodoc", "	:param Other:
+	:type Other: BRepFill_SequenceOfFaceAndOrder &
+	:rtype: None
+") BRepFill_SequenceOfFaceAndOrder;
+		 BRepFill_SequenceOfFaceAndOrder (const BRepFill_SequenceOfFaceAndOrder & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -4762,20 +4064,6 @@ class BRepFill_SequenceOfFaceAndOrder : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") BRepFill_SequenceOfFaceAndOrder::~BRepFill_SequenceOfFaceAndOrder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_SequenceOfFaceAndOrder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_SequenceOfSection;
 class BRepFill_SequenceOfSection : public TCollection_BaseSequence {
 	public:
@@ -4783,6 +4071,12 @@ class BRepFill_SequenceOfSection : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") BRepFill_SequenceOfSection;
 		 BRepFill_SequenceOfSection ();
+		%feature("compactdefaultargs") BRepFill_SequenceOfSection;
+		%feature("autodoc", "	:param Other:
+	:type Other: BRepFill_SequenceOfSection &
+	:rtype: None
+") BRepFill_SequenceOfSection;
+		 BRepFill_SequenceOfSection (const BRepFill_SequenceOfSection & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -4908,20 +4202,6 @@ class BRepFill_SequenceOfSection : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") BRepFill_SequenceOfSection::~BRepFill_SequenceOfSection %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_SequenceOfSection {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_Sweep;
 class BRepFill_Sweep {
 	public:
@@ -4944,7 +4224,7 @@ class BRepFill_Sweep {
 ") SetBounds;
 		void SetBounds (const TopoDS_Wire & FirstShape,const TopoDS_Wire & LastShape);
 		%feature("compactdefaultargs") SetTolerance;
-		%feature("autodoc", "	* Set Approximation Tolerance Tol3d : Tolerance to surface approximation Tol2d : Tolerance used to perform curve approximation  Normaly the 2d curve are approximated with a  tolerance given by the resolution on support surfaces,  but if this tolerance is too large Tol2d is used. TolAngular : Tolerance (in radian) to control the angle  beetween tangents on the section law and  tangent of iso-v on approximed surface
+		%feature("autodoc", "	* Set Approximation Tolerance Tol3d : Tolerance to surface approximation Tol2d : Tolerance used to perform curve approximation Normaly the 2d curve are approximated with a tolerance given by the resolution on support surfaces, but if this tolerance is too large Tol2d is used. TolAngular : Tolerance (in radian) to control the angle beetween tangents on the section law and tangent of iso-v on approximed surface
 
 	:param Tol3d:
 	:type Tol3d: float
@@ -4958,7 +4238,7 @@ class BRepFill_Sweep {
 ") SetTolerance;
 		void SetTolerance (const Standard_Real Tol3d,const Standard_Real BoundTol = 1.0,const Standard_Real Tol2d = 1.0e-5,const Standard_Real TolAngular = 1.0e-2);
 		%feature("compactdefaultargs") SetAngularControl;
-		%feature("autodoc", "	* Tolerance To controle Corner management. If the discontinuity is lesser than <AngleMin> in radian The Transition Performed will be alway 'Modified'
+		%feature("autodoc", "	* Tolerance To controle Corner management. //! If the discontinuity is lesser than <AngleMin> in radian The Transition Performed will be alway 'Modified'
 
 	:param AngleMin: default value is 0.01
 	:type AngleMin: float
@@ -4976,12 +4256,14 @@ class BRepFill_Sweep {
 ") SetForceApproxC1;
 		void SetForceApproxC1 (const Standard_Boolean ForceApproxC1);
 		%feature("compactdefaultargs") Build;
-		%feature("autodoc", "	* Build the Sweeep Surface Transition define Transition strategy Approx define Approximation Strategy - GeomFill_Section : The composed Function Location X Section  is directly approximed. - GeomFill_Location : The location law is approximed, and the  SweepSurface is bulid algebric composition  of approximed location law and section law  This option is Ok, if Section.Surface() methode  is effective. Continuity : The continuity in v waiting on the surface Degmax : The maximum degree in v requiered on the surface Segmax : The maximum number of span in v requiered on  the surface.
+		%feature("autodoc", "	* Build the Sweeep Surface Transition define Transition strategy Approx define Approximation Strategy - GeomFill_Section : The composed Function Location X Section is directly approximed. - GeomFill_Location : The location law is approximed, and the SweepSurface is bulid algebric composition of approximed location law and section law This option is Ok, if Section.Surface() methode is effective. Continuity : The continuity in v waiting on the surface Degmax : The maximum degree in v requiered on the surface Segmax : The maximum number of span in v requiered on the surface.
 
 	:param ReversedEdges:
 	:type ReversedEdges: TopTools_MapOfShape &
 	:param Tapes:
 	:type Tapes: BRepFill_DataMapOfShapeHArray2OfShape &
+	:param Rails:
+	:type Rails: BRepFill_DataMapOfShapeHArray2OfShape &
 	:param Transition: default value is BRepFill_Modified
 	:type Transition: BRepFill_TransitionStyle
 	:param Continuity: default value is GeomAbs_C2
@@ -4994,7 +4276,7 @@ class BRepFill_Sweep {
 	:type Segmax: int
 	:rtype: None
 ") Build;
-		void Build (TopTools_MapOfShape & ReversedEdges,BRepFill_DataMapOfShapeHArray2OfShape & Tapes,const BRepFill_TransitionStyle Transition = BRepFill_Modified,const GeomAbs_Shape Continuity = GeomAbs_C2,const GeomFill_ApproxStyle Approx = GeomFill_Location,const Standard_Integer Degmax = 11,const Standard_Integer Segmax = 30);
+		void Build (TopTools_MapOfShape & ReversedEdges,BRepFill_DataMapOfShapeHArray2OfShape & Tapes,BRepFill_DataMapOfShapeHArray2OfShape & Rails,const BRepFill_TransitionStyle Transition = BRepFill_Modified,const GeomAbs_Shape Continuity = GeomAbs_C2,const GeomFill_ApproxStyle Approx = GeomFill_Location,const Standard_Integer Degmax = 11,const Standard_Integer Segmax = 30);
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	* Say if the Shape is Build.
 
@@ -5028,20 +4310,6 @@ class BRepFill_Sweep {
 };
 
 
-%feature("shadow") BRepFill_Sweep::~BRepFill_Sweep %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_Sweep {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_TrimEdgeTool;
 class BRepFill_TrimEdgeTool {
 	public:
@@ -5092,20 +4360,6 @@ class BRepFill_TrimEdgeTool {
 };
 
 
-%feature("shadow") BRepFill_TrimEdgeTool::~BRepFill_TrimEdgeTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_TrimEdgeTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_TrimShellCorner;
 class BRepFill_TrimShellCorner {
 	public:
@@ -5172,20 +4426,6 @@ class BRepFill_TrimShellCorner {
 };
 
 
-%feature("shadow") BRepFill_TrimShellCorner::~BRepFill_TrimShellCorner %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_TrimShellCorner {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_TrimSurfaceTool;
 class BRepFill_TrimSurfaceTool {
 	public:
@@ -5256,20 +4496,6 @@ class BRepFill_TrimSurfaceTool {
 };
 
 
-%feature("shadow") BRepFill_TrimSurfaceTool::~BRepFill_TrimSurfaceTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepFill_TrimSurfaceTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepFill_ACRLaw;
 class BRepFill_ACRLaw : public BRepFill_LocationLaw {
 	public:
@@ -5284,25 +4510,23 @@ class BRepFill_ACRLaw : public BRepFill_LocationLaw {
 };
 
 
-%feature("shadow") BRepFill_ACRLaw::~BRepFill_ACRLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_ACRLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_ACRLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_ACRLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_ACRLaw {
-	Handle_BRepFill_ACRLaw GetHandle() {
-	return *(Handle_BRepFill_ACRLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_ACRLaw::Handle_BRepFill_ACRLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_ACRLaw;
 class Handle_BRepFill_ACRLaw : public Handle_BRepFill_LocationLaw {
@@ -5322,20 +4546,6 @@ class Handle_BRepFill_ACRLaw : public Handle_BRepFill_LocationLaw {
     return (BRepFill_ACRLaw*)$self->Access();
     }
 };
-%feature("shadow") Handle_BRepFill_ACRLaw::~Handle_BRepFill_ACRLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_ACRLaw {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor BRepFill_Edge3DLaw;
 class BRepFill_Edge3DLaw : public BRepFill_LocationLaw {
@@ -5351,25 +4561,23 @@ class BRepFill_Edge3DLaw : public BRepFill_LocationLaw {
 };
 
 
-%feature("shadow") BRepFill_Edge3DLaw::~BRepFill_Edge3DLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_Edge3DLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_Edge3DLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_Edge3DLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_Edge3DLaw {
-	Handle_BRepFill_Edge3DLaw GetHandle() {
-	return *(Handle_BRepFill_Edge3DLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_Edge3DLaw::Handle_BRepFill_Edge3DLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_Edge3DLaw;
 class Handle_BRepFill_Edge3DLaw : public Handle_BRepFill_LocationLaw {
@@ -5387,20 +4595,6 @@ class Handle_BRepFill_Edge3DLaw : public Handle_BRepFill_LocationLaw {
 %extend Handle_BRepFill_Edge3DLaw {
     BRepFill_Edge3DLaw* GetObject() {
     return (BRepFill_Edge3DLaw*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_Edge3DLaw::~Handle_BRepFill_Edge3DLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_Edge3DLaw {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5424,25 +4618,23 @@ class BRepFill_EdgeOnSurfLaw : public BRepFill_LocationLaw {
 };
 
 
-%feature("shadow") BRepFill_EdgeOnSurfLaw::~BRepFill_EdgeOnSurfLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_EdgeOnSurfLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_EdgeOnSurfLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_EdgeOnSurfLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_EdgeOnSurfLaw {
-	Handle_BRepFill_EdgeOnSurfLaw GetHandle() {
-	return *(Handle_BRepFill_EdgeOnSurfLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_EdgeOnSurfLaw::Handle_BRepFill_EdgeOnSurfLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_EdgeOnSurfLaw;
 class Handle_BRepFill_EdgeOnSurfLaw : public Handle_BRepFill_LocationLaw {
@@ -5460,20 +4652,6 @@ class Handle_BRepFill_EdgeOnSurfLaw : public Handle_BRepFill_LocationLaw {
 %extend Handle_BRepFill_EdgeOnSurfLaw {
     BRepFill_EdgeOnSurfLaw* GetObject() {
     return (BRepFill_EdgeOnSurfLaw*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_EdgeOnSurfLaw::~Handle_BRepFill_EdgeOnSurfLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_EdgeOnSurfLaw {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5561,25 +4739,23 @@ class BRepFill_NSections : public BRepFill_SectionLaw {
 };
 
 
-%feature("shadow") BRepFill_NSections::~BRepFill_NSections %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_NSections {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_NSections(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_NSections {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_NSections {
-	Handle_BRepFill_NSections GetHandle() {
-	return *(Handle_BRepFill_NSections*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_NSections::Handle_BRepFill_NSections %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_NSections;
 class Handle_BRepFill_NSections : public Handle_BRepFill_SectionLaw {
@@ -5597,20 +4773,6 @@ class Handle_BRepFill_NSections : public Handle_BRepFill_SectionLaw {
 %extend Handle_BRepFill_NSections {
     BRepFill_NSections* GetObject() {
     return (BRepFill_NSections*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_NSections::~Handle_BRepFill_NSections %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_NSections {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5708,25 +4870,23 @@ class BRepFill_ShapeLaw : public BRepFill_SectionLaw {
 };
 
 
-%feature("shadow") BRepFill_ShapeLaw::~BRepFill_ShapeLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_ShapeLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_ShapeLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_ShapeLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_ShapeLaw {
-	Handle_BRepFill_ShapeLaw GetHandle() {
-	return *(Handle_BRepFill_ShapeLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_ShapeLaw::Handle_BRepFill_ShapeLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_ShapeLaw;
 class Handle_BRepFill_ShapeLaw : public Handle_BRepFill_SectionLaw {
@@ -5744,20 +4904,6 @@ class Handle_BRepFill_ShapeLaw : public Handle_BRepFill_SectionLaw {
 %extend Handle_BRepFill_ShapeLaw {
     BRepFill_ShapeLaw* GetObject() {
     return (BRepFill_ShapeLaw*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_ShapeLaw::~Handle_BRepFill_ShapeLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_ShapeLaw {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5783,25 +4929,23 @@ class BRepFill_DraftLaw : public BRepFill_Edge3DLaw {
 };
 
 
-%feature("shadow") BRepFill_DraftLaw::~BRepFill_DraftLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepFill_DraftLaw {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepFill_DraftLaw(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepFill_DraftLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepFill_DraftLaw {
-	Handle_BRepFill_DraftLaw GetHandle() {
-	return *(Handle_BRepFill_DraftLaw*) &$self;
-	}
-};
+%pythonappend Handle_BRepFill_DraftLaw::Handle_BRepFill_DraftLaw %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepFill_DraftLaw;
 class Handle_BRepFill_DraftLaw : public Handle_BRepFill_Edge3DLaw {
@@ -5819,20 +4963,6 @@ class Handle_BRepFill_DraftLaw : public Handle_BRepFill_Edge3DLaw {
 %extend Handle_BRepFill_DraftLaw {
     BRepFill_DraftLaw* GetObject() {
     return (BRepFill_DraftLaw*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepFill_DraftLaw::~Handle_BRepFill_DraftLaw %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepFill_DraftLaw {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

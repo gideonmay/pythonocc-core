@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include StlAPI_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class StlAPI {
 	public:
 		%feature("compactdefaultargs") Write;
-		%feature("autodoc", "	* Convert and write shape to STL format.  file is written in binary if aAsciiMode is False  otherwise it is written in Ascii (by default)
+		%feature("autodoc", "	* Convert and write shape to STL format. file is written in binary if aAsciiMode is False otherwise it is written in Ascii (by default)
 
 	:param aShape:
 	:type aShape: TopoDS_Shape &
@@ -68,20 +84,6 @@ class StlAPI {
 };
 
 
-%feature("shadow") StlAPI::~StlAPI %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend StlAPI {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor StlAPI_Reader;
 class StlAPI_Reader {
 	public:
@@ -100,20 +102,6 @@ class StlAPI_Reader {
 };
 
 
-%feature("shadow") StlAPI_Reader::~StlAPI_Reader %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend StlAPI_Reader {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor StlAPI_Writer;
 class StlAPI_Writer {
 	public:
@@ -180,17 +168,3 @@ class StlAPI_Writer {
 };
 
 
-%feature("shadow") StlAPI_Writer::~StlAPI_Writer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend StlAPI_Writer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

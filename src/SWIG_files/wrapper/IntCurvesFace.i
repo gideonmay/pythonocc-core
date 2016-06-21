@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include IntCurvesFace_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class IntCurvesFace_Intersector {
 	public:
 		%feature("compactdefaultargs") IntCurvesFace_Intersector;
-		%feature("autodoc", "	* Load a Face.  The Tolerance <Tol> is used to determine if the first point of the segment is near the face. In that case, the parameter of the intersection point on the line can be a negative value (greater than -Tol).
+		%feature("autodoc", "	* Load a Face. //! The Tolerance <Tol> is used to determine if the first point of the segment is near the face. In that case, the parameter of the intersection point on the line can be a negative value (greater than -Tol).
 
 	:param F:
 	:type F: TopoDS_Face &
@@ -54,7 +70,7 @@ class IntCurvesFace_Intersector {
 ") IntCurvesFace_Intersector;
 		 IntCurvesFace_Intersector (const TopoDS_Face & F,const Standard_Real aTol);
 		%feature("compactdefaultargs") Perform;
-		%feature("autodoc", "	* Perform the intersection between the segment L and the loaded face.  PInf is the smallest parameter on the line PSup is the highest parmaeter on the line  For an infinite line PInf and PSup can be +/- RealLast.
+		%feature("autodoc", "	* Perform the intersection between the segment L and the loaded face. //! PInf is the smallest parameter on the line PSup is the highest parmaeter on the line //! For an infinite line PInf and PSup can be +/- RealLast.
 
 	:param L:
 	:type L: gp_Lin
@@ -164,20 +180,6 @@ class IntCurvesFace_Intersector {
 };
 
 
-%feature("shadow") IntCurvesFace_Intersector::~IntCurvesFace_Intersector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend IntCurvesFace_Intersector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor IntCurvesFace_ShapeIntersector;
 class IntCurvesFace_ShapeIntersector {
 	public:
@@ -194,7 +196,7 @@ class IntCurvesFace_ShapeIntersector {
 ") Load;
 		void Load (const TopoDS_Shape & Sh,const Standard_Real Tol);
 		%feature("compactdefaultargs") Perform;
-		%feature("autodoc", "	* Perform the intersection between the segment L and the loaded shape.  PInf is the smallest parameter on the line PSup is the highest parammter on the line  For an infinite line PInf and PSup can be +/- RealLast.
+		%feature("autodoc", "	* Perform the intersection between the segment L and the loaded shape. //! PInf is the smallest parameter on the line PSup is the highest parammter on the line //! For an infinite line PInf and PSup can be +/- RealLast.
 
 	:param L:
 	:type L: gp_Lin
@@ -206,7 +208,7 @@ class IntCurvesFace_ShapeIntersector {
 ") Perform;
 		void Perform (const gp_Lin & L,const Standard_Real PInf,const Standard_Real PSup);
 		%feature("compactdefaultargs") PerformNearest;
-		%feature("autodoc", "	* Perform the intersection between the segment L and the loaded shape.  PInf is the smallest parameter on the line PSup is the highest parammter on the line  For an infinite line PInf and PSup can be +/- RealLast.
+		%feature("autodoc", "	* Perform the intersection between the segment L and the loaded shape. //! PInf is the smallest parameter on the line PSup is the highest parammter on the line //! For an infinite line PInf and PSup can be +/- RealLast.
 
 	:param L:
 	:type L: gp_Lin
@@ -308,17 +310,3 @@ class IntCurvesFace_ShapeIntersector {
 };
 
 
-%feature("shadow") IntCurvesFace_ShapeIntersector::~IntCurvesFace_ShapeIntersector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend IntCurvesFace_ShapeIntersector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

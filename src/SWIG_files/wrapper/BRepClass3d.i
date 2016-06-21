@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepClass3d_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -54,20 +70,6 @@ class BRepClass3d {
 };
 
 
-%feature("shadow") BRepClass3d::~BRepClass3d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_DataMapIteratorOfMapOfInter;
 class BRepClass3d_DataMapIteratorOfMapOfInter : public TCollection_BasicMapIterator {
 	public:
@@ -98,20 +100,6 @@ class BRepClass3d_DataMapIteratorOfMapOfInter : public TCollection_BasicMapItera
 };
 
 
-%feature("shadow") BRepClass3d_DataMapIteratorOfMapOfInter::~BRepClass3d_DataMapIteratorOfMapOfInter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_DataMapIteratorOfMapOfInter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_DataMapNodeOfMapOfInter;
 class BRepClass3d_DataMapNodeOfMapOfInter : public TCollection_MapNode {
 	public:
@@ -136,25 +124,23 @@ class BRepClass3d_DataMapNodeOfMapOfInter : public TCollection_MapNode {
 };
 
 
-%feature("shadow") BRepClass3d_DataMapNodeOfMapOfInter::~BRepClass3d_DataMapNodeOfMapOfInter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepClass3d_DataMapNodeOfMapOfInter {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepClass3d_DataMapNodeOfMapOfInter(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepClass3d_DataMapNodeOfMapOfInter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepClass3d_DataMapNodeOfMapOfInter {
-	Handle_BRepClass3d_DataMapNodeOfMapOfInter GetHandle() {
-	return *(Handle_BRepClass3d_DataMapNodeOfMapOfInter*) &$self;
-	}
-};
+%pythonappend Handle_BRepClass3d_DataMapNodeOfMapOfInter::Handle_BRepClass3d_DataMapNodeOfMapOfInter %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepClass3d_DataMapNodeOfMapOfInter;
 class Handle_BRepClass3d_DataMapNodeOfMapOfInter : public Handle_TCollection_MapNode {
@@ -174,20 +160,6 @@ class Handle_BRepClass3d_DataMapNodeOfMapOfInter : public Handle_TCollection_Map
     return (BRepClass3d_DataMapNodeOfMapOfInter*)$self->Access();
     }
 };
-%feature("shadow") Handle_BRepClass3d_DataMapNodeOfMapOfInter::~Handle_BRepClass3d_DataMapNodeOfMapOfInter %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepClass3d_DataMapNodeOfMapOfInter {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor BRepClass3d_Intersector3d;
 class BRepClass3d_Intersector3d {
@@ -199,7 +171,7 @@ class BRepClass3d_Intersector3d {
 ") BRepClass3d_Intersector3d;
 		 BRepClass3d_Intersector3d ();
 		%feature("compactdefaultargs") Perform;
-		%feature("autodoc", "	* Perform the intersection between the segment L(0) ... L(Prm) and the Shape <Sh>.  Only the point with the smallest parameter on the line is returned.  The Tolerance <Tol> is used to determine if the first point of the segment is near the face. In that case, the parameter of the intersection point on the line can be a negative value (greater than -Tol).
+		%feature("autodoc", "	* Perform the intersection between the segment L(0) ... L(Prm) and the Shape <Sh>. //! Only the point with the smallest parameter on the line is returned. //! The Tolerance <Tol> is used to determine if the first point of the segment is near the face. In that case, the parameter of the intersection point on the line can be a negative value (greater than -Tol).
 
 	:param L:
 	:type L: gp_Lin
@@ -269,20 +241,6 @@ class BRepClass3d_Intersector3d {
 };
 
 
-%feature("shadow") BRepClass3d_Intersector3d::~BRepClass3d_Intersector3d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_Intersector3d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_MapOfInter;
 class BRepClass3d_MapOfInter : public TCollection_BasicMap {
 	public:
@@ -361,20 +319,6 @@ class BRepClass3d_MapOfInter : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepClass3d_MapOfInter::~BRepClass3d_MapOfInter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_MapOfInter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_SClassifier;
 class BRepClass3d_SClassifier {
 	public:
@@ -437,7 +381,7 @@ class BRepClass3d_SClassifier {
 ") IsOnAFace;
 		Standard_Boolean IsOnAFace ();
 		%feature("compactdefaultargs") Face;
-		%feature("autodoc", "	* Returns the face used to determine the classification. When the state is ON, this is the face containing the point.  When Rejected() returns True, Face() has no signification.
+		%feature("autodoc", "	* Returns the face used to determine the classification. When the state is ON, this is the face containing the point. //! When Rejected() returns True, Face() has no signification.
 
 	:rtype: TopoDS_Face
 ") Face;
@@ -445,20 +389,6 @@ class BRepClass3d_SClassifier {
 };
 
 
-%feature("shadow") BRepClass3d_SClassifier::~BRepClass3d_SClassifier %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_SClassifier {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_SolidExplorer;
 class BRepClass3d_SolidExplorer {
 	public:
@@ -499,7 +429,7 @@ class BRepClass3d_SolidExplorer {
 ") Reject;
 		virtual Standard_Boolean Reject (const gp_Pnt & P);
 		%feature("compactdefaultargs") FindAPointInTheFace;
-		%feature("autodoc", "	* compute a point P in the face F. Param is a Real in  ]0,1[ and is used to initialise the algorithm. For  different values , different points are returned.
+		%feature("autodoc", "	* compute a point P in the face F. Param is a Real in ]0,1[ and is used to initialise the algorithm. For different values , different points are returned.
 
 	:param F:
 	:type F: TopoDS_Face &
@@ -723,7 +653,7 @@ class BRepClass3d_SolidExplorer {
 ") Segment;
 		Standard_Integer Segment (const gp_Pnt & P,gp_Lin & L,Standard_Real &OutValue);
 		%feature("compactdefaultargs") OtherSegment;
-		%feature("autodoc", "	* Returns in <L>, <Par> a segment having at least one intersection with the shape boundary to compute intersections.  The First Call to this method returns a line which point to a point of the first face of the shape. The Second Call provide a line to the second face and so on.
+		%feature("autodoc", "	* Returns in <L>, <Par> a segment having at least one intersection with the shape boundary to compute intersections. //! The First Call to this method returns a line which point to a point of the first face of the shape. The Second Call provide a line to the second face and so on.
 
 	:param P:
 	:type P: gp_Pnt
@@ -769,20 +699,6 @@ class BRepClass3d_SolidExplorer {
 };
 
 
-%feature("shadow") BRepClass3d_SolidExplorer::~BRepClass3d_SolidExplorer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_SolidExplorer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_SolidPassiveClassifier;
 class BRepClass3d_SolidPassiveClassifier {
 	public:
@@ -827,20 +743,6 @@ class BRepClass3d_SolidPassiveClassifier {
 };
 
 
-%feature("shadow") BRepClass3d_SolidPassiveClassifier::~BRepClass3d_SolidPassiveClassifier %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_SolidPassiveClassifier {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepClass3d_SolidClassifier;
 class BRepClass3d_SolidClassifier : public BRepClass3d_SClassifier {
 	public:
@@ -901,17 +803,3 @@ class BRepClass3d_SolidClassifier : public BRepClass3d_SClassifier {
 };
 
 
-%feature("shadow") BRepClass3d_SolidClassifier::~BRepClass3d_SolidClassifier %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepClass3d_SolidClassifier {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

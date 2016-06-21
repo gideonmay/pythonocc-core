@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include GeomAPI_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class GeomAPI {
 	public:
 		%feature("compactdefaultargs") To2d;
-		%feature("autodoc", "	* To intersect a curve and a surface. This function builds (in the parametric space of the plane P) a 2D curve equivalent to the 3D curve C. The 3D curve C is considered to be located in the plane P. Warning The 3D curve C must be of one of the following types: - a line - a circle - an ellipse - a hyperbola - a parabola - a Bezier curve - a BSpline curve Exceptions Standard_NoSuchObject if C is not a defined type curve.
+		%feature("autodoc", "	* This function builds (in the parametric space of the plane P) a 2D curve equivalent to the 3D curve C. The 3D curve C is considered to be located in the plane P. Warning The 3D curve C must be of one of the following types: - a line - a circle - an ellipse - a hyperbola - a parabola - a Bezier curve - a BSpline curve Exceptions Standard_NoSuchObject if C is not a defined type curve.
 
 	:param C:
 	:type C: Handle_Geom_Curve &
@@ -66,20 +82,6 @@ class GeomAPI {
 };
 
 
-%feature("shadow") GeomAPI::~GeomAPI %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_ExtremaCurveCurve;
 class GeomAPI_ExtremaCurveCurve {
 	public:
@@ -252,20 +254,6 @@ class GeomAPI_ExtremaCurveCurve {
 };
 
 
-%feature("shadow") GeomAPI_ExtremaCurveCurve::~GeomAPI_ExtremaCurveCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_ExtremaCurveCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_ExtremaCurveSurface;
 class GeomAPI_ExtremaCurveSurface {
 	public:
@@ -286,7 +274,7 @@ class GeomAPI_ExtremaCurveSurface {
 ") GeomAPI_ExtremaCurveSurface;
 		 GeomAPI_ExtremaCurveSurface (const Handle_Geom_Curve & Curve,const Handle_Geom_Surface & Surface);
 		%feature("compactdefaultargs") GeomAPI_ExtremaCurveSurface;
-		%feature("autodoc", "	* Computes the extrema distances between the curve <C> and the surface <S>. The solution point are computed in the domain [Wmin,Wmax] of the curve and in the domain [Umin,Umax] [Vmin,Vmax] of the surface. //!	Warning Use the function NbExtrema to obtain the number of solutions. If this algorithm fails, NbExtrema returns 0.
+		%feature("autodoc", "	* Computes the extrema distances between the curve <C> and the surface <S>. The solution point are computed in the domain [Wmin,Wmax] of the curve and in the domain [Umin,Umax] [Vmin,Vmax] of the surface. Warning Use the function NbExtrema to obtain the number of solutions. If this algorithm fails, NbExtrema returns 0.
 
 	:param Curve:
 	:type Curve: Handle_Geom_Curve &
@@ -424,20 +412,6 @@ class GeomAPI_ExtremaCurveSurface {
 };
 
 
-%feature("shadow") GeomAPI_ExtremaCurveSurface::~GeomAPI_ExtremaCurveSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_ExtremaCurveSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_ExtremaSurfaceSurface;
 class GeomAPI_ExtremaSurfaceSurface {
 	public:
@@ -608,20 +582,6 @@ class GeomAPI_ExtremaSurfaceSurface {
 };
 
 
-%feature("shadow") GeomAPI_ExtremaSurfaceSurface::~GeomAPI_ExtremaSurfaceSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_ExtremaSurfaceSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_IntCS;
 class GeomAPI_IntCS {
 	public:
@@ -664,7 +624,7 @@ class GeomAPI_IntCS {
 ") NbPoints;
 		Standard_Integer NbPoints ();
 		%feature("compactdefaultargs") Point;
-		%feature("autodoc", "	* Returns the Intersection Point of range <Index>in case of cross intersection.  Raises NotDone if the computation has failed or if the computation has not been done raises OutOfRange if Index is not in the range <1..NbPoints>
+		%feature("autodoc", "	* Returns the Intersection Point of range <Index>in case of cross intersection. Raises NotDone if the computation has failed or if the computation has not been done raises OutOfRange if Index is not in the range <1..NbPoints>
 
 	:param Index:
 	:type Index: int
@@ -718,20 +678,6 @@ class GeomAPI_IntCS {
 };
 
 
-%feature("shadow") GeomAPI_IntCS::~GeomAPI_IntCS %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_IntCS {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_IntSS;
 class GeomAPI_IntSS {
 	public:
@@ -784,24 +730,10 @@ class GeomAPI_IntSS {
 	:type Index: int
 	:rtype: Handle_Geom_Curve
 ") Line;
-		const Handle_Geom_Curve & Line (const Standard_Integer Index);
+		Handle_Geom_Curve Line (const Standard_Integer Index);
 };
 
 
-%feature("shadow") GeomAPI_IntSS::~GeomAPI_IntSS %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_IntSS {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_Interpolate;
 class GeomAPI_Interpolate {
 	public:
@@ -866,7 +798,7 @@ class GeomAPI_Interpolate {
 
 	:rtype: Handle_Geom_BSplineCurve
 ") Curve;
-		const Handle_Geom_BSplineCurve & Curve ();
+		Handle_Geom_BSplineCurve Curve ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	* Returns true if the constrained BSpline curve is successfully constructed. Note: in this case, the result is given by the function Curve.
 
@@ -876,20 +808,6 @@ class GeomAPI_Interpolate {
 };
 
 
-%feature("shadow") GeomAPI_Interpolate::~GeomAPI_Interpolate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_Interpolate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_PointsToBSpline;
 class GeomAPI_PointsToBSpline {
 	public:
@@ -1048,7 +966,7 @@ class GeomAPI_PointsToBSpline {
 
 	:rtype: Handle_Geom_BSplineCurve
 ") Curve;
-		const Handle_Geom_BSplineCurve & Curve ();
+		Handle_Geom_BSplineCurve Curve ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -1056,20 +974,6 @@ class GeomAPI_PointsToBSpline {
 };
 
 
-%feature("shadow") GeomAPI_PointsToBSpline::~GeomAPI_PointsToBSpline %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_PointsToBSpline {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_PointsToBSplineSurface;
 class GeomAPI_PointsToBSplineSurface {
 	public:
@@ -1134,7 +1038,7 @@ class GeomAPI_PointsToBSplineSurface {
 ") GeomAPI_PointsToBSplineSurface;
 		 GeomAPI_PointsToBSplineSurface (const TColgp_Array2OfPnt & Points,const Standard_Real Weight1,const Standard_Real Weight2,const Standard_Real Weight3,const Standard_Integer DegMax = 8,const GeomAbs_Shape Continuity = GeomAbs_C2,const Standard_Real Tol3D = 1.0e-3);
 		%feature("compactdefaultargs") GeomAPI_PointsToBSplineSurface;
-		%feature("autodoc", "	* Approximates a BSpline Surface passing through an array of Points.  The points will be constructed as follow:  P(i,j) = gp_Pnt( X0 + (i-1)*dX ,  Y0 + (j-1)*dY ,  ZPoints(i,j) )  The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol3D 4- the parametrization of the surface will verify:  S->Value( U, V) = gp_Pnt( U, V, Z(U,V) );
+		%feature("autodoc", "	* Approximates a BSpline Surface passing through an array of Points. //! The points will be constructed as follow: P(i,j) = gp_Pnt( X0 + (i-1)*dX , Y0 + (j-1)*dY , ZPoints(i,j) ) //! The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol3D 4- the parametrization of the surface will verify: S->Value( U, V) = gp_Pnt( U, V, Z(U,V) );
 
 	:param ZPoints:
 	:type ZPoints: TColStd_Array2OfReal &
@@ -1192,7 +1096,7 @@ class GeomAPI_PointsToBSplineSurface {
 ") Interpolate;
 		void Interpolate (const TColgp_Array2OfPnt & Points,const Approx_ParametrizationType ParType);
 		%feature("compactdefaultargs") Init;
-		%feature("autodoc", "	* Approximates a BSpline Surface passing through an array of Points.  The points will be constructed as follow:  P(i,j) = gp_Pnt( X0 + (i-1)*dX ,  Y0 + (j-1)*dY ,  ZPoints(i,j) )  The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol3D 4- the parametrization of the surface will verify:  S->Value( U, V) = gp_Pnt( U, V, Z(U,V) );
+		%feature("autodoc", "	* Approximates a BSpline Surface passing through an array of Points. //! The points will be constructed as follow: P(i,j) = gp_Pnt( X0 + (i-1)*dX , Y0 + (j-1)*dY , ZPoints(i,j) ) //! The resulting BSpline will have the following properties: 1- his degree will be in the range [Degmin,Degmax] 2- his continuity will be at least <Continuity> 3- the distance from the point <Points> to the BSpline will be lower to Tol3D 4- the parametrization of the surface will verify: S->Value( U, V) = gp_Pnt( U, V, Z(U,V) );
 
 	:param ZPoints:
 	:type ZPoints: TColStd_Array2OfReal &
@@ -1216,7 +1120,7 @@ class GeomAPI_PointsToBSplineSurface {
 ") Init;
 		void Init (const TColStd_Array2OfReal & ZPoints,const Standard_Real X0,const Standard_Real dX,const Standard_Real Y0,const Standard_Real dY,const Standard_Integer DegMin = 3,const Standard_Integer DegMax = 8,const GeomAbs_Shape Continuity = GeomAbs_C2,const Standard_Real Tol3D = 1.0e-3);
 		%feature("compactdefaultargs") Interpolate;
-		%feature("autodoc", "	* Interpolates a BSpline Surface passing through an array of Points.  The points will be constructed as follow:  P(i,j) = gp_Pnt( X0 + (i-1)*dX ,  Y0 + (j-1)*dY ,  ZPoints(i,j) )  The resulting BSpline will have the following properties: 1- his degree will be 3 2- his continuity will be C2. 4- the parametrization of the surface will verify:  S->Value( U, V) = gp_Pnt( U, V, Z(U,V) );
+		%feature("autodoc", "	* Interpolates a BSpline Surface passing through an array of Points. //! The points will be constructed as follow: P(i,j) = gp_Pnt( X0 + (i-1)*dX , Y0 + (j-1)*dY , ZPoints(i,j) ) //! The resulting BSpline will have the following properties: 1- his degree will be 3 2- his continuity will be C2. 4- the parametrization of the surface will verify: S->Value( U, V) = gp_Pnt( U, V, Z(U,V) );
 
 	:param ZPoints:
 	:type ZPoints: TColStd_Array2OfReal &
@@ -1274,7 +1178,7 @@ class GeomAPI_PointsToBSplineSurface {
 
 	:rtype: Handle_Geom_BSplineSurface
 ") Surface;
-		const Handle_Geom_BSplineSurface & Surface ();
+		Handle_Geom_BSplineSurface Surface ();
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -1282,20 +1186,6 @@ class GeomAPI_PointsToBSplineSurface {
 };
 
 
-%feature("shadow") GeomAPI_PointsToBSplineSurface::~GeomAPI_PointsToBSplineSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_PointsToBSplineSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_ProjectPointOnCurve;
 class GeomAPI_ProjectPointOnCurve {
 	public:
@@ -1452,20 +1342,6 @@ class GeomAPI_ProjectPointOnCurve {
 };
 
 
-%feature("shadow") GeomAPI_ProjectPointOnCurve::~GeomAPI_ProjectPointOnCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_ProjectPointOnCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomAPI_ProjectPointOnSurf;
 class GeomAPI_ProjectPointOnSurf {
 	public:
@@ -1728,17 +1604,3 @@ class GeomAPI_ProjectPointOnSurf {
 };
 
 
-%feature("shadow") GeomAPI_ProjectPointOnSurf::~GeomAPI_ProjectPointOnSurf %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomAPI_ProjectPointOnSurf {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

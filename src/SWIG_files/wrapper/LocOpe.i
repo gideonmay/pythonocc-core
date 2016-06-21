@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include LocOpe_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -92,20 +108,6 @@ class LocOpe {
 };
 
 
-%feature("shadow") LocOpe::~LocOpe %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_BuildShape;
 class LocOpe_BuildShape {
 	public:
@@ -136,20 +138,6 @@ class LocOpe_BuildShape {
 };
 
 
-%feature("shadow") LocOpe_BuildShape::~LocOpe_BuildShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_BuildShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_BuildWires;
 class LocOpe_BuildWires {
 	public:
@@ -161,18 +149,18 @@ class LocOpe_BuildWires {
 		%feature("autodoc", "	:param Ledges:
 	:type Ledges: TopTools_ListOfShape &
 	:param PW:
-	:type PW: Handle_LocOpe_ProjectedWires &
+	:type PW: Handle_LocOpe_WiresOnShape &
 	:rtype: None
 ") LocOpe_BuildWires;
-		 LocOpe_BuildWires (const TopTools_ListOfShape & Ledges,const Handle_LocOpe_ProjectedWires & PW);
+		 LocOpe_BuildWires (const TopTools_ListOfShape & Ledges,const Handle_LocOpe_WiresOnShape & PW);
 		%feature("compactdefaultargs") Perform;
 		%feature("autodoc", "	:param Ledges:
 	:type Ledges: TopTools_ListOfShape &
 	:param PW:
-	:type PW: Handle_LocOpe_ProjectedWires &
+	:type PW: Handle_LocOpe_WiresOnShape &
 	:rtype: None
 ") Perform;
-		void Perform (const TopTools_ListOfShape & Ledges,const Handle_LocOpe_ProjectedWires & PW);
+		void Perform (const TopTools_ListOfShape & Ledges,const Handle_LocOpe_WiresOnShape & PW);
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -184,20 +172,6 @@ class LocOpe_BuildWires {
 };
 
 
-%feature("shadow") LocOpe_BuildWires::~LocOpe_BuildWires %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_BuildWires {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_CSIntersector;
 class LocOpe_CSIntersector {
 	public:
@@ -266,7 +240,7 @@ class LocOpe_CSIntersector {
 ") Point;
 		const LocOpe_PntFace & Point (const Standard_Integer I,const Standard_Integer Index);
 		%feature("compactdefaultargs") LocalizeAfter;
-		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located after the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal.  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located after the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal. //! Otherwise, returns <Standard_False>.
 
 	:param I:
 	:type I: int
@@ -284,7 +258,7 @@ class LocOpe_CSIntersector {
 ") LocalizeAfter;
 		Standard_Boolean LocalizeAfter (const Standard_Integer I,const Standard_Real From,const Standard_Real Tol,TopAbs_Orientation & Or,Standard_Integer &OutValue,Standard_Integer &OutValue);
 		%feature("compactdefaultargs") LocalizeBefore;
-		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located before the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal.  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located before the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal. //! Otherwise, returns <Standard_False>.
 
 	:param I:
 	:type I: int
@@ -302,7 +276,7 @@ class LocOpe_CSIntersector {
 ") LocalizeBefore;
 		Standard_Boolean LocalizeBefore (const Standard_Integer I,const Standard_Real From,const Standard_Real Tol,TopAbs_Orientation & Or,Standard_Integer &OutValue,Standard_Integer &OutValue);
 		%feature("compactdefaultargs") LocalizeAfter;
-		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located after the index <FromInd> ( >= FromInd + 1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal.  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located after the index <FromInd> ( >= FromInd + 1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal. //! Otherwise, returns <Standard_False>.
 
 	:param I:
 	:type I: int
@@ -320,7 +294,7 @@ class LocOpe_CSIntersector {
 ") LocalizeAfter;
 		Standard_Boolean LocalizeAfter (const Standard_Integer I,const Standard_Integer FromInd,const Standard_Real Tol,TopAbs_Orientation & Or,Standard_Integer &OutValue,Standard_Integer &OutValue);
 		%feature("compactdefaultargs") LocalizeBefore;
-		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located before the index <FromInd> ( <= FromInd -1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal.  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* On the element of range <I>, searches the first intersection point located before the index <FromInd> ( <= FromInd -1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo). <Tol> is used to determine if 2 parameters are equal. //! Otherwise, returns <Standard_False>.
 
 	:param I:
 	:type I: int
@@ -344,20 +318,6 @@ class LocOpe_CSIntersector {
 };
 
 
-%feature("shadow") LocOpe_CSIntersector::~LocOpe_CSIntersector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_CSIntersector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_CurveShapeIntersector;
 class LocOpe_CurveShapeIntersector {
 	public:
@@ -428,7 +388,7 @@ class LocOpe_CurveShapeIntersector {
 ") Point;
 		const LocOpe_PntFace & Point (const Standard_Integer Index);
 		%feature("compactdefaultargs") LocalizeAfter;
-		%feature("autodoc", "	* Searches the first intersection point located after the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo).  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* Searches the first intersection point located after the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo). //! Otherwise, returns <Standard_False>.
 
 	:param From:
 	:type From: float
@@ -442,7 +402,7 @@ class LocOpe_CurveShapeIntersector {
 ") LocalizeAfter;
 		Standard_Boolean LocalizeAfter (const Standard_Real From,TopAbs_Orientation & Or,Standard_Integer &OutValue,Standard_Integer &OutValue);
 		%feature("compactdefaultargs") LocalizeBefore;
-		%feature("autodoc", "	* Searches the first intersection point located before the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo).  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* Searches the first intersection point located before the parameter <From>, wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo). //! Otherwise, returns <Standard_False>.
 
 	:param From:
 	:type From: float
@@ -456,7 +416,7 @@ class LocOpe_CurveShapeIntersector {
 ") LocalizeBefore;
 		Standard_Boolean LocalizeBefore (const Standard_Real From,TopAbs_Orientation & Or,Standard_Integer &OutValue,Standard_Integer &OutValue);
 		%feature("compactdefaultargs") LocalizeAfter;
-		%feature("autodoc", "	* Searches the first intersection point located after the index <FromInd> ( >= FromInd + 1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo).  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* Searches the first intersection point located after the index <FromInd> ( >= FromInd + 1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point. (IndFrom <= IndTo). //! Otherwise, returns <Standard_False>.
 
 	:param FromInd:
 	:type FromInd: int
@@ -470,7 +430,7 @@ class LocOpe_CurveShapeIntersector {
 ") LocalizeAfter;
 		Standard_Boolean LocalizeAfter (const Standard_Integer FromInd,TopAbs_Orientation & Or,Standard_Integer &OutValue,Standard_Integer &OutValue);
 		%feature("compactdefaultargs") LocalizeBefore;
-		%feature("autodoc", "	* Searches the first intersection point located before the index <FromInd> ( <= FromInd -1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo).  Otherwise, returns <Standard_False>.
+		%feature("autodoc", "	* Searches the first intersection point located before the index <FromInd> ( <= FromInd -1), wich orientation is not TopAbs_EXTERNAL. If found, returns <Standard_True>. <Or> contains the orientation of the point, <IndFrom> and <IndTo> represents the interval of index in the sequence of intersection point corresponding to the point (IndFrom <= IndTo). //! Otherwise, returns <Standard_False>.
 
 	:param FromInd:
 	:type FromInd: int
@@ -486,20 +446,6 @@ class LocOpe_CurveShapeIntersector {
 };
 
 
-%feature("shadow") LocOpe_CurveShapeIntersector::~LocOpe_CurveShapeIntersector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_CurveShapeIntersector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_DPrism;
 class LocOpe_DPrism {
 	public:
@@ -568,20 +514,6 @@ class LocOpe_DPrism {
 };
 
 
-%feature("shadow") LocOpe_DPrism::~LocOpe_DPrism %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_DPrism {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_DataMapIteratorOfDataMapOfShapePnt;
 class LocOpe_DataMapIteratorOfDataMapOfShapePnt : public TCollection_BasicMapIterator {
 	public:
@@ -612,20 +544,6 @@ class LocOpe_DataMapIteratorOfDataMapOfShapePnt : public TCollection_BasicMapIte
 };
 
 
-%feature("shadow") LocOpe_DataMapIteratorOfDataMapOfShapePnt::~LocOpe_DataMapIteratorOfDataMapOfShapePnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_DataMapIteratorOfDataMapOfShapePnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_DataMapNodeOfDataMapOfShapePnt;
 class LocOpe_DataMapNodeOfDataMapOfShapePnt : public TCollection_MapNode {
 	public:
@@ -650,25 +568,23 @@ class LocOpe_DataMapNodeOfDataMapOfShapePnt : public TCollection_MapNode {
 };
 
 
-%feature("shadow") LocOpe_DataMapNodeOfDataMapOfShapePnt::~LocOpe_DataMapNodeOfDataMapOfShapePnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LocOpe_DataMapNodeOfDataMapOfShapePnt {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LocOpe_DataMapNodeOfDataMapOfShapePnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_DataMapNodeOfDataMapOfShapePnt {
-	Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt GetHandle() {
-	return *(Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt*) &$self;
-	}
-};
+%pythonappend Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt::Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt;
 class Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt : public Handle_TCollection_MapNode {
@@ -686,20 +602,6 @@ class Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt : public Handle_TCollection_M
 %extend Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt {
     LocOpe_DataMapNodeOfDataMapOfShapePnt* GetObject() {
     return (LocOpe_DataMapNodeOfDataMapOfShapePnt*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt::~Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_DataMapNodeOfDataMapOfShapePnt {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -781,20 +683,6 @@ class LocOpe_DataMapOfShapePnt : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") LocOpe_DataMapOfShapePnt::~LocOpe_DataMapOfShapePnt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_DataMapOfShapePnt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_FindEdges;
 class LocOpe_FindEdges {
 	public:
@@ -841,20 +729,6 @@ class LocOpe_FindEdges {
 };
 
 
-%feature("shadow") LocOpe_FindEdges::~LocOpe_FindEdges %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_FindEdges {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_FindEdgesInFace;
 class LocOpe_FindEdgesInFace {
 	public:
@@ -897,20 +771,6 @@ class LocOpe_FindEdgesInFace {
 };
 
 
-%feature("shadow") LocOpe_FindEdgesInFace::~LocOpe_FindEdgesInFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_FindEdgesInFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_GeneratedShape;
 class LocOpe_GeneratedShape : public MMgt_TShared {
 	public:
@@ -943,25 +803,23 @@ class LocOpe_GeneratedShape : public MMgt_TShared {
 };
 
 
-%feature("shadow") LocOpe_GeneratedShape::~LocOpe_GeneratedShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LocOpe_GeneratedShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_GeneratedShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LocOpe_GeneratedShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_GeneratedShape {
-	Handle_LocOpe_GeneratedShape GetHandle() {
-	return *(Handle_LocOpe_GeneratedShape*) &$self;
-	}
-};
+%pythonappend Handle_LocOpe_GeneratedShape::Handle_LocOpe_GeneratedShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LocOpe_GeneratedShape;
 class Handle_LocOpe_GeneratedShape : public Handle_MMgt_TShared {
@@ -979,20 +837,6 @@ class Handle_LocOpe_GeneratedShape : public Handle_MMgt_TShared {
 %extend Handle_LocOpe_GeneratedShape {
     LocOpe_GeneratedShape* GetObject() {
     return (LocOpe_GeneratedShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_GeneratedShape::~Handle_LocOpe_GeneratedShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_GeneratedShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1054,20 +898,6 @@ class LocOpe_Generator {
 };
 
 
-%feature("shadow") LocOpe_Generator::~LocOpe_Generator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_Generator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_Gluer;
 class LocOpe_Gluer {
 	public:
@@ -1148,20 +978,6 @@ class LocOpe_Gluer {
 };
 
 
-%feature("shadow") LocOpe_Gluer::~LocOpe_Gluer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_Gluer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_HBuilder;
 class LocOpe_HBuilder : public TopOpeBRepBuild_HBuilder {
 	public:
@@ -1184,25 +1000,23 @@ class LocOpe_HBuilder : public TopOpeBRepBuild_HBuilder {
 };
 
 
-%feature("shadow") LocOpe_HBuilder::~LocOpe_HBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LocOpe_HBuilder {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_HBuilder(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LocOpe_HBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_HBuilder {
-	Handle_LocOpe_HBuilder GetHandle() {
-	return *(Handle_LocOpe_HBuilder*) &$self;
-	}
-};
+%pythonappend Handle_LocOpe_HBuilder::Handle_LocOpe_HBuilder %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LocOpe_HBuilder;
 class Handle_LocOpe_HBuilder : public Handle_TopOpeBRepBuild_HBuilder {
@@ -1220,20 +1034,6 @@ class Handle_LocOpe_HBuilder : public Handle_TopOpeBRepBuild_HBuilder {
 %extend Handle_LocOpe_HBuilder {
     LocOpe_HBuilder* GetObject() {
     return (LocOpe_HBuilder*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_HBuilder::~Handle_LocOpe_HBuilder %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_HBuilder {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1317,20 +1117,6 @@ class LocOpe_LinearForm {
 };
 
 
-%feature("shadow") LocOpe_LinearForm::~LocOpe_LinearForm %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_LinearForm {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_Pipe;
 class LocOpe_Pipe {
 	public:
@@ -1381,20 +1167,6 @@ class LocOpe_Pipe {
 };
 
 
-%feature("shadow") LocOpe_Pipe::~LocOpe_Pipe %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_Pipe {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_PntFace;
 class LocOpe_PntFace {
 	public:
@@ -1451,20 +1223,6 @@ class LocOpe_PntFace {
 };
 
 
-%feature("shadow") LocOpe_PntFace::~LocOpe_PntFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_PntFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_Prism;
 class LocOpe_Prism {
 	public:
@@ -1539,137 +1297,6 @@ class LocOpe_Prism {
 };
 
 
-%feature("shadow") LocOpe_Prism::~LocOpe_Prism %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_Prism {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor LocOpe_ProjectedWires;
-class LocOpe_ProjectedWires : public MMgt_TShared {
-	public:
-		%feature("compactdefaultargs") InitEdgeIterator;
-		%feature("autodoc", "	:rtype: void
-") InitEdgeIterator;
-		virtual void InitEdgeIterator ();
-		%feature("compactdefaultargs") MoreEdge;
-		%feature("autodoc", "	:rtype: bool
-") MoreEdge;
-		virtual Standard_Boolean MoreEdge ();
-		%feature("compactdefaultargs") Edge;
-		%feature("autodoc", "	:rtype: TopoDS_Edge
-") Edge;
-		virtual TopoDS_Edge Edge ();
-		%feature("compactdefaultargs") OnFace;
-		%feature("autodoc", "	* Returns the face of the shape on which the current edge is projected.
-
-	:rtype: TopoDS_Face
-") OnFace;
-		virtual TopoDS_Face OnFace ();
-		%feature("compactdefaultargs") OnEdge;
-		%feature("autodoc", "	* If the current edge is projected on an edge, returns <Standard_True> and sets the value of <E>. Otherwise, returns <Standard_False>.
-
-	:param E:
-	:type E: TopoDS_Edge &
-	:rtype: bool
-") OnEdge;
-		virtual Standard_Boolean OnEdge (TopoDS_Edge & E);
-		%feature("compactdefaultargs") NextEdge;
-		%feature("autodoc", "	:rtype: void
-") NextEdge;
-		virtual void NextEdge ();
-		%feature("compactdefaultargs") OnVertex;
-		%feature("autodoc", "	:param Vwire:
-	:type Vwire: TopoDS_Vertex &
-	:param Vshape:
-	:type Vshape: TopoDS_Vertex &
-	:rtype: bool
-") OnVertex;
-		virtual Standard_Boolean OnVertex (const TopoDS_Vertex & Vwire,TopoDS_Vertex & Vshape);
-		%feature("compactdefaultargs") OnEdge;
-		%feature("autodoc", "	* If the vertex <V> lies on an edge of the original shape, returns <Standard_True> and sets the concerned edge in <E>, and the parameter on the edge in <P>. Else returns <Standard_False>.
-
-	:param V:
-	:type V: TopoDS_Vertex &
-	:param E:
-	:type E: TopoDS_Edge &
-	:param P:
-	:type P: float &
-	:rtype: bool
-") OnEdge;
-		virtual Standard_Boolean OnEdge (const TopoDS_Vertex & V,TopoDS_Edge & E,Standard_Real &OutValue);
-		%feature("compactdefaultargs") IsFaceWithSection;
-		%feature("autodoc", "	* tells is the face to be split by section or not
-
-	:param aFace:
-	:type aFace: TopoDS_Shape &
-	:rtype: bool
-") IsFaceWithSection;
-		virtual Standard_Boolean IsFaceWithSection (const TopoDS_Shape & aFace);
-};
-
-
-%feature("shadow") LocOpe_ProjectedWires::~LocOpe_ProjectedWires %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_ProjectedWires {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_ProjectedWires {
-	Handle_LocOpe_ProjectedWires GetHandle() {
-	return *(Handle_LocOpe_ProjectedWires*) &$self;
-	}
-};
-
-%nodefaultctor Handle_LocOpe_ProjectedWires;
-class Handle_LocOpe_ProjectedWires : public Handle_MMgt_TShared {
-
-    public:
-        // constructors
-        Handle_LocOpe_ProjectedWires();
-        Handle_LocOpe_ProjectedWires(const Handle_LocOpe_ProjectedWires &aHandle);
-        Handle_LocOpe_ProjectedWires(const LocOpe_ProjectedWires *anItem);
-        void Nullify();
-        Standard_Boolean IsNull() const;
-        static const Handle_LocOpe_ProjectedWires DownCast(const Handle_Standard_Transient &AnObject);
-
-};
-%extend Handle_LocOpe_ProjectedWires {
-    LocOpe_ProjectedWires* GetObject() {
-    return (LocOpe_ProjectedWires*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_ProjectedWires::~Handle_LocOpe_ProjectedWires %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_ProjectedWires {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
-
 %nodefaultctor LocOpe_SequenceNodeOfSequenceOfCirc;
 class LocOpe_SequenceNodeOfSequenceOfCirc : public TCollection_SeqNode {
 	public:
@@ -1690,25 +1317,23 @@ class LocOpe_SequenceNodeOfSequenceOfCirc : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") LocOpe_SequenceNodeOfSequenceOfCirc::~LocOpe_SequenceNodeOfSequenceOfCirc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LocOpe_SequenceNodeOfSequenceOfCirc {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_SequenceNodeOfSequenceOfCirc(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LocOpe_SequenceNodeOfSequenceOfCirc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_SequenceNodeOfSequenceOfCirc {
-	Handle_LocOpe_SequenceNodeOfSequenceOfCirc GetHandle() {
-	return *(Handle_LocOpe_SequenceNodeOfSequenceOfCirc*) &$self;
-	}
-};
+%pythonappend Handle_LocOpe_SequenceNodeOfSequenceOfCirc::Handle_LocOpe_SequenceNodeOfSequenceOfCirc %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LocOpe_SequenceNodeOfSequenceOfCirc;
 class Handle_LocOpe_SequenceNodeOfSequenceOfCirc : public Handle_TCollection_SeqNode {
@@ -1726,20 +1351,6 @@ class Handle_LocOpe_SequenceNodeOfSequenceOfCirc : public Handle_TCollection_Seq
 %extend Handle_LocOpe_SequenceNodeOfSequenceOfCirc {
     LocOpe_SequenceNodeOfSequenceOfCirc* GetObject() {
     return (LocOpe_SequenceNodeOfSequenceOfCirc*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_SequenceNodeOfSequenceOfCirc::~Handle_LocOpe_SequenceNodeOfSequenceOfCirc %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_SequenceNodeOfSequenceOfCirc {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1763,25 +1374,23 @@ class LocOpe_SequenceNodeOfSequenceOfLin : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") LocOpe_SequenceNodeOfSequenceOfLin::~LocOpe_SequenceNodeOfSequenceOfLin %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LocOpe_SequenceNodeOfSequenceOfLin {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_SequenceNodeOfSequenceOfLin(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LocOpe_SequenceNodeOfSequenceOfLin {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_SequenceNodeOfSequenceOfLin {
-	Handle_LocOpe_SequenceNodeOfSequenceOfLin GetHandle() {
-	return *(Handle_LocOpe_SequenceNodeOfSequenceOfLin*) &$self;
-	}
-};
+%pythonappend Handle_LocOpe_SequenceNodeOfSequenceOfLin::Handle_LocOpe_SequenceNodeOfSequenceOfLin %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LocOpe_SequenceNodeOfSequenceOfLin;
 class Handle_LocOpe_SequenceNodeOfSequenceOfLin : public Handle_TCollection_SeqNode {
@@ -1799,20 +1408,6 @@ class Handle_LocOpe_SequenceNodeOfSequenceOfLin : public Handle_TCollection_SeqN
 %extend Handle_LocOpe_SequenceNodeOfSequenceOfLin {
     LocOpe_SequenceNodeOfSequenceOfLin* GetObject() {
     return (LocOpe_SequenceNodeOfSequenceOfLin*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_SequenceNodeOfSequenceOfLin::~Handle_LocOpe_SequenceNodeOfSequenceOfLin %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_SequenceNodeOfSequenceOfLin {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1836,25 +1431,23 @@ class LocOpe_SequenceNodeOfSequenceOfPntFace : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") LocOpe_SequenceNodeOfSequenceOfPntFace::~LocOpe_SequenceNodeOfSequenceOfPntFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend LocOpe_SequenceNodeOfSequenceOfPntFace {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_SequenceNodeOfSequenceOfPntFace(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend LocOpe_SequenceNodeOfSequenceOfPntFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_SequenceNodeOfSequenceOfPntFace {
-	Handle_LocOpe_SequenceNodeOfSequenceOfPntFace GetHandle() {
-	return *(Handle_LocOpe_SequenceNodeOfSequenceOfPntFace*) &$self;
-	}
-};
+%pythonappend Handle_LocOpe_SequenceNodeOfSequenceOfPntFace::Handle_LocOpe_SequenceNodeOfSequenceOfPntFace %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_LocOpe_SequenceNodeOfSequenceOfPntFace;
 class Handle_LocOpe_SequenceNodeOfSequenceOfPntFace : public Handle_TCollection_SeqNode {
@@ -1874,20 +1467,6 @@ class Handle_LocOpe_SequenceNodeOfSequenceOfPntFace : public Handle_TCollection_
     return (LocOpe_SequenceNodeOfSequenceOfPntFace*)$self->Access();
     }
 };
-%feature("shadow") Handle_LocOpe_SequenceNodeOfSequenceOfPntFace::~Handle_LocOpe_SequenceNodeOfSequenceOfPntFace %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_SequenceNodeOfSequenceOfPntFace {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor LocOpe_SequenceOfCirc;
 class LocOpe_SequenceOfCirc : public TCollection_BaseSequence {
@@ -1896,6 +1475,12 @@ class LocOpe_SequenceOfCirc : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") LocOpe_SequenceOfCirc;
 		 LocOpe_SequenceOfCirc ();
+		%feature("compactdefaultargs") LocOpe_SequenceOfCirc;
+		%feature("autodoc", "	:param Other:
+	:type Other: LocOpe_SequenceOfCirc &
+	:rtype: None
+") LocOpe_SequenceOfCirc;
+		 LocOpe_SequenceOfCirc (const LocOpe_SequenceOfCirc & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -2021,20 +1606,6 @@ class LocOpe_SequenceOfCirc : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") LocOpe_SequenceOfCirc::~LocOpe_SequenceOfCirc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_SequenceOfCirc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_SequenceOfLin;
 class LocOpe_SequenceOfLin : public TCollection_BaseSequence {
 	public:
@@ -2042,6 +1613,12 @@ class LocOpe_SequenceOfLin : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") LocOpe_SequenceOfLin;
 		 LocOpe_SequenceOfLin ();
+		%feature("compactdefaultargs") LocOpe_SequenceOfLin;
+		%feature("autodoc", "	:param Other:
+	:type Other: LocOpe_SequenceOfLin &
+	:rtype: None
+") LocOpe_SequenceOfLin;
+		 LocOpe_SequenceOfLin (const LocOpe_SequenceOfLin & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -2167,20 +1744,6 @@ class LocOpe_SequenceOfLin : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") LocOpe_SequenceOfLin::~LocOpe_SequenceOfLin %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_SequenceOfLin {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_SequenceOfPntFace;
 class LocOpe_SequenceOfPntFace : public TCollection_BaseSequence {
 	public:
@@ -2188,6 +1751,12 @@ class LocOpe_SequenceOfPntFace : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") LocOpe_SequenceOfPntFace;
 		 LocOpe_SequenceOfPntFace ();
+		%feature("compactdefaultargs") LocOpe_SequenceOfPntFace;
+		%feature("autodoc", "	:param Other:
+	:type Other: LocOpe_SequenceOfPntFace &
+	:rtype: None
+") LocOpe_SequenceOfPntFace;
+		 LocOpe_SequenceOfPntFace (const LocOpe_SequenceOfPntFace & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -2313,20 +1882,6 @@ class LocOpe_SequenceOfPntFace : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") LocOpe_SequenceOfPntFace::~LocOpe_SequenceOfPntFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_SequenceOfPntFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_SplitDrafts;
 class LocOpe_SplitDrafts {
 	public:
@@ -2421,20 +1976,6 @@ class LocOpe_SplitDrafts {
 };
 
 
-%feature("shadow") LocOpe_SplitDrafts::~LocOpe_SplitDrafts %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_SplitDrafts {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_SplitShape;
 class LocOpe_SplitShape {
 	public:
@@ -2527,20 +2068,6 @@ class LocOpe_SplitShape {
 };
 
 
-%feature("shadow") LocOpe_SplitShape::~LocOpe_SplitShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_SplitShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor LocOpe_Spliter;
 class LocOpe_Spliter {
 	public:
@@ -2568,10 +2095,10 @@ class LocOpe_Spliter {
 		void Init (const TopoDS_Shape & S);
 		%feature("compactdefaultargs") Perform;
 		%feature("autodoc", "	:param PW:
-	:type PW: Handle_LocOpe_ProjectedWires &
+	:type PW: Handle_LocOpe_WiresOnShape &
 	:rtype: None
 ") Perform;
-		void Perform (const Handle_LocOpe_ProjectedWires & PW);
+		void Perform (const Handle_LocOpe_WiresOnShape & PW);
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	:rtype: bool
 ") IsDone;
@@ -2611,129 +2138,8 @@ class LocOpe_Spliter {
 };
 
 
-%feature("shadow") LocOpe_Spliter::~LocOpe_Spliter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_Spliter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor LocOpe_GluedShape;
-class LocOpe_GluedShape : public LocOpe_GeneratedShape {
-	public:
-		%feature("compactdefaultargs") LocOpe_GluedShape;
-		%feature("autodoc", "	:rtype: None
-") LocOpe_GluedShape;
-		 LocOpe_GluedShape ();
-		%feature("compactdefaultargs") LocOpe_GluedShape;
-		%feature("autodoc", "	:param S:
-	:type S: TopoDS_Shape &
-	:rtype: None
-") LocOpe_GluedShape;
-		 LocOpe_GluedShape (const TopoDS_Shape & S);
-		%feature("compactdefaultargs") Init;
-		%feature("autodoc", "	:param S:
-	:type S: TopoDS_Shape &
-	:rtype: None
-") Init;
-		void Init (const TopoDS_Shape & S);
-		%feature("compactdefaultargs") GlueOnFace;
-		%feature("autodoc", "	:param F:
-	:type F: TopoDS_Face &
-	:rtype: None
-") GlueOnFace;
-		void GlueOnFace (const TopoDS_Face & F);
-		%feature("compactdefaultargs") GeneratingEdges;
-		%feature("autodoc", "	:rtype: TopTools_ListOfShape
-") GeneratingEdges;
-		const TopTools_ListOfShape & GeneratingEdges ();
-		%feature("compactdefaultargs") Generated;
-		%feature("autodoc", "	* Returns the edge created by the vertex <V>. If none, must return a null shape.
-
-	:param V:
-	:type V: TopoDS_Vertex &
-	:rtype: TopoDS_Edge
-") Generated;
-		TopoDS_Edge Generated (const TopoDS_Vertex & V);
-		%feature("compactdefaultargs") Generated;
-		%feature("autodoc", "	* Returns the face created by the edge <E>. If none, must return a null shape.
-
-	:param E:
-	:type E: TopoDS_Edge &
-	:rtype: TopoDS_Face
-") Generated;
-		TopoDS_Face Generated (const TopoDS_Edge & E);
-		%feature("compactdefaultargs") OrientedFaces;
-		%feature("autodoc", "	* Returns the list of correctly oriented generated faces.
-
-	:rtype: TopTools_ListOfShape
-") OrientedFaces;
-		const TopTools_ListOfShape & OrientedFaces ();
-};
-
-
-%feature("shadow") LocOpe_GluedShape::~LocOpe_GluedShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend LocOpe_GluedShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_GluedShape {
-	Handle_LocOpe_GluedShape GetHandle() {
-	return *(Handle_LocOpe_GluedShape*) &$self;
-	}
-};
-
-%nodefaultctor Handle_LocOpe_GluedShape;
-class Handle_LocOpe_GluedShape : public Handle_LocOpe_GeneratedShape {
-
-    public:
-        // constructors
-        Handle_LocOpe_GluedShape();
-        Handle_LocOpe_GluedShape(const Handle_LocOpe_GluedShape &aHandle);
-        Handle_LocOpe_GluedShape(const LocOpe_GluedShape *anItem);
-        void Nullify();
-        Standard_Boolean IsNull() const;
-        static const Handle_LocOpe_GluedShape DownCast(const Handle_Standard_Transient &AnObject);
-
-};
-%extend Handle_LocOpe_GluedShape {
-    LocOpe_GluedShape* GetObject() {
-    return (LocOpe_GluedShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_LocOpe_GluedShape::~Handle_LocOpe_GluedShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_LocOpe_GluedShape {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
-
 %nodefaultctor LocOpe_WiresOnShape;
-class LocOpe_WiresOnShape : public LocOpe_ProjectedWires {
+class LocOpe_WiresOnShape : public MMgt_TShared {
 	public:
 		%feature("compactdefaultargs") LocOpe_WiresOnShape;
 		%feature("autodoc", "	:param S:
@@ -2845,6 +2251,20 @@ class LocOpe_WiresOnShape : public LocOpe_ProjectedWires {
 	:rtype: bool
 ") OnEdge;
 		Standard_Boolean OnEdge (const TopoDS_Vertex & V,TopoDS_Edge & E,Standard_Real &OutValue);
+		%feature("compactdefaultargs") OnEdge;
+		%feature("autodoc", "	* If the vertex <V> lies on an edge of the original shape, returns <Standard_True> and sets the concerned edge in <E>, and the parameter on the edge in <P>. Else returns <Standard_False>.
+
+	:param V:
+	:type V: TopoDS_Vertex &
+	:param EdgeFrom:
+	:type EdgeFrom: TopoDS_Edge &
+	:param E:
+	:type E: TopoDS_Edge &
+	:param P:
+	:type P: float &
+	:rtype: bool
+") OnEdge;
+		Standard_Boolean OnEdge (const TopoDS_Vertex & V,const TopoDS_Edge & EdgeFrom,TopoDS_Edge & E,Standard_Real &OutValue);
 		%feature("compactdefaultargs") IsFaceWithSection;
 		%feature("autodoc", "	* tells is the face to be split by section or not
 
@@ -2856,28 +2276,26 @@ class LocOpe_WiresOnShape : public LocOpe_ProjectedWires {
 };
 
 
-%feature("shadow") LocOpe_WiresOnShape::~LocOpe_WiresOnShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend LocOpe_WiresOnShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_WiresOnShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_LocOpe_WiresOnShape::Handle_LocOpe_WiresOnShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
 
-%extend LocOpe_WiresOnShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend LocOpe_WiresOnShape {
-	Handle_LocOpe_WiresOnShape GetHandle() {
-	return *(Handle_LocOpe_WiresOnShape*) &$self;
-	}
-};
-
 %nodefaultctor Handle_LocOpe_WiresOnShape;
-class Handle_LocOpe_WiresOnShape : public Handle_LocOpe_ProjectedWires {
+class Handle_LocOpe_WiresOnShape : public Handle_MMgt_TShared {
 
     public:
         // constructors
@@ -2894,18 +2312,95 @@ class Handle_LocOpe_WiresOnShape : public Handle_LocOpe_ProjectedWires {
     return (LocOpe_WiresOnShape*)$self->Access();
     }
 };
-%feature("shadow") Handle_LocOpe_WiresOnShape::~Handle_LocOpe_WiresOnShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
+
+%nodefaultctor LocOpe_GluedShape;
+class LocOpe_GluedShape : public LocOpe_GeneratedShape {
+	public:
+		%feature("compactdefaultargs") LocOpe_GluedShape;
+		%feature("autodoc", "	:rtype: None
+") LocOpe_GluedShape;
+		 LocOpe_GluedShape ();
+		%feature("compactdefaultargs") LocOpe_GluedShape;
+		%feature("autodoc", "	:param S:
+	:type S: TopoDS_Shape &
+	:rtype: None
+") LocOpe_GluedShape;
+		 LocOpe_GluedShape (const TopoDS_Shape & S);
+		%feature("compactdefaultargs") Init;
+		%feature("autodoc", "	:param S:
+	:type S: TopoDS_Shape &
+	:rtype: None
+") Init;
+		void Init (const TopoDS_Shape & S);
+		%feature("compactdefaultargs") GlueOnFace;
+		%feature("autodoc", "	:param F:
+	:type F: TopoDS_Face &
+	:rtype: None
+") GlueOnFace;
+		void GlueOnFace (const TopoDS_Face & F);
+		%feature("compactdefaultargs") GeneratingEdges;
+		%feature("autodoc", "	:rtype: TopTools_ListOfShape
+") GeneratingEdges;
+		const TopTools_ListOfShape & GeneratingEdges ();
+		%feature("compactdefaultargs") Generated;
+		%feature("autodoc", "	* Returns the edge created by the vertex <V>. If none, must return a null shape.
+
+	:param V:
+	:type V: TopoDS_Vertex &
+	:rtype: TopoDS_Edge
+") Generated;
+		TopoDS_Edge Generated (const TopoDS_Vertex & V);
+		%feature("compactdefaultargs") Generated;
+		%feature("autodoc", "	* Returns the face created by the edge <E>. If none, must return a null shape.
+
+	:param E:
+	:type E: TopoDS_Edge &
+	:rtype: TopoDS_Face
+") Generated;
+		TopoDS_Face Generated (const TopoDS_Edge & E);
+		%feature("compactdefaultargs") OrientedFaces;
+		%feature("autodoc", "	* Returns the list of correctly oriented generated faces.
+
+	:rtype: TopTools_ListOfShape
+") OrientedFaces;
+		const TopTools_ListOfShape & OrientedFaces ();
+};
+
+
+%extend LocOpe_GluedShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_LocOpe_GluedShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_LocOpe_GluedShape::Handle_LocOpe_GluedShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
 
-%extend Handle_LocOpe_WiresOnShape {
-    void _kill_pointed() {
-        delete $self;
+%nodefaultctor Handle_LocOpe_GluedShape;
+class Handle_LocOpe_GluedShape : public Handle_LocOpe_GeneratedShape {
+
+    public:
+        // constructors
+        Handle_LocOpe_GluedShape();
+        Handle_LocOpe_GluedShape(const Handle_LocOpe_GluedShape &aHandle);
+        Handle_LocOpe_GluedShape(const LocOpe_GluedShape *anItem);
+        void Nullify();
+        Standard_Boolean IsNull() const;
+        static const Handle_LocOpe_GluedShape DownCast(const Handle_Standard_Transient &AnObject);
+
+};
+%extend Handle_LocOpe_GluedShape {
+    LocOpe_GluedShape* GetObject() {
+    return (LocOpe_GluedShape*)$self->Access();
     }
 };
 

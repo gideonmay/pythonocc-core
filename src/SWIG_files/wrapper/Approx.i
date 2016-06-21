@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Approx_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -124,30 +140,16 @@ class Approx_Array1OfAdHSurface {
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HSurface
 ") Value;
-		const Handle_Adaptor3d_HSurface & Value (const Standard_Integer Index);
+		Handle_Adaptor3d_HSurface Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HSurface
 ") ChangeValue;
-		Handle_Adaptor3d_HSurface & ChangeValue (const Standard_Integer Index);
+		Handle_Adaptor3d_HSurface ChangeValue (const Standard_Integer Index);
 };
 
 
-%feature("shadow") Approx_Array1OfAdHSurface::~Approx_Array1OfAdHSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_Array1OfAdHSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_Array1OfGTrsf2d;
 class Approx_Array1OfGTrsf2d {
 	public:
@@ -230,20 +232,6 @@ class Approx_Array1OfGTrsf2d {
 };
 
 
-%feature("shadow") Approx_Array1OfGTrsf2d::~Approx_Array1OfGTrsf2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_Array1OfGTrsf2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_Curve2d;
 class Approx_Curve2d {
 	public:
@@ -290,20 +278,6 @@ class Approx_Curve2d {
 };
 
 
-%feature("shadow") Approx_Curve2d::~Approx_Curve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_Curve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_Curve3d;
 class Approx_Curve3d {
 	public:
@@ -356,20 +330,6 @@ class Approx_Curve3d {
         };
 
 
-%feature("shadow") Approx_Curve3d::~Approx_Curve3d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_Curve3d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_CurveOnSurface;
 class Approx_CurveOnSurface {
 	public:
@@ -422,7 +382,7 @@ class Approx_CurveOnSurface {
 ") MaxError2dU;
 		Standard_Real MaxError2dU ();
 		%feature("compactdefaultargs") MaxError2dV;
-		%feature("autodoc", "	* returns the maximum errors relativly to the U component or the V component of the  2d Curve
+		%feature("autodoc", "	* returns the maximum errors relativly to the U component or the V component of the 2d Curve
 
 	:rtype: float
 ") MaxError2dV;
@@ -430,20 +390,6 @@ class Approx_CurveOnSurface {
 };
 
 
-%feature("shadow") Approx_CurveOnSurface::~Approx_CurveOnSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_CurveOnSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_CurvilinearParameter;
 class Approx_CurvilinearParameter {
 	public:
@@ -558,20 +504,6 @@ class Approx_CurvilinearParameter {
         };
 
 
-%feature("shadow") Approx_CurvilinearParameter::~Approx_CurvilinearParameter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_CurvilinearParameter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_CurvlinFunc;
 class Approx_CurvlinFunc : public MMgt_TShared {
 	public:
@@ -608,7 +540,7 @@ class Approx_CurvlinFunc : public MMgt_TShared {
 ") Approx_CurvlinFunc;
 		 Approx_CurvlinFunc (const Handle_Adaptor2d_HCurve2d & C2D1,const Handle_Adaptor2d_HCurve2d & C2D2,const Handle_Adaptor3d_HSurface & S1,const Handle_Adaptor3d_HSurface & S2,const Standard_Real Tol);
 		%feature("compactdefaultargs") SetTol;
-		%feature("autodoc", "	* //!---Purpose Update the tolerance to used
+		%feature("autodoc", "	* ---Purpose Update the tolerance to used
 
 	:param Tol:
 	:type Tol: float
@@ -632,7 +564,7 @@ class Approx_CurvlinFunc : public MMgt_TShared {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -734,25 +666,23 @@ class Approx_CurvlinFunc : public MMgt_TShared {
 };
 
 
-%feature("shadow") Approx_CurvlinFunc::~Approx_CurvlinFunc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Approx_CurvlinFunc {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Approx_CurvlinFunc(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Approx_CurvlinFunc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Approx_CurvlinFunc {
-	Handle_Approx_CurvlinFunc GetHandle() {
-	return *(Handle_Approx_CurvlinFunc*) &$self;
-	}
-};
+%pythonappend Handle_Approx_CurvlinFunc::Handle_Approx_CurvlinFunc %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Approx_CurvlinFunc;
 class Handle_Approx_CurvlinFunc : public Handle_MMgt_TShared {
@@ -770,20 +700,6 @@ class Handle_Approx_CurvlinFunc : public Handle_MMgt_TShared {
 %extend Handle_Approx_CurvlinFunc {
     Approx_CurvlinFunc* GetObject() {
     return (Approx_CurvlinFunc*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Approx_CurvlinFunc::~Handle_Approx_CurvlinFunc %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Approx_CurvlinFunc {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -899,20 +815,6 @@ class Approx_FitAndDivide {
 };
 
 
-%feature("shadow") Approx_FitAndDivide::~Approx_FitAndDivide %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_FitAndDivide {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_FitAndDivide2d;
 class Approx_FitAndDivide2d {
 	public:
@@ -1025,20 +927,6 @@ class Approx_FitAndDivide2d {
 };
 
 
-%feature("shadow") Approx_FitAndDivide2d::~Approx_FitAndDivide2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_FitAndDivide2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_HArray1OfAdHSurface;
 class Approx_HArray1OfAdHSurface : public MMgt_TShared {
 	public:
@@ -1091,13 +979,13 @@ class Approx_HArray1OfAdHSurface : public MMgt_TShared {
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HSurface
 ") Value;
-		const Handle_Adaptor3d_HSurface & Value (const Standard_Integer Index);
+		Handle_Adaptor3d_HSurface Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
 	:rtype: Handle_Adaptor3d_HSurface
 ") ChangeValue;
-		Handle_Adaptor3d_HSurface & ChangeValue (const Standard_Integer Index);
+		Handle_Adaptor3d_HSurface ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Array1;
 		%feature("autodoc", "	:rtype: Approx_Array1OfAdHSurface
 ") Array1;
@@ -1109,25 +997,23 @@ class Approx_HArray1OfAdHSurface : public MMgt_TShared {
 };
 
 
-%feature("shadow") Approx_HArray1OfAdHSurface::~Approx_HArray1OfAdHSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Approx_HArray1OfAdHSurface {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Approx_HArray1OfAdHSurface(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Approx_HArray1OfAdHSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Approx_HArray1OfAdHSurface {
-	Handle_Approx_HArray1OfAdHSurface GetHandle() {
-	return *(Handle_Approx_HArray1OfAdHSurface*) &$self;
-	}
-};
+%pythonappend Handle_Approx_HArray1OfAdHSurface::Handle_Approx_HArray1OfAdHSurface %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Approx_HArray1OfAdHSurface;
 class Handle_Approx_HArray1OfAdHSurface : public Handle_MMgt_TShared {
@@ -1145,20 +1031,6 @@ class Handle_Approx_HArray1OfAdHSurface : public Handle_MMgt_TShared {
 %extend Handle_Approx_HArray1OfAdHSurface {
     Approx_HArray1OfAdHSurface* GetObject() {
     return (Approx_HArray1OfAdHSurface*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Approx_HArray1OfAdHSurface::~Handle_Approx_HArray1OfAdHSurface %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Approx_HArray1OfAdHSurface {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1232,25 +1104,23 @@ class Approx_HArray1OfGTrsf2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") Approx_HArray1OfGTrsf2d::~Approx_HArray1OfGTrsf2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Approx_HArray1OfGTrsf2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Approx_HArray1OfGTrsf2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Approx_HArray1OfGTrsf2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Approx_HArray1OfGTrsf2d {
-	Handle_Approx_HArray1OfGTrsf2d GetHandle() {
-	return *(Handle_Approx_HArray1OfGTrsf2d*) &$self;
-	}
-};
+%pythonappend Handle_Approx_HArray1OfGTrsf2d::Handle_Approx_HArray1OfGTrsf2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Approx_HArray1OfGTrsf2d;
 class Handle_Approx_HArray1OfGTrsf2d : public Handle_MMgt_TShared {
@@ -1268,20 +1138,6 @@ class Handle_Approx_HArray1OfGTrsf2d : public Handle_MMgt_TShared {
 %extend Handle_Approx_HArray1OfGTrsf2d {
     Approx_HArray1OfGTrsf2d* GetObject() {
     return (Approx_HArray1OfGTrsf2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Approx_HArray1OfGTrsf2d::~Handle_Approx_HArray1OfGTrsf2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Approx_HArray1OfGTrsf2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1327,20 +1183,6 @@ class Approx_MCurvesToBSpCurve {
 };
 
 
-%feature("shadow") Approx_MCurvesToBSpCurve::~Approx_MCurvesToBSpCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_MCurvesToBSpCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_MyLeastSquareOfFitAndDivide;
 class Approx_MyLeastSquareOfFitAndDivide {
 	public:
@@ -1383,20 +1225,6 @@ class Approx_MyLeastSquareOfFitAndDivide {
 };
 
 
-%feature("shadow") Approx_MyLeastSquareOfFitAndDivide::~Approx_MyLeastSquareOfFitAndDivide %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_MyLeastSquareOfFitAndDivide {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_MyLeastSquareOfFitAndDivide2d;
 class Approx_MyLeastSquareOfFitAndDivide2d {
 	public:
@@ -1439,20 +1267,6 @@ class Approx_MyLeastSquareOfFitAndDivide2d {
 };
 
 
-%feature("shadow") Approx_MyLeastSquareOfFitAndDivide2d::~Approx_MyLeastSquareOfFitAndDivide2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_MyLeastSquareOfFitAndDivide2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_SameParameter;
 class Approx_SameParameter {
 	public:
@@ -1519,20 +1333,6 @@ class Approx_SameParameter {
 };
 
 
-%feature("shadow") Approx_SameParameter::~Approx_SameParameter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_SameParameter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_SequenceNodeOfSequenceOfHArray1OfReal;
 class Approx_SequenceNodeOfSequenceOfHArray1OfReal : public TCollection_SeqNode {
 	public:
@@ -1549,29 +1349,27 @@ class Approx_SequenceNodeOfSequenceOfHArray1OfReal : public TCollection_SeqNode 
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TColStd_HArray1OfReal
 ") Value;
-		Handle_TColStd_HArray1OfReal & Value ();
+		Handle_TColStd_HArray1OfReal Value ();
 };
 
 
-%feature("shadow") Approx_SequenceNodeOfSequenceOfHArray1OfReal::~Approx_SequenceNodeOfSequenceOfHArray1OfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend Approx_SequenceNodeOfSequenceOfHArray1OfReal {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal::Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend Approx_SequenceNodeOfSequenceOfHArray1OfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Approx_SequenceNodeOfSequenceOfHArray1OfReal {
-	Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal GetHandle() {
-	return *(Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal*) &$self;
-	}
-};
 
 %nodefaultctor Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal;
 class Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal : public Handle_TCollection_SeqNode {
@@ -1591,20 +1389,6 @@ class Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal : public Handle_TColle
     return (Approx_SequenceNodeOfSequenceOfHArray1OfReal*)$self->Access();
     }
 };
-%feature("shadow") Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal::~Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Approx_SequenceNodeOfSequenceOfHArray1OfReal {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Approx_SequenceOfHArray1OfReal;
 class Approx_SequenceOfHArray1OfReal : public TCollection_BaseSequence {
@@ -1613,6 +1397,12 @@ class Approx_SequenceOfHArray1OfReal : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Approx_SequenceOfHArray1OfReal;
 		 Approx_SequenceOfHArray1OfReal ();
+		%feature("compactdefaultargs") Approx_SequenceOfHArray1OfReal;
+		%feature("autodoc", "	:param Other:
+	:type Other: Approx_SequenceOfHArray1OfReal &
+	:rtype: None
+") Approx_SequenceOfHArray1OfReal;
+		 Approx_SequenceOfHArray1OfReal (const Approx_SequenceOfHArray1OfReal & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -1688,11 +1478,11 @@ class Approx_SequenceOfHArray1OfReal : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TColStd_HArray1OfReal
 ") First;
-		const Handle_TColStd_HArray1OfReal & First ();
+		Handle_TColStd_HArray1OfReal First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TColStd_HArray1OfReal
 ") Last;
-		const Handle_TColStd_HArray1OfReal & Last ();
+		Handle_TColStd_HArray1OfReal Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1706,7 +1496,7 @@ class Approx_SequenceOfHArray1OfReal : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TColStd_HArray1OfReal
 ") Value;
-		const Handle_TColStd_HArray1OfReal & Value (const Standard_Integer Index);
+		Handle_TColStd_HArray1OfReal Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1720,7 +1510,7 @@ class Approx_SequenceOfHArray1OfReal : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TColStd_HArray1OfReal
 ") ChangeValue;
-		Handle_TColStd_HArray1OfReal & ChangeValue (const Standard_Integer Index);
+		Handle_TColStd_HArray1OfReal ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1738,20 +1528,6 @@ class Approx_SequenceOfHArray1OfReal : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Approx_SequenceOfHArray1OfReal::~Approx_SequenceOfHArray1OfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_SequenceOfHArray1OfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_SweepApproximation;
 class Approx_SweepApproximation {
 	public:
@@ -1762,7 +1538,7 @@ class Approx_SweepApproximation {
 ") Approx_SweepApproximation;
 		 Approx_SweepApproximation (const Handle_Approx_SweepFunction & Func);
 		%feature("compactdefaultargs") Perform;
-		%feature("autodoc", "	* Perform the Approximation [First, Last] : Approx_SweepApproximation.cdl Tol3d : Tolerance to surface approximation Tol2d : Tolerance used to perform curve approximation  Normaly the 2d curve are approximated with a  tolerance given by the resolution on support surfaces,  but if this tolerance is too large Tol2d is used. TolAngular : Tolerance (in radian) to control the angle  beetween tangents on the section law and  tangent of iso-v on approximed surface Continuity : The continuity in v waiting on the surface Degmax : The maximum degree in v requiered on the surface Segmax : The maximum number of span in v requiered on  the surface Warning : The continuity ci can be obtained only if Ft is Ci
+		%feature("autodoc", "	* Perform the Approximation [First, Last] : Approx_SweepApproximation.cdl Tol3d : Tolerance to surface approximation Tol2d : Tolerance used to perform curve approximation Normaly the 2d curve are approximated with a tolerance given by the resolution on support surfaces, but if this tolerance is too large Tol2d is used. TolAngular : Tolerance (in radian) to control the angle beetween tangents on the section law and tangent of iso-v on approximed surface Continuity : The continuity in v waiting on the surface Degmax : The maximum degree in v requiered on the surface Segmax : The maximum number of span in v requiered on the surface Warning : The continuity ci can be obtained only if Ft is Ci
 
 	:param First:
 	:type First: float
@@ -1962,20 +1738,6 @@ class Approx_SweepApproximation {
         };
 
 
-%feature("shadow") Approx_SweepApproximation::~Approx_SweepApproximation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Approx_SweepApproximation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Approx_SweepFunction;
 class Approx_SweepFunction : public MMgt_TShared {
 	public:
@@ -2100,7 +1862,7 @@ class Approx_SweepFunction : public MMgt_TShared {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -2180,25 +1942,23 @@ class Approx_SweepFunction : public MMgt_TShared {
 };
 
 
-%feature("shadow") Approx_SweepFunction::~Approx_SweepFunction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Approx_SweepFunction {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Approx_SweepFunction(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Approx_SweepFunction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Approx_SweepFunction {
-	Handle_Approx_SweepFunction GetHandle() {
-	return *(Handle_Approx_SweepFunction*) &$self;
-	}
-};
+%pythonappend Handle_Approx_SweepFunction::Handle_Approx_SweepFunction %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Approx_SweepFunction;
 class Handle_Approx_SweepFunction : public Handle_MMgt_TShared {
@@ -2216,20 +1976,6 @@ class Handle_Approx_SweepFunction : public Handle_MMgt_TShared {
 %extend Handle_Approx_SweepFunction {
     Approx_SweepFunction* GetObject() {
     return (Approx_SweepFunction*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Approx_SweepFunction::~Handle_Approx_SweepFunction %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Approx_SweepFunction {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

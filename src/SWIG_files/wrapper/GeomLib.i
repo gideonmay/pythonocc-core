@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include GeomLib_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef GeomLib_DenominatorMultiplier * GeomLib_DenominatorMultiplierPtr;
@@ -174,7 +190,7 @@ class GeomLib {
 ") AxeOfInertia;
 		static void AxeOfInertia (const TColgp_Array1OfPnt & Points,gp_Ax2 & Axe,Standard_Boolean &OutValue,const Standard_Real Tol = 1.0e-7);
 		%feature("compactdefaultargs") Inertia;
-		%feature("autodoc", "	* Compute principale axes of inertia, and dispertion  value of some points.
+		%feature("autodoc", "	* Compute principale axes of inertia, and dispertion value of some points.
 
 	:param Points:
 	:type Points: TColgp_Array1OfPnt
@@ -194,7 +210,7 @@ class GeomLib {
 ") Inertia;
 		static void Inertia (const TColgp_Array1OfPnt & Points,gp_Pnt & Bary,gp_Dir & XDir,gp_Dir & YDir,Standard_Real &OutValue,Standard_Real &OutValue,Standard_Real &OutValue);
 		%feature("compactdefaultargs") RemovePointsFromArray;
-		%feature("autodoc", "	* Warning! This assume that the InParameter is an increasing sequence of real number and it will not check for that : Unpredictable result can happen if this is not satisfied. It is the caller responsability to check for that property. This method makes uniform NumPoints segments S1,...SNumPoints out of the segment defined by the first parameter and the last parameter ofthe InParameter ; keeps only one point of the InParameters set of parameter in each of the uniform segments taking care of the first and the last parameters. For the ith segment the element of the InParameter is the one that is the first to exceed the midpoint of the segment and to fall before the midpoint of the next segment  There will be at the end at most NumPoints + 1 if NumPoints > 2 in the OutParameters Array
+		%feature("autodoc", "	* Warning! This assume that the InParameter is an increasing sequence of real number and it will not check for that : Unpredictable result can happen if this is not satisfied. It is the caller responsability to check for that property. //! This method makes uniform NumPoints segments S1,...SNumPoints out of the segment defined by the first parameter and the last parameter ofthe InParameter ; keeps only one point of the InParameters set of parameter in each of the uniform segments taking care of the first and the last parameters. For the ith segment the element of the InParameter is the one that is the first to exceed the midpoint of the segment and to fall before the midpoint of the next segment There will be at the end at most NumPoints + 1 if NumPoints > 2 in the OutParameters Array
 
 	:param NumPoints:
 	:type NumPoints: int
@@ -288,20 +304,6 @@ class GeomLib {
 };
 
 
-%feature("shadow") GeomLib::~GeomLib %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_Array1OfMat;
 class GeomLib_Array1OfMat {
 	public:
@@ -384,20 +386,6 @@ class GeomLib_Array1OfMat {
 };
 
 
-%feature("shadow") GeomLib_Array1OfMat::~GeomLib_Array1OfMat %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_Array1OfMat {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_Check2dBSplineCurve;
 class GeomLib_Check2dBSplineCurve {
 	public:
@@ -432,7 +420,7 @@ class GeomLib_Check2dBSplineCurve {
 ") FixTangent;
 		void FixTangent (const Standard_Boolean FirstFlag,const Standard_Boolean LastFlag);
 		%feature("compactdefaultargs") FixedTangent;
-		%feature("autodoc", "	* modifies the curve by fixing the first or the last tangencies if Index3D not in the Range [1,Nb3dSpaces] if the Approx is not Done
+		%feature("autodoc", "	* modifies the curve by fixing the first or the last tangencies //! if Index3D not in the Range [1,Nb3dSpaces] if the Approx is not Done
 
 	:param FirstFlag:
 	:type FirstFlag: bool
@@ -444,20 +432,6 @@ class GeomLib_Check2dBSplineCurve {
 };
 
 
-%feature("shadow") GeomLib_Check2dBSplineCurve::~GeomLib_Check2dBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_Check2dBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_CheckBSplineCurve;
 class GeomLib_CheckBSplineCurve {
 	public:
@@ -492,7 +466,7 @@ class GeomLib_CheckBSplineCurve {
 ") FixTangent;
 		void FixTangent (const Standard_Boolean FirstFlag,const Standard_Boolean LastFlag);
 		%feature("compactdefaultargs") FixedTangent;
-		%feature("autodoc", "	* modifies the curve by fixing the first or the last tangencies if Index3D not in the Range [1,Nb3dSpaces] if the Approx is not Done
+		%feature("autodoc", "	* modifies the curve by fixing the first or the last tangencies //! if Index3D not in the Range [1,Nb3dSpaces] if the Approx is not Done
 
 	:param FirstFlag:
 	:type FirstFlag: bool
@@ -504,25 +478,11 @@ class GeomLib_CheckBSplineCurve {
 };
 
 
-%feature("shadow") GeomLib_CheckBSplineCurve::~GeomLib_CheckBSplineCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_CheckBSplineCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_DenominatorMultiplier;
 class GeomLib_DenominatorMultiplier {
 	public:
 		%feature("compactdefaultargs") GeomLib_DenominatorMultiplier;
-		%feature("autodoc", "	* if the surface is rational this will define the evaluator of a real function of 2 variables a(u,v) such that if we define a new surface by :  a(u,v) * N(u,v) NewF(u,v) = ----------------  a(u,v) * D(u,v)
+		%feature("autodoc", "	* if the surface is rational this will define the evaluator of a real function of 2 variables a(u,v) such that if we define a new surface by : a(u,v) * N(u,v) NewF(u,v) = ---------------- a(u,v) * D(u,v)
 
 	:param Surface:
 	:type Surface: Handle_Geom_BSplineSurface &
@@ -532,7 +492,7 @@ class GeomLib_DenominatorMultiplier {
 ") GeomLib_DenominatorMultiplier;
 		 GeomLib_DenominatorMultiplier (const Handle_Geom_BSplineSurface & Surface,const TColStd_Array1OfReal & KnotVector);
 		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	* Returns the value of a(UParameter,VParameter)= H0(UParameter)/Denominator(Umin,Vparameter) D Denominator(Umin,Vparameter) - ------------------------------[H1(u)]/(Denominator(Umin,Vparameter)^2)  D U  + H3(UParameter)/Denominator(Umax,Vparameter) D Denominator(Umax,Vparameter) - ------------------------------[H2(u)]/(Denominator(Umax,Vparameter)^2)  D U
+		%feature("autodoc", "	* Returns the value of a(UParameter,VParameter)= //! H0(UParameter)/Denominator(Umin,Vparameter) //! D Denominator(Umin,Vparameter) - ------------------------------[H1(u)]/(Denominator(Umin,Vparameter)^2) D U //! + H3(UParameter)/Denominator(Umax,Vparameter) //! D Denominator(Umax,Vparameter) - ------------------------------[H2(u)]/(Denominator(Umax,Vparameter)^2) D U
 
 	:param UParameter:
 	:type UParameter: float
@@ -544,20 +504,6 @@ class GeomLib_DenominatorMultiplier {
 };
 
 
-%feature("shadow") GeomLib_DenominatorMultiplier::~GeomLib_DenominatorMultiplier %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_DenominatorMultiplier {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_Interpolate;
 class GeomLib_Interpolate {
 	public:
@@ -594,20 +540,6 @@ class GeomLib_Interpolate {
 };
 
 
-%feature("shadow") GeomLib_Interpolate::~GeomLib_Interpolate %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_Interpolate {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_IsPlanarSurface;
 class GeomLib_IsPlanarSurface {
 	public:
@@ -634,20 +566,6 @@ class GeomLib_IsPlanarSurface {
 };
 
 
-%feature("shadow") GeomLib_IsPlanarSurface::~GeomLib_IsPlanarSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_IsPlanarSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_LogSample;
 class GeomLib_LogSample : public math_FunctionSample {
 	public:
@@ -672,20 +590,6 @@ class GeomLib_LogSample : public math_FunctionSample {
 };
 
 
-%feature("shadow") GeomLib_LogSample::~GeomLib_LogSample %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_LogSample {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_MakeCurvefromApprox;
 class GeomLib_MakeCurvefromApprox {
 	public:
@@ -766,20 +670,6 @@ class GeomLib_MakeCurvefromApprox {
 };
 
 
-%feature("shadow") GeomLib_MakeCurvefromApprox::~GeomLib_MakeCurvefromApprox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_MakeCurvefromApprox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GeomLib_PolyFunc;
 class GeomLib_PolyFunc : public math_FunctionWithDerivative {
 	public:
@@ -824,20 +714,6 @@ class GeomLib_PolyFunc : public math_FunctionWithDerivative {
 };
 
 
-%feature("shadow") GeomLib_PolyFunc::~GeomLib_PolyFunc %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_PolyFunc {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class GeomLib_Tool {
 	public:
 		%feature("compactdefaultargs") Parameter;
@@ -887,17 +763,3 @@ class GeomLib_Tool {
 };
 
 
-%feature("shadow") GeomLib_Tool::~GeomLib_Tool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GeomLib_Tool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

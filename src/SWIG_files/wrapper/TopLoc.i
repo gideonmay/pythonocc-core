@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include TopLoc_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef gp_Trsf * TopLoc_TrsfPtr;
@@ -75,25 +91,23 @@ class TopLoc_Datum3D : public MMgt_TShared {
         };
 
 
-%feature("shadow") TopLoc_Datum3D::~TopLoc_Datum3D %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TopLoc_Datum3D {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TopLoc_Datum3D(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TopLoc_Datum3D {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TopLoc_Datum3D {
-	Handle_TopLoc_Datum3D GetHandle() {
-	return *(Handle_TopLoc_Datum3D*) &$self;
-	}
-};
+%pythonappend Handle_TopLoc_Datum3D::Handle_TopLoc_Datum3D %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TopLoc_Datum3D;
 class Handle_TopLoc_Datum3D : public Handle_MMgt_TShared {
@@ -111,20 +125,6 @@ class Handle_TopLoc_Datum3D : public Handle_MMgt_TShared {
 %extend Handle_TopLoc_Datum3D {
     TopLoc_Datum3D* GetObject() {
     return (TopLoc_Datum3D*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TopLoc_Datum3D::~Handle_TopLoc_Datum3D %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TopLoc_Datum3D {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -167,25 +167,23 @@ class TopLoc_IndexedMapNodeOfIndexedMapOfLocation : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TopLoc_IndexedMapNodeOfIndexedMapOfLocation::~TopLoc_IndexedMapNodeOfIndexedMapOfLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TopLoc_IndexedMapNodeOfIndexedMapOfLocation {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TopLoc_IndexedMapNodeOfIndexedMapOfLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TopLoc_IndexedMapNodeOfIndexedMapOfLocation {
-	Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation GetHandle() {
-	return *(Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation*) &$self;
-	}
-};
+%pythonappend Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation::Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation;
 class Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation : public Handle_TCollection_MapNode {
@@ -205,20 +203,6 @@ class Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation : public Handle_TCollec
     return (TopLoc_IndexedMapNodeOfIndexedMapOfLocation*)$self->Access();
     }
 };
-%feature("shadow") Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation::~Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TopLoc_IndexedMapNodeOfIndexedMapOfLocation {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TopLoc_IndexedMapOfLocation;
 class TopLoc_IndexedMapOfLocation : public TCollection_BasicMap {
@@ -229,6 +213,12 @@ class TopLoc_IndexedMapOfLocation : public TCollection_BasicMap {
 	:rtype: None
 ") TopLoc_IndexedMapOfLocation;
 		 TopLoc_IndexedMapOfLocation (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TopLoc_IndexedMapOfLocation;
+		%feature("autodoc", "	:param Other:
+	:type Other: TopLoc_IndexedMapOfLocation &
+	:rtype: None
+") TopLoc_IndexedMapOfLocation;
+		 TopLoc_IndexedMapOfLocation (const TopLoc_IndexedMapOfLocation & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TopLoc_IndexedMapOfLocation &
@@ -290,20 +280,6 @@ class TopLoc_IndexedMapOfLocation : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TopLoc_IndexedMapOfLocation::~TopLoc_IndexedMapOfLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_IndexedMapOfLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopLoc_ItemLocation;
 class TopLoc_ItemLocation {
 	public:
@@ -344,20 +320,6 @@ class TopLoc_ItemLocation {
 };
 
 
-%feature("shadow") TopLoc_ItemLocation::~TopLoc_ItemLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_ItemLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopLoc_Location;
 class TopLoc_Location {
 	public:
@@ -400,7 +362,7 @@ class TopLoc_Location {
 
 	:rtype: Handle_TopLoc_Datum3D
 ") FirstDatum;
-		const Handle_TopLoc_Datum3D & FirstDatum ();
+		Handle_TopLoc_Datum3D FirstDatum ();
 		%feature("compactdefaultargs") FirstPower;
 		%feature("autodoc", "	* Returns the power elevation of the first elementary datum. Exceptions Standard_NoSuchObject if this location is empty.
 
@@ -408,7 +370,7 @@ class TopLoc_Location {
 ") FirstPower;
 		Standard_Integer FirstPower ();
 		%feature("compactdefaultargs") NextLocation;
-		%feature("autodoc", "	* Returns a Location representing <self> without the first datum. We have the relation : <self> = NextLocation() * FirstDatum() ^ FirstPower() Exceptions Standard_NoSuchObject if this location is empty.
+		%feature("autodoc", "	* Returns a Location representing <self> without the first datum. We have the relation : //! <self> = NextLocation() * FirstDatum() ^ FirstPower() Exceptions Standard_NoSuchObject if this location is empty.
 
 	:rtype: TopLoc_Location
 ") NextLocation;
@@ -424,7 +386,7 @@ class TopLoc_Location {
 ") operatorgp_Trsf;
 		 operator gp_Trsf ();
 		%feature("compactdefaultargs") Inverted;
-		%feature("autodoc", "	* Returns the inverse of <self>.  <self> * Inverted() is an Identity.
+		%feature("autodoc", "	* Returns the inverse of <self>. //! <self> * Inverted() is an Identity.
 
 	:rtype: TopLoc_Location
 ") Inverted;
@@ -542,20 +504,6 @@ class TopLoc_Location {
         };
 
 
-%feature("shadow") TopLoc_Location::~TopLoc_Location %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_Location {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopLoc_MapIteratorOfMapOfLocation;
 class TopLoc_MapIteratorOfMapOfLocation : public TCollection_BasicMapIterator {
 	public:
@@ -582,20 +530,6 @@ class TopLoc_MapIteratorOfMapOfLocation : public TCollection_BasicMapIterator {
 };
 
 
-%feature("shadow") TopLoc_MapIteratorOfMapOfLocation::~TopLoc_MapIteratorOfMapOfLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_MapIteratorOfMapOfLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class TopLoc_MapLocationHasher {
 	public:
 		%feature("compactdefaultargs") HashCode;
@@ -617,20 +551,6 @@ class TopLoc_MapLocationHasher {
 };
 
 
-%feature("shadow") TopLoc_MapLocationHasher::~TopLoc_MapLocationHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_MapLocationHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopLoc_MapOfLocation;
 class TopLoc_MapOfLocation : public TCollection_BasicMap {
 	public:
@@ -640,6 +560,12 @@ class TopLoc_MapOfLocation : public TCollection_BasicMap {
 	:rtype: None
 ") TopLoc_MapOfLocation;
 		 TopLoc_MapOfLocation (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TopLoc_MapOfLocation;
+		%feature("autodoc", "	:param Other:
+	:type Other: TopLoc_MapOfLocation &
+	:rtype: None
+") TopLoc_MapOfLocation;
+		 TopLoc_MapOfLocation (const TopLoc_MapOfLocation & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TopLoc_MapOfLocation &
@@ -683,31 +609,17 @@ class TopLoc_MapOfLocation : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TopLoc_MapOfLocation::~TopLoc_MapOfLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_MapOfLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TopLoc_SListNodeOfSListOfItemLocation;
-class TopLoc_SListNodeOfSListOfItemLocation : public MMgt_TShared {
+%nodefaultctor TopLoc_SListNodeOfItemLocation;
+class TopLoc_SListNodeOfItemLocation : public MMgt_TShared {
 	public:
-		%feature("compactdefaultargs") TopLoc_SListNodeOfSListOfItemLocation;
+		%feature("compactdefaultargs") TopLoc_SListNodeOfItemLocation;
 		%feature("autodoc", "	:param I:
 	:type I: TopLoc_ItemLocation &
 	:param aTail:
 	:type aTail: TopLoc_SListOfItemLocation &
 	:rtype: None
-") TopLoc_SListNodeOfSListOfItemLocation;
-		 TopLoc_SListNodeOfSListOfItemLocation (const TopLoc_ItemLocation & I,const TopLoc_SListOfItemLocation & aTail);
+") TopLoc_SListNodeOfItemLocation;
+		 TopLoc_SListNodeOfItemLocation (const TopLoc_ItemLocation & I,const TopLoc_SListOfItemLocation & aTail);
 		%feature("compactdefaultargs") Tail;
 		%feature("autodoc", "	:rtype: TopLoc_SListOfItemLocation
 ") Tail;
@@ -719,56 +631,40 @@ class TopLoc_SListNodeOfSListOfItemLocation : public MMgt_TShared {
 };
 
 
-%feature("shadow") TopLoc_SListNodeOfSListOfItemLocation::~TopLoc_SListNodeOfSListOfItemLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TopLoc_SListNodeOfItemLocation {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TopLoc_SListNodeOfItemLocation(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TopLoc_SListNodeOfItemLocation::Handle_TopLoc_SListNodeOfItemLocation %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
 
-%extend TopLoc_SListNodeOfSListOfItemLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TopLoc_SListNodeOfSListOfItemLocation {
-	Handle_TopLoc_SListNodeOfSListOfItemLocation GetHandle() {
-	return *(Handle_TopLoc_SListNodeOfSListOfItemLocation*) &$self;
-	}
-};
-
-%nodefaultctor Handle_TopLoc_SListNodeOfSListOfItemLocation;
-class Handle_TopLoc_SListNodeOfSListOfItemLocation : public Handle_MMgt_TShared {
+%nodefaultctor Handle_TopLoc_SListNodeOfItemLocation;
+class Handle_TopLoc_SListNodeOfItemLocation : public Handle_MMgt_TShared {
 
     public:
         // constructors
-        Handle_TopLoc_SListNodeOfSListOfItemLocation();
-        Handle_TopLoc_SListNodeOfSListOfItemLocation(const Handle_TopLoc_SListNodeOfSListOfItemLocation &aHandle);
-        Handle_TopLoc_SListNodeOfSListOfItemLocation(const TopLoc_SListNodeOfSListOfItemLocation *anItem);
+        Handle_TopLoc_SListNodeOfItemLocation();
+        Handle_TopLoc_SListNodeOfItemLocation(const Handle_TopLoc_SListNodeOfItemLocation &aHandle);
+        Handle_TopLoc_SListNodeOfItemLocation(const TopLoc_SListNodeOfItemLocation *anItem);
         void Nullify();
         Standard_Boolean IsNull() const;
-        static const Handle_TopLoc_SListNodeOfSListOfItemLocation DownCast(const Handle_Standard_Transient &AnObject);
+        static const Handle_TopLoc_SListNodeOfItemLocation DownCast(const Handle_Standard_Transient &AnObject);
 
 };
-%extend Handle_TopLoc_SListNodeOfSListOfItemLocation {
-    TopLoc_SListNodeOfSListOfItemLocation* GetObject() {
-    return (TopLoc_SListNodeOfSListOfItemLocation*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TopLoc_SListNodeOfSListOfItemLocation::~Handle_TopLoc_SListNodeOfSListOfItemLocation %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TopLoc_SListNodeOfSListOfItemLocation {
-    void _kill_pointed() {
-        delete $self;
+%extend Handle_TopLoc_SListNodeOfItemLocation {
+    TopLoc_SListNodeOfItemLocation* GetObject() {
+    return (TopLoc_SListNodeOfItemLocation*)$self->Access();
     }
 };
 
@@ -776,11 +672,15 @@ def __del__(self):
 class TopLoc_SListOfItemLocation {
 	public:
 		%feature("compactdefaultargs") TopLoc_SListOfItemLocation;
-		%feature("autodoc", "	:rtype: None
+		%feature("autodoc", "	* Creates an empty List.
+
+	:rtype: None
 ") TopLoc_SListOfItemLocation;
 		 TopLoc_SListOfItemLocation ();
 		%feature("compactdefaultargs") TopLoc_SListOfItemLocation;
-		%feature("autodoc", "	:param anItem:
+		%feature("autodoc", "	* Creates a List with <anItem> as value and <aTail> as tail.
+
+	:param anItem:
 	:type anItem: TopLoc_ItemLocation &
 	:param aTail:
 	:type aTail: TopLoc_SListOfItemLocation &
@@ -788,13 +688,17 @@ class TopLoc_SListOfItemLocation {
 ") TopLoc_SListOfItemLocation;
 		 TopLoc_SListOfItemLocation (const TopLoc_ItemLocation & anItem,const TopLoc_SListOfItemLocation & aTail);
 		%feature("compactdefaultargs") TopLoc_SListOfItemLocation;
-		%feature("autodoc", "	:param Other:
+		%feature("autodoc", "	* Creates a list from an other one. The lists are shared.
+
+	:param Other:
 	:type Other: TopLoc_SListOfItemLocation &
 	:rtype: None
 ") TopLoc_SListOfItemLocation;
 		 TopLoc_SListOfItemLocation (const TopLoc_SListOfItemLocation & Other);
 		%feature("compactdefaultargs") Assign;
-		%feature("autodoc", "	:param Other:
+		%feature("autodoc", "	* Sets a list from an other one. The lists are shared. The list itself is returned.
+
+	:param Other:
 	:type Other: TopLoc_SListOfItemLocation &
 	:rtype: TopLoc_SListOfItemLocation
 ") Assign;
@@ -810,84 +714,96 @@ class TopLoc_SListOfItemLocation {
 ") IsEmpty;
 		Standard_Boolean IsEmpty ();
 		%feature("compactdefaultargs") Clear;
-		%feature("autodoc", "	:rtype: None
+		%feature("autodoc", "	* Sets the list to be empty.
+
+	:rtype: None
 ") Clear;
 		void Clear ();
 		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: TopLoc_ItemLocation
+		%feature("autodoc", "	* Returns the current value of the list. An error is raised if the list is empty.
+
+	:rtype: TopLoc_ItemLocation
 ") Value;
 		const TopLoc_ItemLocation & Value ();
 		%feature("compactdefaultargs") ChangeValue;
-		%feature("autodoc", "	:rtype: TopLoc_ItemLocation
+		%feature("autodoc", "	* Returns the current value of the list. An error is raised if the list is empty. This value may be modified. A method modifying the value can be called. The value will be modified in the list.
+
+	:rtype: TopLoc_ItemLocation
 ") ChangeValue;
 		TopLoc_ItemLocation & ChangeValue ();
 		%feature("compactdefaultargs") SetValue;
-		%feature("autodoc", "	:param anItem:
+		%feature("autodoc", "	* Changes the current value in the list. An error is raised if the list is empty.
+
+	:param anItem:
 	:type anItem: TopLoc_ItemLocation &
 	:rtype: None
 ") SetValue;
 		void SetValue (const TopLoc_ItemLocation & anItem);
 		%feature("compactdefaultargs") Tail;
-		%feature("autodoc", "	:rtype: TopLoc_SListOfItemLocation
+		%feature("autodoc", "	* Returns the current tail of the list. On an empty list the tail is the list itself.
+
+	:rtype: TopLoc_SListOfItemLocation
 ") Tail;
 		const TopLoc_SListOfItemLocation & Tail ();
 		%feature("compactdefaultargs") ChangeTail;
-		%feature("autodoc", "	:rtype: TopLoc_SListOfItemLocation
+		%feature("autodoc", "	* Returns the current tail of the list. This tail may be modified. A method modifying the tail can be called. The tail will be modified in the list.
+
+	:rtype: TopLoc_SListOfItemLocation
 ") ChangeTail;
 		TopLoc_SListOfItemLocation & ChangeTail ();
 		%feature("compactdefaultargs") SetTail;
-		%feature("autodoc", "	:param aList:
+		%feature("autodoc", "	* Changes the current tail in the list. On an empty list SetTail is Assign.
+
+	:param aList:
 	:type aList: TopLoc_SListOfItemLocation &
 	:rtype: None
 ") SetTail;
 		void SetTail (const TopLoc_SListOfItemLocation & aList);
 		%feature("compactdefaultargs") Construct;
-		%feature("autodoc", "	:param anItem:
+		%feature("autodoc", "	* Replaces the list by a list with <anItem> as Value and the list <self> as tail.
+
+	:param anItem:
 	:type anItem: TopLoc_ItemLocation &
 	:rtype: None
 ") Construct;
 		void Construct (const TopLoc_ItemLocation & anItem);
 		%feature("compactdefaultargs") Constructed;
-		%feature("autodoc", "	:param anItem:
+		%feature("autodoc", "	* Returns a new list with <anItem> as Value an the list <self> as tail.
+
+	:param anItem:
 	:type anItem: TopLoc_ItemLocation &
 	:rtype: TopLoc_SListOfItemLocation
 ") Constructed;
 		TopLoc_SListOfItemLocation Constructed (const TopLoc_ItemLocation & anItem);
 		%feature("compactdefaultargs") ToTail;
-		%feature("autodoc", "	:rtype: None
+		%feature("autodoc", "	* Replaces the list <self> by its tail.
+
+	:rtype: None
 ") ToTail;
 		void ToTail ();
 		%feature("compactdefaultargs") Initialize;
-		%feature("autodoc", "	:param aList:
+		%feature("autodoc", "	* Sets the iterator to iterate on the content of <aList>. This is Assign().
+
+	:param aList:
 	:type aList: TopLoc_SListOfItemLocation &
 	:rtype: None
 ") Initialize;
 		void Initialize (const TopLoc_SListOfItemLocation & aList);
 		%feature("compactdefaultargs") More;
-		%feature("autodoc", "	:rtype: bool
+		%feature("autodoc", "	* Returns True if the iterator has a current value. This is !IsEmpty()
+
+	:rtype: bool
 ") More;
 		Standard_Boolean More ();
 		%feature("compactdefaultargs") Next;
-		%feature("autodoc", "	:rtype: None
+		%feature("autodoc", "	* Moves the iterator to the next object in the list. If the iterator is empty it will stay empty. This is ToTail()
+
+	:rtype: None
 ") Next;
 		void Next ();
 };
 
 
-%feature("shadow") TopLoc_SListOfItemLocation::~TopLoc_SListOfItemLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopLoc_SListOfItemLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopLoc_StdMapNodeOfMapOfLocation;
 class TopLoc_StdMapNodeOfMapOfLocation : public TCollection_MapNode {
 	public:
@@ -906,25 +822,23 @@ class TopLoc_StdMapNodeOfMapOfLocation : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TopLoc_StdMapNodeOfMapOfLocation::~TopLoc_StdMapNodeOfMapOfLocation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TopLoc_StdMapNodeOfMapOfLocation {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TopLoc_StdMapNodeOfMapOfLocation(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TopLoc_StdMapNodeOfMapOfLocation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TopLoc_StdMapNodeOfMapOfLocation {
-	Handle_TopLoc_StdMapNodeOfMapOfLocation GetHandle() {
-	return *(Handle_TopLoc_StdMapNodeOfMapOfLocation*) &$self;
-	}
-};
+%pythonappend Handle_TopLoc_StdMapNodeOfMapOfLocation::Handle_TopLoc_StdMapNodeOfMapOfLocation %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TopLoc_StdMapNodeOfMapOfLocation;
 class Handle_TopLoc_StdMapNodeOfMapOfLocation : public Handle_TCollection_MapNode {
@@ -942,20 +856,6 @@ class Handle_TopLoc_StdMapNodeOfMapOfLocation : public Handle_TCollection_MapNod
 %extend Handle_TopLoc_StdMapNodeOfMapOfLocation {
     TopLoc_StdMapNodeOfMapOfLocation* GetObject() {
     return (TopLoc_StdMapNodeOfMapOfLocation*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TopLoc_StdMapNodeOfMapOfLocation::~Handle_TopLoc_StdMapNodeOfMapOfLocation %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TopLoc_StdMapNodeOfMapOfLocation {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

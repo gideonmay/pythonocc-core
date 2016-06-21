@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepBuilderAPI_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef NCollection_CellFilter <BRepBuilderAPI_VertexInspector> BRepBuilderAPI_CellFilter;
@@ -112,7 +128,7 @@ class BRepBuilderAPI {
 
 	:rtype: Handle_Geom_Plane
 ") Plane;
-		static const Handle_Geom_Plane & Plane ();
+		Handle_Geom_Plane Plane ();
 		%feature("compactdefaultargs") Precision;
 		%feature("autodoc", "	* Sets the default precision. The current Precision is returned.
 
@@ -130,20 +146,6 @@ class BRepBuilderAPI {
 };
 
 
-%feature("shadow") BRepBuilderAPI::~BRepBuilderAPI %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_Collect;
 class BRepBuilderAPI_Collect {
 	public:
@@ -192,20 +194,6 @@ class BRepBuilderAPI_Collect {
 };
 
 
-%feature("shadow") BRepBuilderAPI_Collect::~BRepBuilderAPI_Collect %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_Collect {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_Command;
 class BRepBuilderAPI_Command {
 	public:
@@ -226,20 +214,6 @@ class BRepBuilderAPI_Command {
 };
 
 
-%feature("shadow") BRepBuilderAPI_Command::~BRepBuilderAPI_Command %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_Command {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_FindPlane;
 class BRepBuilderAPI_FindPlane {
 	public:
@@ -284,20 +258,6 @@ class BRepBuilderAPI_FindPlane {
 };
 
 
-%feature("shadow") BRepBuilderAPI_FindPlane::~BRepBuilderAPI_FindPlane %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_FindPlane {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_Sewing;
 class BRepBuilderAPI_Sewing : public MMgt_TShared {
 	public:
@@ -376,7 +336,7 @@ class BRepBuilderAPI_Sewing : public MMgt_TShared {
 
 	:rtype: Handle_BRepTools_ReShape
 ") GetContext;
-		const Handle_BRepTools_ReShape & GetContext ();
+		Handle_BRepTools_ReShape GetContext ();
 		%feature("compactdefaultargs") NbFreeEdges;
 		%feature("autodoc", "	* Gives the number of free edges (edge shared by one face)
 
@@ -634,7 +594,7 @@ class BRepBuilderAPI_Sewing : public MMgt_TShared {
 ") SetNonManifoldMode;
 		void SetNonManifoldMode (const Standard_Boolean theNonManifoldMode);
 		%feature("compactdefaultargs") NonManifoldMode;
-		%feature("autodoc", "	* Gets mode for non-manifold sewing. INTERNAL FUCTIONS ---
+		%feature("autodoc", "	* Gets mode for non-manifold sewing. //! INTERNAL FUCTIONS ---
 
 	:rtype: bool
 ") NonManifoldMode;
@@ -642,25 +602,23 @@ class BRepBuilderAPI_Sewing : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepBuilderAPI_Sewing::~BRepBuilderAPI_Sewing %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepBuilderAPI_Sewing {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepBuilderAPI_Sewing(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepBuilderAPI_Sewing {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepBuilderAPI_Sewing {
-	Handle_BRepBuilderAPI_Sewing GetHandle() {
-	return *(Handle_BRepBuilderAPI_Sewing*) &$self;
-	}
-};
+%pythonappend Handle_BRepBuilderAPI_Sewing::Handle_BRepBuilderAPI_Sewing %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepBuilderAPI_Sewing;
 class Handle_BRepBuilderAPI_Sewing : public Handle_MMgt_TShared {
@@ -678,20 +636,6 @@ class Handle_BRepBuilderAPI_Sewing : public Handle_MMgt_TShared {
 %extend Handle_BRepBuilderAPI_Sewing {
     BRepBuilderAPI_Sewing* GetObject() {
     return (BRepBuilderAPI_Sewing*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepBuilderAPI_Sewing::~Handle_BRepBuilderAPI_Sewing %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepBuilderAPI_Sewing {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -734,31 +678,9 @@ class BRepBuilderAPI_VertexInspector : public NCollection_CellFilter_InspectorXY
 	:rtype: TColStd_ListOfInteger
 ") ResInd;
 		const TColStd_ListOfInteger & ResInd ();
-		%feature("compactdefaultargs") Inspect;
-		%feature("autodoc", "	* Implementation of inspection method
-
-	:param theTarget:
-	:type theTarget: int
-	:rtype: NCollection_CellFilter_Action
-") Inspect;
-		NCollection_CellFilter_Action Inspect (const Standard_Integer theTarget);
 };
 
 
-%feature("shadow") BRepBuilderAPI_VertexInspector::~BRepBuilderAPI_VertexInspector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_VertexInspector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_BndBoxTreeSelector;
 class BRepBuilderAPI_BndBoxTreeSelector : public BRepBuilderAPI_BndBoxTree::Selector {
 	public:
@@ -807,20 +729,6 @@ class BRepBuilderAPI_BndBoxTreeSelector : public BRepBuilderAPI_BndBoxTree::Sele
 };
 
 
-%feature("shadow") BRepBuilderAPI_BndBoxTreeSelector::~BRepBuilderAPI_BndBoxTreeSelector %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_BndBoxTreeSelector {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeShape;
 class BRepBuilderAPI_MakeShape : public BRepBuilderAPI_Command {
 	public:
@@ -871,20 +779,6 @@ class BRepBuilderAPI_MakeShape : public BRepBuilderAPI_Command {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeShape::~BRepBuilderAPI_MakeShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeEdge;
 class BRepBuilderAPI_MakeEdge : public BRepBuilderAPI_MakeShape {
 	public:
@@ -1213,7 +1107,7 @@ class BRepBuilderAPI_MakeEdge : public BRepBuilderAPI_MakeShape {
 ") BRepBuilderAPI_MakeEdge;
 		 BRepBuilderAPI_MakeEdge (const Handle_Geom2d_Curve & L,const Handle_Geom_Surface & S,const gp_Pnt & P1,const gp_Pnt & P2,const Standard_Real p1,const Standard_Real p2);
 		%feature("compactdefaultargs") BRepBuilderAPI_MakeEdge;
-		%feature("autodoc", "	* The general method to directly create an edge is to give - a 3D curve C as the support (geometric domain) of the edge, - two vertices V1 and V2 to limit the curve (definition of the restriction of the edge), and - two real values p1 and p2 which are the parameters for the vertices V1 and V2 on the curve. The curve may be defined as a 2d curve in the parametric space of a surface: a pcurve. The surface on which the edge is built is then kept at the level of the edge. The default tolerance will be associated with this edge. Rules applied to the arguments: For the curve: - The curve must not be a 'null handle'. - If the curve is a trimmed curve the basis curve is used. For the vertices: - Vertices may be null shapes. When V1 or V2 is null the edge is open in the corresponding direction and the parameter value p1 or p2 must be infinite (remember that Precision::Infinite() defines an infinite value). - The two vertices must be identical if they have the same 3D location. Identical vertices are used in particular when the curve is closed. For the parameters: - The parameters must be in the parametric range of the curve (or the basis curve if the curve is trimmed). If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_ParameterOutOfRange. - Parameter values must not be equal. If this condition is not satisfied (i.e. if | p1 - p2 | ) the edge is not built, and the Error function will return BRepAPI_LineThroughIdenticPoints. Parameter values are expected to be given in increasing order: C->FirstParameter() - If the parameter values are given in decreasing order the vertices are switched, i.e. the 'first vertex' is on the point of parameter p2 and the 'second vertex' is on the point of parameter p1. In such a case, to keep the original intent of the construction, the edge will be oriented 'reversed'. - On a periodic curve the parameter values p1 and p2 are adjusted by adding or subtracting the period to obtain p1 in the parametric range of the curve, and p2] such that [ p1 , where Period is the period of the curve. - A parameter value may be infinite. The edge is open in the corresponding direction. However the corresponding vertex must be a null shape. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_PointWithInfiniteParameter. - The distance between the vertex and the point evaluated on the curve with the parameter, must be lower than the precision of the vertex. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_DifferentsPointAndParameter. Other edge constructions - The parameter values can be omitted, they will be computed by projecting the vertices on the curve. Note that projection is the only way to evaluate the parameter values of the vertices on the curve: vertices must be given on the curve, i.e. the distance from a vertex to the curve must be less than or equal to the precision of the vertex. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_PointProjectionFailed. - 3D points can be given in place of vertices. Vertices will be created from the points (with the default topological precision Precision::Confusion()). Note: - Giving vertices is useful when creating a connected edge. - If the parameter values correspond to the extremities of a closed curve, points must be identical, or at least coincident. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_DifferentPointsOnClosedCurve. - The vertices or points can be omitted if the parameter values are given. The points will be computed from the parameters on the curve. The vertices or points and the parameter values can be omitted. The first and last parameters of the curve will then be used. Auxiliary methods
+		%feature("autodoc", "	* The general method to directly create an edge is to give - a 3D curve C as the support (geometric domain) of the edge, - two vertices V1 and V2 to limit the curve (definition of the restriction of the edge), and - two real values p1 and p2 which are the parameters for the vertices V1 and V2 on the curve. The curve may be defined as a 2d curve in the parametric space of a surface: a pcurve. The surface on which the edge is built is then kept at the level of the edge. The default tolerance will be associated with this edge. Rules applied to the arguments: For the curve: - The curve must not be a 'null handle'. - If the curve is a trimmed curve the basis curve is used. For the vertices: - Vertices may be null shapes. When V1 or V2 is null the edge is open in the corresponding direction and the parameter value p1 or p2 must be infinite (remember that Precision::Infinite() defines an infinite value). - The two vertices must be identical if they have the same 3D location. Identical vertices are used in particular when the curve is closed. For the parameters: - The parameters must be in the parametric range of the curve (or the basis curve if the curve is trimmed). If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_ParameterOutOfRange. - Parameter values must not be equal. If this condition is not satisfied (i.e. if | p1 - p2 | ) the edge is not built, and the Error function will return BRepAPI_LineThroughIdenticPoints. Parameter values are expected to be given in increasing order: C->FirstParameter() - If the parameter values are given in decreasing order the vertices are switched, i.e. the 'first vertex' is on the point of parameter p2 and the 'second vertex' is on the point of parameter p1. In such a case, to keep the original intent of the construction, the edge will be oriented 'reversed'. - On a periodic curve the parameter values p1 and p2 are adjusted by adding or subtracting the period to obtain p1 in the parametric range of the curve, and p2] such that [ p1 , where Period is the period of the curve. - A parameter value may be infinite. The edge is open in the corresponding direction. However the corresponding vertex must be a null shape. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_PointWithInfiniteParameter. - The distance between the vertex and the point evaluated on the curve with the parameter, must be lower than the precision of the vertex. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_DifferentsPointAndParameter. Other edge constructions - The parameter values can be omitted, they will be computed by projecting the vertices on the curve. Note that projection is the only way to evaluate the parameter values of the vertices on the curve: vertices must be given on the curve, i.e. the distance from a vertex to the curve must be less than or equal to the precision of the vertex. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_PointProjectionFailed. - 3D points can be given in place of vertices. Vertices will be created from the points (with the default topological precision Precision::Confusion()). Note: - Giving vertices is useful when creating a connected edge. - If the parameter values correspond to the extremities of a closed curve, points must be identical, or at least coincident. If this condition is not satisfied the edge is not built, and the Error function will return BRepAPI_DifferentPointsOnClosedCurve. - The vertices or points can be omitted if the parameter values are given. The points will be computed from the parameters on the curve. The vertices or points and the parameter values can be omitted. The first and last parameters of the curve will then be used. //! Auxiliary methods
 
 	:param L:
 	:type L: Handle_Geom2d_Curve &
@@ -1401,7 +1295,7 @@ class BRepBuilderAPI_MakeEdge : public BRepBuilderAPI_MakeShape {
 ") Vertex1;
 		const TopoDS_Vertex  Vertex1 ();
 		%feature("compactdefaultargs") Vertex2;
-		%feature("autodoc", "	* Returns the second vertex of the edge. May be Null. Warning The returned vertex in each function corresponds respectively to - the lowest, or - the highest parameter on the curve along which the edge is built. It does not correspond to the first or second vertex given at the time of the construction, if the edge is oriented reversed. Exceptions StdFail_NotDone if the edge is not built.
+		%feature("autodoc", "	* Returns the second vertex of the edge. May be Null. //! Warning The returned vertex in each function corresponds respectively to - the lowest, or - the highest parameter on the curve along which the edge is built. It does not correspond to the first or second vertex given at the time of the construction, if the edge is oriented reversed. Exceptions StdFail_NotDone if the edge is not built.
 
 	:rtype: TopoDS_Vertex
 ") Vertex2;
@@ -1409,20 +1303,6 @@ class BRepBuilderAPI_MakeEdge : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeEdge::~BRepBuilderAPI_MakeEdge %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeEdge {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeEdge2d;
 class BRepBuilderAPI_MakeEdge2d : public BRepBuilderAPI_MakeShape {
 	public:
@@ -1783,20 +1663,6 @@ class BRepBuilderAPI_MakeEdge2d : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeEdge2d::~BRepBuilderAPI_MakeEdge2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeEdge2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeFace;
 class BRepBuilderAPI_MakeFace : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2125,20 +1991,6 @@ class BRepBuilderAPI_MakeFace : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeFace::~BRepBuilderAPI_MakeFace %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeFace {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakePolygon;
 class BRepBuilderAPI_MakePolygon : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2285,20 +2137,6 @@ class BRepBuilderAPI_MakePolygon : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakePolygon::~BRepBuilderAPI_MakePolygon %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakePolygon {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeShell;
 class BRepBuilderAPI_MakeShell : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2379,20 +2217,6 @@ class BRepBuilderAPI_MakeShell : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeShell::~BRepBuilderAPI_MakeShell %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeShell {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeSolid;
 class BRepBuilderAPI_MakeSolid : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2449,7 +2273,7 @@ class BRepBuilderAPI_MakeSolid : public BRepBuilderAPI_MakeShape {
 ") BRepBuilderAPI_MakeSolid;
 		 BRepBuilderAPI_MakeSolid (const TopoDS_Solid & So);
 		%feature("compactdefaultargs") BRepBuilderAPI_MakeSolid;
-		%feature("autodoc", "	* Add a shell to a solid. Constructs a solid: - from the solid So, to which shells can be added, or - by adding the shell S to the solid So. Warning No check is done to verify the conditions of coherence of the resulting solid. In particular S must not intersect the solid S0. Besides, after all shells have been added using the Add function, one of these shells should constitute the outside skin of the solid. It may be closed (a finite solid) or open (an infinite solid). Other shells form hollows (cavities) in the previous ones. Each must bound a closed volume.
+		%feature("autodoc", "	* Add a shell to a solid. //! Constructs a solid: - from the solid So, to which shells can be added, or - by adding the shell S to the solid So. Warning No check is done to verify the conditions of coherence of the resulting solid. In particular S must not intersect the solid S0. Besides, after all shells have been added using the Add function, one of these shells should constitute the outside skin of the solid. It may be closed (a finite solid) or open (an infinite solid). Other shells form hollows (cavities) in the previous ones. Each must bound a closed volume.
 
 	:param So:
 	:type So: TopoDS_Solid &
@@ -2459,7 +2283,7 @@ class BRepBuilderAPI_MakeSolid : public BRepBuilderAPI_MakeShape {
 ") BRepBuilderAPI_MakeSolid;
 		 BRepBuilderAPI_MakeSolid (const TopoDS_Solid & So,const TopoDS_Shell & S);
 		%feature("compactdefaultargs") Add;
-		%feature("autodoc", "	* Adds the shell to the current solid. //!	Warning No check is done to verify the conditions of coherence of the resulting solid. In particular, S must not intersect other shells of the solid under construction. Besides, after all shells have been added, one of these shells should constitute the outside skin of the solid. It may be closed (a finite solid) or open (an infinite solid). Other shells form hollows (cavities) in these previous ones. Each must bound a closed volume.
+		%feature("autodoc", "	* Adds the shell to the current solid. Warning No check is done to verify the conditions of coherence of the resulting solid. In particular, S must not intersect other shells of the solid under construction. Besides, after all shells have been added, one of these shells should constitute the outside skin of the solid. It may be closed (a finite solid) or open (an infinite solid). Other shells form hollows (cavities) in these previous ones. Each must bound a closed volume.
 
 	:param S:
 	:type S: TopoDS_Shell &
@@ -2491,20 +2315,6 @@ class BRepBuilderAPI_MakeSolid : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeSolid::~BRepBuilderAPI_MakeSolid %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeSolid {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeVertex;
 class BRepBuilderAPI_MakeVertex : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2529,20 +2339,6 @@ class BRepBuilderAPI_MakeVertex : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeVertex::~BRepBuilderAPI_MakeVertex %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeVertex {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_MakeWire;
 class BRepBuilderAPI_MakeWire : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2675,20 +2471,6 @@ class BRepBuilderAPI_MakeWire : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_MakeWire::~BRepBuilderAPI_MakeWire %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_MakeWire {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_ModifyShape;
 class BRepBuilderAPI_ModifyShape : public BRepBuilderAPI_MakeShape {
 	public:
@@ -2711,20 +2493,6 @@ class BRepBuilderAPI_ModifyShape : public BRepBuilderAPI_MakeShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_ModifyShape::~BRepBuilderAPI_ModifyShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_ModifyShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_Copy;
 class BRepBuilderAPI_Copy : public BRepBuilderAPI_ModifyShape {
 	public:
@@ -2757,20 +2525,6 @@ class BRepBuilderAPI_Copy : public BRepBuilderAPI_ModifyShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_Copy::~BRepBuilderAPI_Copy %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_Copy {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_GTransform;
 class BRepBuilderAPI_GTransform : public BRepBuilderAPI_ModifyShape {
 	public:
@@ -2823,20 +2577,6 @@ class BRepBuilderAPI_GTransform : public BRepBuilderAPI_ModifyShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_GTransform::~BRepBuilderAPI_GTransform %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_GTransform {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_NurbsConvert;
 class BRepBuilderAPI_NurbsConvert : public BRepBuilderAPI_ModifyShape {
 	public:
@@ -2869,20 +2609,6 @@ class BRepBuilderAPI_NurbsConvert : public BRepBuilderAPI_ModifyShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_NurbsConvert::~BRepBuilderAPI_NurbsConvert %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_NurbsConvert {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepBuilderAPI_Transform;
 class BRepBuilderAPI_Transform : public BRepBuilderAPI_ModifyShape {
 	public:
@@ -2935,17 +2661,3 @@ class BRepBuilderAPI_Transform : public BRepBuilderAPI_ModifyShape {
 };
 
 
-%feature("shadow") BRepBuilderAPI_Transform::~BRepBuilderAPI_Transform %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepBuilderAPI_Transform {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

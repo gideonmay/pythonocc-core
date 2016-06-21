@@ -25,7 +25,7 @@ import itertools
 
 from OCC.AIS import AIS_MultipleConnectedInteractive, AIS_Shape
 from OCC.TopoDS import TopoDS_Shape
-from OCC.gp import gp_Dir, gp_Pnt, gp_Pnt2d
+from OCC.gp import gp_Dir, gp_Pnt, gp_Pnt2d, gp_Vec
 from OCC.BRepBuilderAPI import (BRepBuilderAPI_MakeVertex,
                                 BRepBuilderAPI_MakeEdge,
                                 BRepBuilderAPI_MakeEdge2d,
@@ -106,6 +106,23 @@ class Viewer3d(OCC.Visualization.Display3d):
         self.View = None
         self.selected_shape = None
         self.selected_shapes = []
+        self._select_callbacks = []
+
+    def register_select_callback(self, callback):
+        """ Adds a callback that will be called each time a shape s selected
+        """
+        if not callable(callback):
+            raise AssertionError("You must provide a callable to register the callback")
+        else:
+            self._select_callbacks.append(callback)
+
+    def unregister_callback(self, callback):
+        """ Remove a callback from the callback list
+        """
+        if not callback in self._select_callbacks:
+            raise AssertionError("This callback is not registered")
+        else:
+            self._select_callbacks.remove(callback)
 
     def MoveTo(self, X, Y):
         self.Context.MoveTo(X, Y, self.View_handle)
@@ -230,10 +247,14 @@ class Viewer3d(OCC.Visualization.Display3d):
     def DisplayVector(self, vec, pnt, update=False):
         if self._inited:
             aPresentation = Prs3d_Presentation(self._struc_mgr)
-            arrow = Prs3d_Arrow()
-            arrow.Draw(
+
+            pnt_as_vec = gp_Vec(pnt.X(), pnt.Y(), pnt.Z())
+            start = pnt_as_vec + vec
+            pnt_start = gp_Pnt(start.X(), start.Y(), start.Z())
+
+            Prs3d_Arrow.Draw(
                 aPresentation.GetHandle(),
-                (pnt.as_vec() + vec).as_pnt(),
+                pnt_start,
                 gp_Dir(vec),
                 math.radians(20),
                 vec.Magnitude()
@@ -423,7 +444,7 @@ class Viewer3d(OCC.Visualization.Display3d):
     def SetSelectionMode(self, mode=None):
         self.Context.CloseAllContexts()
         self.Context.OpenLocalContext()
-        topo_level = modes.next()
+        topo_level = next(modes)
         if mode is None:
             self.Context.ActivateStandardMode(topo_level)
         else:
@@ -463,17 +484,21 @@ class Viewer3d(OCC.Visualization.Display3d):
             if self.Context.HasSelectedShape():
                 self.selected_shapes.append(self.Context.SelectedShape())
             self.Context.NextSelected()
-        print("Current selection (%i instances):" % len(self.selected_shapes), self.selected_shapes)
+        # callbacks
+        for callback in self._select_callbacks:
+            callback(self.selected_shapes, Xmin, Ymin, Xmax, Ymax)
 
     def Select(self, X, Y):
         self.Context.Select()
         self.Context.InitSelected()
+
+        self.selected_shapes = []
         if self.Context.MoreSelected():
             if self.Context.HasSelectedShape():
-                self.selected_shape = self.Context.SelectedShape()
-                print("Current selection (single):", self.selected_shape)
-        else:
-            self.selected_shape = None
+                self.selected_shapes.append(self.Context.SelectedShape())
+        # callbacks
+        for callback in self._select_callbacks:
+            callback(self.selected_shapes, X, Y)
 
     def ShiftSelect(self, X, Y):
         self.Context.ShiftSelect()
@@ -486,7 +511,9 @@ class Viewer3d(OCC.Visualization.Display3d):
             self.Context.NextSelected()
         # hilight newly selected unhighlight those no longer selected
         self.Context.UpdateSelected()
-        print("Current selection (%i instances):" % len(self.selected_shapes), self.selected_shapes)
+        # callbacks
+        for callback in self._select_callbacks:
+            callback(self.selected_shapes, X, Y)
 
     def Rotation(self, X, Y):
         self.View.Rotation(X, Y)

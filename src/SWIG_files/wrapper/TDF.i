@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include TDF_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef Handle_NCollection_BaseAllocator TDF_HAllocator;
@@ -97,20 +113,6 @@ class TDF {
 };
 
 
-%feature("shadow") TDF::~TDF %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_Attribute;
 class TDF_Attribute : public MMgt_TShared {
 	public:
@@ -151,7 +153,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") IsNew;
 		Standard_Boolean IsNew ();
 		%feature("compactdefaultargs") IsForgotten;
-		%feature("autodoc", "	* Returns true if the attribute forgotten status is set. ShortCut Methods concerning associated attributes =================================================
+		%feature("autodoc", "	* Returns true if the attribute forgotten status is set. //! ShortCut Methods concerning associated attributes =================================================
 
 	:rtype: bool
 ") IsForgotten;
@@ -191,7 +193,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") ForgetAttribute;
 		Standard_Boolean ForgetAttribute (const Standard_GUID & aguid);
 		%feature("compactdefaultargs") ForgetAllAttributes;
-		%feature("autodoc", "	* Forgets all the attributes attached to the label  of <self>. Does it on the sub-labels if <clearChildren> is set to true. Of course, this method is compatible with Transaction & Delta mecanisms. Be carefull that if <self> will have a null label after this call
+		%feature("autodoc", "	* Forgets all the attributes attached to the label of <self>. Does it on the sub-labels if <clearChildren> is set to true. Of course, this method is compatible with Transaction & Delta mecanisms. Be carefull that if <self> will have a null label after this call
 
 	:param clearChildren: default value is Standard_True
 	:type clearChildren: bool
@@ -257,7 +259,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") BeforeCommitTransaction;
 		virtual void BeforeCommitTransaction ();
 		%feature("compactdefaultargs") Backup;
-		%feature("autodoc", "	* Backups the attribute. The backuped attribute is flagged 'Backuped' and not 'Valid'.  The method does nothing:  1) If the attribute transaction number is equal to the current transaction number (the attribute has already been backuped).  2) If the attribute is not attached to a label.
+		%feature("autodoc", "	* Backups the attribute. The backuped attribute is flagged 'Backuped' and not 'Valid'. //! The method does nothing: //! 1) If the attribute transaction number is equal to the current transaction number (the attribute has already been backuped). //! 2) If the attribute is not attached to a label.
 
 	:rtype: None
 ") Backup;
@@ -283,25 +285,25 @@ class TDF_Attribute : public MMgt_TShared {
 ") Restore;
 		virtual void Restore (const Handle_TDF_Attribute & anAttribute);
 		%feature("compactdefaultargs") DeltaOnAddition;
-		%feature("autodoc", "	* Makes an AttributeDelta because <self>  appeared. The only known use of a redefinition of  this method is to return a null handle (no delta).
+		%feature("autodoc", "	* Makes an AttributeDelta because <self> appeared. The only known use of a redefinition of this method is to return a null handle (no delta).
 
 	:rtype: Handle_TDF_DeltaOnAddition
 ") DeltaOnAddition;
 		virtual Handle_TDF_DeltaOnAddition DeltaOnAddition ();
 		%feature("compactdefaultargs") DeltaOnForget;
-		%feature("autodoc", "	* Makes an AttributeDelta because <self> has been  forgotten.
+		%feature("autodoc", "	* Makes an AttributeDelta because <self> has been forgotten.
 
 	:rtype: Handle_TDF_DeltaOnForget
 ") DeltaOnForget;
 		virtual Handle_TDF_DeltaOnForget DeltaOnForget ();
 		%feature("compactdefaultargs") DeltaOnResume;
-		%feature("autodoc", "	* Makes an AttributeDelta because <self> has been  resumed.
+		%feature("autodoc", "	* Makes an AttributeDelta because <self> has been resumed.
 
 	:rtype: Handle_TDF_DeltaOnResume
 ") DeltaOnResume;
 		virtual Handle_TDF_DeltaOnResume DeltaOnResume ();
 		%feature("compactdefaultargs") DeltaOnModification;
-		%feature("autodoc", "	* Makes a DeltaOnModification between <self> and  <anOldAttribute.
+		%feature("autodoc", "	* Makes a DeltaOnModification between <self> and <anOldAttribute.
 
 	:param anOldAttribute:
 	:type anOldAttribute: Handle_TDF_Attribute &
@@ -317,7 +319,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") DeltaOnModification;
 		virtual void DeltaOnModification (const Handle_TDF_DeltaOnModification & aDelta);
 		%feature("compactdefaultargs") DeltaOnRemoval;
-		%feature("autodoc", "	* Makes a DeltaOnRemoval on <self> because <self> has  disappeared from the DS.
+		%feature("autodoc", "	* Makes a DeltaOnRemoval on <self> because <self> has disappeared from the DS.
 
 	:rtype: Handle_TDF_DeltaOnRemoval
 ") DeltaOnRemoval;
@@ -329,7 +331,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") NewEmpty;
 		virtual Handle_TDF_Attribute NewEmpty ();
 		%feature("compactdefaultargs") Paste;
-		%feature("autodoc", "	* This method is different from the 'Copy' one, because it is used when copying an attribute from a source structure into a target structure. This method may paste the contents of <self> into <intoAttribute>.  The given pasted attribute can be full or empty of its contents. But don't make a NEW! Just set the contents!  It is possible to use <aRelocationTable> to get/set the relocation value of a source attribute.
+		%feature("autodoc", "	* This method is different from the 'Copy' one, because it is used when copying an attribute from a source structure into a target structure. This method may paste the contents of <self> into <intoAttribute>. //! The given pasted attribute can be full or empty of its contents. But don't make a NEW! Just set the contents! //! It is possible to use <aRelocationTable> to get/set the relocation value of a source attribute.
 
 	:param intoAttribute:
 	:type intoAttribute: Handle_TDF_Attribute &
@@ -339,7 +341,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") Paste;
 		virtual void Paste (const Handle_TDF_Attribute & intoAttribute,const Handle_TDF_RelocationTable & aRelocationTable);
 		%feature("compactdefaultargs") References;
-		%feature("autodoc", "	* Adds the first level referenced attributes and labels to <aDataSet>.  For this, use the AddLabel or AddAttribute of DataSet.  If there is none, do not implement the method.
+		%feature("autodoc", "	* Adds the first level referenced attributes and labels to <aDataSet>. //! For this, use the AddLabel or AddAttribute of DataSet. //! If there is none, do not implement the method.
 
 	:param aDataSet:
 	:type aDataSet: Handle_TDF_DataSet &
@@ -367,7 +369,7 @@ class TDF_Attribute : public MMgt_TShared {
 ") ExtendedDump;
 		virtual void ExtendedDump (Standard_OStream & anOS,const TDF_IDFilter & aFilter,TDF_AttributeIndexedMap & aMap);
 		%feature("compactdefaultargs") Forget;
-		%feature("autodoc", "	* Forgets the attribute. <aTransaction> is the current transaction in which the forget is done. A forgotten attribute is also flagged not 'Valid'.  A forgotten attribute is invisible. Set also the 'Valid' status to False. Obvioulsy, DF cannot empty an attribute (this has a semantic signification), but can remove it from the structure. So, a forgotten attribute is NOT an empty one, but a soon DEAD one.  Should be private.
+		%feature("autodoc", "	* Forgets the attribute. <aTransaction> is the current transaction in which the forget is done. A forgotten attribute is also flagged not 'Valid'. //! A forgotten attribute is invisible. Set also the 'Valid' status to False. Obvioulsy, DF cannot empty an attribute (this has a semantic signification), but can remove it from the structure. So, a forgotten attribute is NOT an empty one, but a soon DEAD one. //! Should be private.
 
 	:param aTransaction:
 	:type aTransaction: int
@@ -377,25 +379,23 @@ class TDF_Attribute : public MMgt_TShared {
 };
 
 
-%feature("shadow") TDF_Attribute::~TDF_Attribute %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_Attribute {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_Attribute(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_Attribute {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_Attribute {
-	Handle_TDF_Attribute GetHandle() {
-	return *(Handle_TDF_Attribute*) &$self;
-	}
-};
+%pythonappend Handle_TDF_Attribute::Handle_TDF_Attribute %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_Attribute;
 class Handle_TDF_Attribute : public Handle_MMgt_TShared {
@@ -413,20 +413,6 @@ class Handle_TDF_Attribute : public Handle_MMgt_TShared {
 %extend Handle_TDF_Attribute {
     TDF_Attribute* GetObject() {
     return (TDF_Attribute*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_Attribute::~Handle_TDF_Attribute %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_Attribute {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -502,30 +488,16 @@ class TDF_AttributeArray1 {
 	:type Index: int
 	:rtype: Handle_TDF_Attribute
 ") Value;
-		const Handle_TDF_Attribute & Value (const Standard_Integer Index);
+		Handle_TDF_Attribute Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
 	:rtype: Handle_TDF_Attribute
 ") ChangeValue;
-		Handle_TDF_Attribute & ChangeValue (const Standard_Integer Index);
+		Handle_TDF_Attribute ChangeValue (const Standard_Integer Index);
 };
 
 
-%feature("shadow") TDF_AttributeArray1::~TDF_AttributeArray1 %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeArray1 {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeDataMap;
 class TDF_AttributeDataMap : public TCollection_BasicMap {
 	public:
@@ -582,13 +554,13 @@ class TDF_AttributeDataMap : public TCollection_BasicMap {
 	:type K: Handle_TDF_Attribute &
 	:rtype: Handle_TDF_Attribute
 ") Find;
-		const Handle_TDF_Attribute & Find (const Handle_TDF_Attribute & K);
+		Handle_TDF_Attribute Find (const Handle_TDF_Attribute & K);
 		%feature("compactdefaultargs") ChangeFind;
 		%feature("autodoc", "	:param K:
 	:type K: Handle_TDF_Attribute &
 	:rtype: Handle_TDF_Attribute
 ") ChangeFind;
-		Handle_TDF_Attribute & ChangeFind (const Handle_TDF_Attribute & K);
+		Handle_TDF_Attribute ChangeFind (const Handle_TDF_Attribute & K);
 		%feature("compactdefaultargs") Find1;
 		%feature("autodoc", "	:param K:
 	:type K: Handle_TDF_Attribute &
@@ -604,20 +576,6 @@ class TDF_AttributeDataMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_AttributeDataMap::~TDF_AttributeDataMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeDataMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeDelta;
 class TDF_AttributeDelta : public MMgt_TShared {
 	public:
@@ -656,25 +614,23 @@ class TDF_AttributeDelta : public MMgt_TShared {
         };
 
 
-%feature("shadow") TDF_AttributeDelta::~TDF_AttributeDelta %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_AttributeDelta {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_AttributeDelta(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_AttributeDelta {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_AttributeDelta {
-	Handle_TDF_AttributeDelta GetHandle() {
-	return *(Handle_TDF_AttributeDelta*) &$self;
-	}
-};
+%pythonappend Handle_TDF_AttributeDelta::Handle_TDF_AttributeDelta %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_AttributeDelta;
 class Handle_TDF_AttributeDelta : public Handle_MMgt_TShared {
@@ -694,20 +650,6 @@ class Handle_TDF_AttributeDelta : public Handle_MMgt_TShared {
     return (TDF_AttributeDelta*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_AttributeDelta::~Handle_TDF_AttributeDelta %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_AttributeDelta {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_AttributeDeltaList;
 class TDF_AttributeDeltaList {
@@ -716,6 +658,12 @@ class TDF_AttributeDeltaList {
 		%feature("autodoc", "	:rtype: None
 ") TDF_AttributeDeltaList;
 		 TDF_AttributeDeltaList ();
+		%feature("compactdefaultargs") TDF_AttributeDeltaList;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_AttributeDeltaList &
+	:rtype: None
+") TDF_AttributeDeltaList;
+		 TDF_AttributeDeltaList (const TDF_AttributeDeltaList & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_AttributeDeltaList &
@@ -783,11 +731,11 @@ class TDF_AttributeDeltaList {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TDF_AttributeDelta
 ") First;
-		Handle_TDF_AttributeDelta & First ();
+		Handle_TDF_AttributeDelta First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TDF_AttributeDelta
 ") Last;
-		Handle_TDF_AttributeDelta & Last ();
+		Handle_TDF_AttributeDelta Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -833,20 +781,6 @@ class TDF_AttributeDeltaList {
 };
 
 
-%feature("shadow") TDF_AttributeDeltaList::~TDF_AttributeDeltaList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeDeltaList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeDoubleMap;
 class TDF_AttributeDoubleMap : public TCollection_BasicMap {
 	public:
@@ -911,13 +845,13 @@ class TDF_AttributeDoubleMap : public TCollection_BasicMap {
 	:type K: Handle_TDF_Attribute &
 	:rtype: Handle_TDF_Attribute
 ") Find1;
-		const Handle_TDF_Attribute & Find1 (const Handle_TDF_Attribute & K);
+		Handle_TDF_Attribute Find1 (const Handle_TDF_Attribute & K);
 		%feature("compactdefaultargs") Find2;
 		%feature("autodoc", "	:param K:
 	:type K: Handle_TDF_Attribute &
 	:rtype: Handle_TDF_Attribute
 ") Find2;
-		const Handle_TDF_Attribute & Find2 (const Handle_TDF_Attribute & K);
+		Handle_TDF_Attribute Find2 (const Handle_TDF_Attribute & K);
 		%feature("compactdefaultargs") UnBind1;
 		%feature("autodoc", "	:param K:
 	:type K: Handle_TDF_Attribute &
@@ -933,20 +867,6 @@ class TDF_AttributeDoubleMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_AttributeDoubleMap::~TDF_AttributeDoubleMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeDoubleMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeIndexedMap;
 class TDF_AttributeIndexedMap : public TCollection_BasicMap {
 	public:
@@ -956,6 +876,12 @@ class TDF_AttributeIndexedMap : public TCollection_BasicMap {
 	:rtype: None
 ") TDF_AttributeIndexedMap;
 		 TDF_AttributeIndexedMap (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TDF_AttributeIndexedMap;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_AttributeIndexedMap &
+	:rtype: None
+") TDF_AttributeIndexedMap;
+		 TDF_AttributeIndexedMap (const TDF_AttributeIndexedMap & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_AttributeIndexedMap &
@@ -1007,7 +933,7 @@ class TDF_AttributeIndexedMap : public TCollection_BasicMap {
 	:type I: int
 	:rtype: Handle_TDF_Attribute
 ") FindKey;
-		const Handle_TDF_Attribute & FindKey (const Standard_Integer I);
+		Handle_TDF_Attribute FindKey (const Standard_Integer I);
 		%feature("compactdefaultargs") FindIndex;
 		%feature("autodoc", "	:param K:
 	:type K: Handle_TDF_Attribute &
@@ -1017,20 +943,6 @@ class TDF_AttributeIndexedMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_AttributeIndexedMap::~TDF_AttributeIndexedMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeIndexedMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeIterator;
 class TDF_AttributeIterator {
 	public:
@@ -1077,20 +989,6 @@ class TDF_AttributeIterator {
 };
 
 
-%feature("shadow") TDF_AttributeIterator::~TDF_AttributeIterator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeIterator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeList;
 class TDF_AttributeList {
 	public:
@@ -1098,6 +996,12 @@ class TDF_AttributeList {
 		%feature("autodoc", "	:rtype: None
 ") TDF_AttributeList;
 		 TDF_AttributeList ();
+		%feature("compactdefaultargs") TDF_AttributeList;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_AttributeList &
+	:rtype: None
+") TDF_AttributeList;
+		 TDF_AttributeList (const TDF_AttributeList & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_AttributeList &
@@ -1165,11 +1069,11 @@ class TDF_AttributeList {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") First;
-		Handle_TDF_Attribute & First ();
+		Handle_TDF_Attribute First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Last;
-		Handle_TDF_Attribute & Last ();
+		Handle_TDF_Attribute Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -1215,20 +1119,6 @@ class TDF_AttributeList {
 };
 
 
-%feature("shadow") TDF_AttributeList::~TDF_AttributeList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeMap;
 class TDF_AttributeMap : public TCollection_BasicMap {
 	public:
@@ -1238,6 +1128,12 @@ class TDF_AttributeMap : public TCollection_BasicMap {
 	:rtype: None
 ") TDF_AttributeMap;
 		 TDF_AttributeMap (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TDF_AttributeMap;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_AttributeMap &
+	:rtype: None
+") TDF_AttributeMap;
+		 TDF_AttributeMap (const TDF_AttributeMap & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_AttributeMap &
@@ -1281,20 +1177,6 @@ class TDF_AttributeMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_AttributeMap::~TDF_AttributeMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_AttributeSequence;
 class TDF_AttributeSequence : public TCollection_BaseSequence {
 	public:
@@ -1302,6 +1184,12 @@ class TDF_AttributeSequence : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TDF_AttributeSequence;
 		 TDF_AttributeSequence ();
+		%feature("compactdefaultargs") TDF_AttributeSequence;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_AttributeSequence &
+	:rtype: None
+") TDF_AttributeSequence;
+		 TDF_AttributeSequence (const TDF_AttributeSequence & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -1377,11 +1265,11 @@ class TDF_AttributeSequence : public TCollection_BaseSequence {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") First;
-		const Handle_TDF_Attribute & First ();
+		Handle_TDF_Attribute First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Last;
-		const Handle_TDF_Attribute & Last ();
+		Handle_TDF_Attribute Last ();
 		%feature("compactdefaultargs") Split;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1395,7 +1283,7 @@ class TDF_AttributeSequence : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TDF_Attribute
 ") Value;
-		const Handle_TDF_Attribute & Value (const Standard_Integer Index);
+		Handle_TDF_Attribute Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") SetValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1409,7 +1297,7 @@ class TDF_AttributeSequence : public TCollection_BaseSequence {
 	:type Index: int
 	:rtype: Handle_TDF_Attribute
 ") ChangeValue;
-		Handle_TDF_Attribute & ChangeValue (const Standard_Integer Index);
+		Handle_TDF_Attribute ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Remove;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
@@ -1427,20 +1315,6 @@ class TDF_AttributeSequence : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TDF_AttributeSequence::~TDF_AttributeSequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_AttributeSequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ChildIDIterator;
 class TDF_ChildIDIterator {
 	public:
@@ -1501,20 +1375,6 @@ class TDF_ChildIDIterator {
 };
 
 
-%feature("shadow") TDF_ChildIDIterator::~TDF_ChildIDIterator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ChildIDIterator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ChildIterator;
 class TDF_ChildIterator {
 	public:
@@ -1571,20 +1431,6 @@ class TDF_ChildIterator {
 };
 
 
-%feature("shadow") TDF_ChildIterator::~TDF_ChildIterator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ChildIterator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ClosureMode;
 class TDF_ClosureMode {
 	public:
@@ -1597,7 +1443,7 @@ class TDF_ClosureMode {
 ") TDF_ClosureMode;
 		 TDF_ClosureMode (const Standard_Boolean aMode = Standard_True);
 		%feature("compactdefaultargs") Descendants;
-		%feature("autodoc", "	* Sets the mode 'Descendants' to <aStatus>.  'Descendants' mode means we add to the data set the children labels of each USER GIVEN label. We do not do that with the labels found applying UpToFirstLevel option.
+		%feature("autodoc", "	* Sets the mode 'Descendants' to <aStatus>. //! 'Descendants' mode means we add to the data set the children labels of each USER GIVEN label. We do not do that with the labels found applying UpToFirstLevel option.
 
 	:param aStatus:
 	:type aStatus: bool
@@ -1611,7 +1457,7 @@ class TDF_ClosureMode {
 ") Descendants;
 		Standard_Boolean Descendants ();
 		%feature("compactdefaultargs") References;
-		%feature("autodoc", "	* Sets the mode 'References' to <aStatus>.  'References' mode means we add to the data set the descendants of an attribute, by calling the attribute method Descendants().
+		%feature("autodoc", "	* Sets the mode 'References' to <aStatus>. //! 'References' mode means we add to the data set the descendants of an attribute, by calling the attribute method Descendants().
 
 	:param aStatus:
 	:type aStatus: bool
@@ -1627,20 +1473,6 @@ class TDF_ClosureMode {
 };
 
 
-%feature("shadow") TDF_ClosureMode::~TDF_ClosureMode %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ClosureMode {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class TDF_ClosureTool {
 	public:
 		%feature("compactdefaultargs") Closure;
@@ -1682,20 +1514,6 @@ class TDF_ClosureTool {
 };
 
 
-%feature("shadow") TDF_ClosureTool::~TDF_ClosureTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ClosureTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class TDF_ComparisonTool {
 	public:
 		%feature("compactdefaultargs") Compare;
@@ -1713,7 +1531,7 @@ class TDF_ComparisonTool {
 ") Compare;
 		static void Compare (const Handle_TDF_DataSet & aSourceDataSet,const Handle_TDF_DataSet & aTargetDataSet,const TDF_IDFilter & aFilter,const Handle_TDF_RelocationTable & aRelocationTable);
 		%feature("compactdefaultargs") SourceUnbound;
-		%feature("autodoc", "	* Finds from <aRefDataSet> all the keys not bound into <aRelocationTable> and put them into <aDiffDataSet>. Returns True if the difference contains at least one key. (A key is a source object).  <anOption> may take the following values: 1 : labels treatment only; 2 : attributes treatment only (default value); 3 : both labels & attributes treatment.
+		%feature("autodoc", "	* Finds from <aRefDataSet> all the keys not bound into <aRelocationTable> and put them into <aDiffDataSet>. Returns True if the difference contains at least one key. (A key is a source object). //! <anOption> may take the following values: 1 : labels treatment only; 2 : attributes treatment only (default value); 3 : both labels & attributes treatment.
 
 	:param aRefDataSet:
 	:type aRefDataSet: Handle_TDF_DataSet &
@@ -1729,7 +1547,7 @@ class TDF_ComparisonTool {
 ") SourceUnbound;
 		static Standard_Boolean SourceUnbound (const Handle_TDF_DataSet & aRefDataSet,const Handle_TDF_RelocationTable & aRelocationTable,const TDF_IDFilter & aFilter,const Handle_TDF_DataSet & aDiffDataSet,const Standard_Integer anOption = 2);
 		%feature("compactdefaultargs") TargetUnbound;
-		%feature("autodoc", "	* Substracts from <aRefDataSet> all the items bound into <aRelocationTable>. The result is put into <aDiffDataSet>. Returns True if the difference contains at least one item. (An item is a target object).  <anOption> may take the following values: 1 : labels treatment only; 2 : attributes treatment only(default value); 3 : both labels & attributes treatment.
+		%feature("autodoc", "	* Substracts from <aRefDataSet> all the items bound into <aRelocationTable>. The result is put into <aDiffDataSet>. Returns True if the difference contains at least one item. (An item is a target object). //! <anOption> may take the following values: 1 : labels treatment only; 2 : attributes treatment only(default value); 3 : both labels & attributes treatment.
 
 	:param aRefDataSet:
 	:type aRefDataSet: Handle_TDF_DataSet &
@@ -1765,20 +1583,6 @@ class TDF_ComparisonTool {
 };
 
 
-%feature("shadow") TDF_ComparisonTool::~TDF_ComparisonTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ComparisonTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_CopyLabel;
 class TDF_CopyLabel {
 	public:
@@ -1859,24 +1663,10 @@ class TDF_CopyLabel {
 
 	:rtype: Handle_TDF_RelocationTable
 ") RelocationTable;
-		const Handle_TDF_RelocationTable & RelocationTable ();
+		Handle_TDF_RelocationTable RelocationTable ();
 };
 
 
-%feature("shadow") TDF_CopyLabel::~TDF_CopyLabel %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_CopyLabel {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class TDF_CopyTool {
 	public:
 		%feature("compactdefaultargs") Copy;
@@ -1902,7 +1692,7 @@ class TDF_CopyTool {
 ") Copy;
 		static void Copy (const Handle_TDF_DataSet & aSourceDataSet,const Handle_TDF_RelocationTable & aRelocationTable,const TDF_IDFilter & aPrivilegeFilter);
 		%feature("compactdefaultargs") Copy;
-		%feature("autodoc", "	* Copy <aSourceDataSet> using and updating <aRelocationTable>. Use <aPrivilegeFilter> to give a list of IDs for which the target attribute prevails over the source one. If  <setSelfContained> is set to true, every TDF_Reference will be replaced by the referenced structure according to <aRefFilter>.  NB: <aRefFilter> is used only if <setSelfContained> is true. Internal root label copy recursive method.
+		%feature("autodoc", "	* Copy <aSourceDataSet> using and updating <aRelocationTable>. Use <aPrivilegeFilter> to give a list of IDs for which the target attribute prevails over the source one. If <setSelfContained> is set to true, every TDF_Reference will be replaced by the referenced structure according to <aRefFilter>. //! NB: <aRefFilter> is used only if <setSelfContained> is true. Internal root label copy recursive method.
 
 	:param aSourceDataSet:
 	:type aSourceDataSet: Handle_TDF_DataSet &
@@ -1920,20 +1710,6 @@ class TDF_CopyTool {
 };
 
 
-%feature("shadow") TDF_CopyTool::~TDF_CopyTool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_CopyTool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_Data;
 class TDF_Data : public MMgt_TShared {
 	public:
@@ -1970,7 +1746,7 @@ class TDF_Data : public MMgt_TShared {
 ") IsApplicable;
 		Standard_Boolean IsApplicable (const Handle_TDF_Delta & aDelta);
 		%feature("compactdefaultargs") Undo;
-		%feature("autodoc", "	* Apply <aDelta> to undo a set of attribute modifications.  Optionnal <withDelta> set to True indiquates a Delta Set must be generated. (See above)
+		%feature("autodoc", "	* Apply <aDelta> to undo a set of attribute modifications. //! Optionnal <withDelta> set to True indiquates a Delta Set must be generated. (See above)
 
 	:param aDelta:
 	:type aDelta: Handle_TDF_Delta &
@@ -2020,25 +1796,23 @@ class TDF_Data : public MMgt_TShared {
 };
 
 
-%feature("shadow") TDF_Data::~TDF_Data %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_Data {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_Data(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_Data {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_Data {
-	Handle_TDF_Data GetHandle() {
-	return *(Handle_TDF_Data*) &$self;
-	}
-};
+%pythonappend Handle_TDF_Data::Handle_TDF_Data %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_Data;
 class Handle_TDF_Data : public Handle_MMgt_TShared {
@@ -2056,20 +1830,6 @@ class Handle_TDF_Data : public Handle_MMgt_TShared {
 %extend Handle_TDF_Data {
     TDF_Data* GetObject() {
     return (TDF_Data*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_Data::~Handle_TDF_Data %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_Data {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2095,28 +1855,14 @@ class TDF_DataMapIteratorOfAttributeDataMap : public TCollection_BasicMapIterato
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key;
-		const Handle_TDF_Attribute & Key ();
+		Handle_TDF_Attribute Key ();
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Value;
-		const Handle_TDF_Attribute & Value ();
+		Handle_TDF_Attribute Value ();
 };
 
 
-%feature("shadow") TDF_DataMapIteratorOfAttributeDataMap::~TDF_DataMapIteratorOfAttributeDataMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DataMapIteratorOfAttributeDataMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DataMapIteratorOfLabelDataMap;
 class TDF_DataMapIteratorOfLabelDataMap : public TCollection_BasicMapIterator {
 	public:
@@ -2147,20 +1893,6 @@ class TDF_DataMapIteratorOfLabelDataMap : public TCollection_BasicMapIterator {
 };
 
 
-%feature("shadow") TDF_DataMapIteratorOfLabelDataMap::~TDF_DataMapIteratorOfLabelDataMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DataMapIteratorOfLabelDataMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DataMapIteratorOfLabelIntegerMap;
 class TDF_DataMapIteratorOfLabelIntegerMap : public TCollection_BasicMapIterator {
 	public:
@@ -2191,64 +1923,6 @@ class TDF_DataMapIteratorOfLabelIntegerMap : public TCollection_BasicMapIterator
 };
 
 
-%feature("shadow") TDF_DataMapIteratorOfLabelIntegerMap::~TDF_DataMapIteratorOfLabelIntegerMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DataMapIteratorOfLabelIntegerMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TDF_DataMapIteratorOfLabelLabelMap;
-class TDF_DataMapIteratorOfLabelLabelMap : public TCollection_BasicMapIterator {
-	public:
-		%feature("compactdefaultargs") TDF_DataMapIteratorOfLabelLabelMap;
-		%feature("autodoc", "	:rtype: None
-") TDF_DataMapIteratorOfLabelLabelMap;
-		 TDF_DataMapIteratorOfLabelLabelMap ();
-		%feature("compactdefaultargs") TDF_DataMapIteratorOfLabelLabelMap;
-		%feature("autodoc", "	:param aMap:
-	:type aMap: TDF_LabelLabelMap &
-	:rtype: None
-") TDF_DataMapIteratorOfLabelLabelMap;
-		 TDF_DataMapIteratorOfLabelLabelMap (const TDF_LabelLabelMap & aMap);
-		%feature("compactdefaultargs") Initialize;
-		%feature("autodoc", "	:param aMap:
-	:type aMap: TDF_LabelLabelMap &
-	:rtype: None
-") Initialize;
-		void Initialize (const TDF_LabelLabelMap & aMap);
-		%feature("compactdefaultargs") Key;
-		%feature("autodoc", "	:rtype: TDF_Label
-") Key;
-		const TDF_Label & Key ();
-		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: TDF_Label
-") Value;
-		const TDF_Label & Value ();
-};
-
-
-%feature("shadow") TDF_DataMapIteratorOfLabelLabelMap::~TDF_DataMapIteratorOfLabelLabelMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DataMapIteratorOfLabelLabelMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DataMapNodeOfAttributeDataMap;
 class TDF_DataMapNodeOfAttributeDataMap : public TCollection_MapNode {
 	public:
@@ -2265,33 +1939,31 @@ class TDF_DataMapNodeOfAttributeDataMap : public TCollection_MapNode {
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key;
-		Handle_TDF_Attribute & Key ();
+		Handle_TDF_Attribute Key ();
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Value;
-		Handle_TDF_Attribute & Value ();
+		Handle_TDF_Attribute Value ();
 };
 
 
-%feature("shadow") TDF_DataMapNodeOfAttributeDataMap::~TDF_DataMapNodeOfAttributeDataMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TDF_DataMapNodeOfAttributeDataMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DataMapNodeOfAttributeDataMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TDF_DataMapNodeOfAttributeDataMap::Handle_TDF_DataMapNodeOfAttributeDataMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TDF_DataMapNodeOfAttributeDataMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DataMapNodeOfAttributeDataMap {
-	Handle_TDF_DataMapNodeOfAttributeDataMap GetHandle() {
-	return *(Handle_TDF_DataMapNodeOfAttributeDataMap*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TDF_DataMapNodeOfAttributeDataMap;
 class Handle_TDF_DataMapNodeOfAttributeDataMap : public Handle_TCollection_MapNode {
@@ -2309,20 +1981,6 @@ class Handle_TDF_DataMapNodeOfAttributeDataMap : public Handle_TCollection_MapNo
 %extend Handle_TDF_DataMapNodeOfAttributeDataMap {
     TDF_DataMapNodeOfAttributeDataMap* GetObject() {
     return (TDF_DataMapNodeOfAttributeDataMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DataMapNodeOfAttributeDataMap::~Handle_TDF_DataMapNodeOfAttributeDataMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DataMapNodeOfAttributeDataMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2350,25 +2008,23 @@ class TDF_DataMapNodeOfLabelDataMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_DataMapNodeOfLabelDataMap::~TDF_DataMapNodeOfLabelDataMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DataMapNodeOfLabelDataMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DataMapNodeOfLabelDataMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DataMapNodeOfLabelDataMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DataMapNodeOfLabelDataMap {
-	Handle_TDF_DataMapNodeOfLabelDataMap GetHandle() {
-	return *(Handle_TDF_DataMapNodeOfLabelDataMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DataMapNodeOfLabelDataMap::Handle_TDF_DataMapNodeOfLabelDataMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DataMapNodeOfLabelDataMap;
 class Handle_TDF_DataMapNodeOfLabelDataMap : public Handle_TCollection_MapNode {
@@ -2386,20 +2042,6 @@ class Handle_TDF_DataMapNodeOfLabelDataMap : public Handle_TCollection_MapNode {
 %extend Handle_TDF_DataMapNodeOfLabelDataMap {
     TDF_DataMapNodeOfLabelDataMap* GetObject() {
     return (TDF_DataMapNodeOfLabelDataMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DataMapNodeOfLabelDataMap::~Handle_TDF_DataMapNodeOfLabelDataMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DataMapNodeOfLabelDataMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2436,25 +2078,23 @@ class TDF_DataMapNodeOfLabelIntegerMap : public TCollection_MapNode {
             };
 
 
-%feature("shadow") TDF_DataMapNodeOfLabelIntegerMap::~TDF_DataMapNodeOfLabelIntegerMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DataMapNodeOfLabelIntegerMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DataMapNodeOfLabelIntegerMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DataMapNodeOfLabelIntegerMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DataMapNodeOfLabelIntegerMap {
-	Handle_TDF_DataMapNodeOfLabelIntegerMap GetHandle() {
-	return *(Handle_TDF_DataMapNodeOfLabelIntegerMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DataMapNodeOfLabelIntegerMap::Handle_TDF_DataMapNodeOfLabelIntegerMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DataMapNodeOfLabelIntegerMap;
 class Handle_TDF_DataMapNodeOfLabelIntegerMap : public Handle_TCollection_MapNode {
@@ -2472,97 +2112,6 @@ class Handle_TDF_DataMapNodeOfLabelIntegerMap : public Handle_TCollection_MapNod
 %extend Handle_TDF_DataMapNodeOfLabelIntegerMap {
     TDF_DataMapNodeOfLabelIntegerMap* GetObject() {
     return (TDF_DataMapNodeOfLabelIntegerMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DataMapNodeOfLabelIntegerMap::~Handle_TDF_DataMapNodeOfLabelIntegerMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DataMapNodeOfLabelIntegerMap {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
-
-%nodefaultctor TDF_DataMapNodeOfLabelLabelMap;
-class TDF_DataMapNodeOfLabelLabelMap : public TCollection_MapNode {
-	public:
-		%feature("compactdefaultargs") TDF_DataMapNodeOfLabelLabelMap;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:param I:
-	:type I: TDF_Label &
-	:param n:
-	:type n: TCollection_MapNodePtr &
-	:rtype: None
-") TDF_DataMapNodeOfLabelLabelMap;
-		 TDF_DataMapNodeOfLabelLabelMap (const TDF_Label & K,const TDF_Label & I,const TCollection_MapNodePtr & n);
-		%feature("compactdefaultargs") Key;
-		%feature("autodoc", "	:rtype: TDF_Label
-") Key;
-		TDF_Label & Key ();
-		%feature("compactdefaultargs") Value;
-		%feature("autodoc", "	:rtype: TDF_Label
-") Value;
-		TDF_Label & Value ();
-};
-
-
-%feature("shadow") TDF_DataMapNodeOfLabelLabelMap::~TDF_DataMapNodeOfLabelLabelMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DataMapNodeOfLabelLabelMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DataMapNodeOfLabelLabelMap {
-	Handle_TDF_DataMapNodeOfLabelLabelMap GetHandle() {
-	return *(Handle_TDF_DataMapNodeOfLabelLabelMap*) &$self;
-	}
-};
-
-%nodefaultctor Handle_TDF_DataMapNodeOfLabelLabelMap;
-class Handle_TDF_DataMapNodeOfLabelLabelMap : public Handle_TCollection_MapNode {
-
-    public:
-        // constructors
-        Handle_TDF_DataMapNodeOfLabelLabelMap();
-        Handle_TDF_DataMapNodeOfLabelLabelMap(const Handle_TDF_DataMapNodeOfLabelLabelMap &aHandle);
-        Handle_TDF_DataMapNodeOfLabelLabelMap(const TDF_DataMapNodeOfLabelLabelMap *anItem);
-        void Nullify();
-        Standard_Boolean IsNull() const;
-        static const Handle_TDF_DataMapNodeOfLabelLabelMap DownCast(const Handle_Standard_Transient &AnObject);
-
-};
-%extend Handle_TDF_DataMapNodeOfLabelLabelMap {
-    TDF_DataMapNodeOfLabelLabelMap* GetObject() {
-    return (TDF_DataMapNodeOfLabelLabelMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DataMapNodeOfLabelLabelMap::~Handle_TDF_DataMapNodeOfLabelLabelMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DataMapNodeOfLabelLabelMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2656,25 +2205,23 @@ class TDF_DataSet : public MMgt_TShared {
         };
 
 
-%feature("shadow") TDF_DataSet::~TDF_DataSet %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DataSet {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DataSet(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DataSet {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DataSet {
-	Handle_TDF_DataSet GetHandle() {
-	return *(Handle_TDF_DataSet*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DataSet::Handle_TDF_DataSet %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DataSet;
 class Handle_TDF_DataSet : public Handle_MMgt_TShared {
@@ -2692,20 +2239,6 @@ class Handle_TDF_DataSet : public Handle_MMgt_TShared {
 %extend Handle_TDF_DataSet {
     TDF_DataSet* GetObject() {
     return (TDF_DataSet*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DataSet::~Handle_TDF_DataSet %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DataSet {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2783,25 +2316,23 @@ class TDF_Delta : public MMgt_TShared {
         };
 
 
-%feature("shadow") TDF_Delta::~TDF_Delta %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_Delta {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_Delta(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_Delta {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_Delta {
-	Handle_TDF_Delta GetHandle() {
-	return *(Handle_TDF_Delta*) &$self;
-	}
-};
+%pythonappend Handle_TDF_Delta::Handle_TDF_Delta %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_Delta;
 class Handle_TDF_Delta : public Handle_MMgt_TShared {
@@ -2821,20 +2352,6 @@ class Handle_TDF_Delta : public Handle_MMgt_TShared {
     return (TDF_Delta*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_Delta::~Handle_TDF_Delta %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_Delta {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_DeltaList;
 class TDF_DeltaList {
@@ -2843,6 +2360,12 @@ class TDF_DeltaList {
 		%feature("autodoc", "	:rtype: None
 ") TDF_DeltaList;
 		 TDF_DeltaList ();
+		%feature("compactdefaultargs") TDF_DeltaList;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_DeltaList &
+	:rtype: None
+") TDF_DeltaList;
+		 TDF_DeltaList (const TDF_DeltaList & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_DeltaList &
@@ -2910,11 +2433,11 @@ class TDF_DeltaList {
 		%feature("compactdefaultargs") First;
 		%feature("autodoc", "	:rtype: Handle_TDF_Delta
 ") First;
-		Handle_TDF_Delta & First ();
+		Handle_TDF_Delta First ();
 		%feature("compactdefaultargs") Last;
 		%feature("autodoc", "	:rtype: Handle_TDF_Delta
 ") Last;
-		Handle_TDF_Delta & Last ();
+		Handle_TDF_Delta Last ();
 		%feature("compactdefaultargs") RemoveFirst;
 		%feature("autodoc", "	:rtype: None
 ") RemoveFirst;
@@ -2960,20 +2483,6 @@ class TDF_DeltaList {
 };
 
 
-%feature("shadow") TDF_DeltaList::~TDF_DeltaList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DeltaList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DoubleMapIteratorOfAttributeDoubleMap;
 class TDF_DoubleMapIteratorOfAttributeDoubleMap : public TCollection_BasicMapIterator {
 	public:
@@ -2996,28 +2505,14 @@ class TDF_DoubleMapIteratorOfAttributeDoubleMap : public TCollection_BasicMapIte
 		%feature("compactdefaultargs") Key1;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key1;
-		const Handle_TDF_Attribute & Key1 ();
+		Handle_TDF_Attribute Key1 ();
 		%feature("compactdefaultargs") Key2;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key2;
-		const Handle_TDF_Attribute & Key2 ();
+		Handle_TDF_Attribute Key2 ();
 };
 
 
-%feature("shadow") TDF_DoubleMapIteratorOfAttributeDoubleMap::~TDF_DoubleMapIteratorOfAttributeDoubleMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DoubleMapIteratorOfAttributeDoubleMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DoubleMapIteratorOfGUIDProgIDMap;
 class TDF_DoubleMapIteratorOfGUIDProgIDMap : public TCollection_BasicMapIterator {
 	public:
@@ -3048,20 +2543,6 @@ class TDF_DoubleMapIteratorOfGUIDProgIDMap : public TCollection_BasicMapIterator
 };
 
 
-%feature("shadow") TDF_DoubleMapIteratorOfGUIDProgIDMap::~TDF_DoubleMapIteratorOfGUIDProgIDMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DoubleMapIteratorOfGUIDProgIDMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DoubleMapIteratorOfLabelDoubleMap;
 class TDF_DoubleMapIteratorOfLabelDoubleMap : public TCollection_BasicMapIterator {
 	public:
@@ -3092,20 +2573,6 @@ class TDF_DoubleMapIteratorOfLabelDoubleMap : public TCollection_BasicMapIterato
 };
 
 
-%feature("shadow") TDF_DoubleMapIteratorOfLabelDoubleMap::~TDF_DoubleMapIteratorOfLabelDoubleMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_DoubleMapIteratorOfLabelDoubleMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DoubleMapNodeOfAttributeDoubleMap;
 class TDF_DoubleMapNodeOfAttributeDoubleMap : public TCollection_MapNode {
 	public:
@@ -3124,11 +2591,11 @@ class TDF_DoubleMapNodeOfAttributeDoubleMap : public TCollection_MapNode {
 		%feature("compactdefaultargs") Key1;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key1;
-		Handle_TDF_Attribute & Key1 ();
+		Handle_TDF_Attribute Key1 ();
 		%feature("compactdefaultargs") Key2;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key2;
-		Handle_TDF_Attribute & Key2 ();
+		Handle_TDF_Attribute Key2 ();
 		%feature("compactdefaultargs") Next2;
 		%feature("autodoc", "	:rtype: TCollection_MapNodePtr
 ") Next2;
@@ -3136,25 +2603,23 @@ class TDF_DoubleMapNodeOfAttributeDoubleMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_DoubleMapNodeOfAttributeDoubleMap::~TDF_DoubleMapNodeOfAttributeDoubleMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DoubleMapNodeOfAttributeDoubleMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DoubleMapNodeOfAttributeDoubleMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DoubleMapNodeOfAttributeDoubleMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DoubleMapNodeOfAttributeDoubleMap {
-	Handle_TDF_DoubleMapNodeOfAttributeDoubleMap GetHandle() {
-	return *(Handle_TDF_DoubleMapNodeOfAttributeDoubleMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DoubleMapNodeOfAttributeDoubleMap::Handle_TDF_DoubleMapNodeOfAttributeDoubleMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DoubleMapNodeOfAttributeDoubleMap;
 class Handle_TDF_DoubleMapNodeOfAttributeDoubleMap : public Handle_TCollection_MapNode {
@@ -3172,20 +2637,6 @@ class Handle_TDF_DoubleMapNodeOfAttributeDoubleMap : public Handle_TCollection_M
 %extend Handle_TDF_DoubleMapNodeOfAttributeDoubleMap {
     TDF_DoubleMapNodeOfAttributeDoubleMap* GetObject() {
     return (TDF_DoubleMapNodeOfAttributeDoubleMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DoubleMapNodeOfAttributeDoubleMap::~Handle_TDF_DoubleMapNodeOfAttributeDoubleMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DoubleMapNodeOfAttributeDoubleMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3219,25 +2670,23 @@ class TDF_DoubleMapNodeOfGUIDProgIDMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_DoubleMapNodeOfGUIDProgIDMap::~TDF_DoubleMapNodeOfGUIDProgIDMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DoubleMapNodeOfGUIDProgIDMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DoubleMapNodeOfGUIDProgIDMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DoubleMapNodeOfGUIDProgIDMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DoubleMapNodeOfGUIDProgIDMap {
-	Handle_TDF_DoubleMapNodeOfGUIDProgIDMap GetHandle() {
-	return *(Handle_TDF_DoubleMapNodeOfGUIDProgIDMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DoubleMapNodeOfGUIDProgIDMap::Handle_TDF_DoubleMapNodeOfGUIDProgIDMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DoubleMapNodeOfGUIDProgIDMap;
 class Handle_TDF_DoubleMapNodeOfGUIDProgIDMap : public Handle_TCollection_MapNode {
@@ -3255,20 +2704,6 @@ class Handle_TDF_DoubleMapNodeOfGUIDProgIDMap : public Handle_TCollection_MapNod
 %extend Handle_TDF_DoubleMapNodeOfGUIDProgIDMap {
     TDF_DoubleMapNodeOfGUIDProgIDMap* GetObject() {
     return (TDF_DoubleMapNodeOfGUIDProgIDMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DoubleMapNodeOfGUIDProgIDMap::~Handle_TDF_DoubleMapNodeOfGUIDProgIDMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DoubleMapNodeOfGUIDProgIDMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3302,25 +2737,23 @@ class TDF_DoubleMapNodeOfLabelDoubleMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_DoubleMapNodeOfLabelDoubleMap::~TDF_DoubleMapNodeOfLabelDoubleMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DoubleMapNodeOfLabelDoubleMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DoubleMapNodeOfLabelDoubleMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DoubleMapNodeOfLabelDoubleMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DoubleMapNodeOfLabelDoubleMap {
-	Handle_TDF_DoubleMapNodeOfLabelDoubleMap GetHandle() {
-	return *(Handle_TDF_DoubleMapNodeOfLabelDoubleMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DoubleMapNodeOfLabelDoubleMap::Handle_TDF_DoubleMapNodeOfLabelDoubleMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DoubleMapNodeOfLabelDoubleMap;
 class Handle_TDF_DoubleMapNodeOfLabelDoubleMap : public Handle_TCollection_MapNode {
@@ -3338,20 +2771,6 @@ class Handle_TDF_DoubleMapNodeOfLabelDoubleMap : public Handle_TCollection_MapNo
 %extend Handle_TDF_DoubleMapNodeOfLabelDoubleMap {
     TDF_DoubleMapNodeOfLabelDoubleMap* GetObject() {
     return (TDF_DoubleMapNodeOfLabelDoubleMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DoubleMapNodeOfLabelDoubleMap::~Handle_TDF_DoubleMapNodeOfLabelDoubleMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DoubleMapNodeOfLabelDoubleMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -3441,20 +2860,6 @@ class TDF_GUIDProgIDMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_GUIDProgIDMap::~TDF_GUIDProgIDMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_GUIDProgIDMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_HAttributeArray1;
 class TDF_HAttributeArray1 : public MMgt_TShared {
 	public:
@@ -3507,13 +2912,13 @@ class TDF_HAttributeArray1 : public MMgt_TShared {
 	:type Index: int
 	:rtype: Handle_TDF_Attribute
 ") Value;
-		const Handle_TDF_Attribute & Value (const Standard_Integer Index);
+		Handle_TDF_Attribute Value (const Standard_Integer Index);
 		%feature("compactdefaultargs") ChangeValue;
 		%feature("autodoc", "	:param Index:
 	:type Index: int
 	:rtype: Handle_TDF_Attribute
 ") ChangeValue;
-		Handle_TDF_Attribute & ChangeValue (const Standard_Integer Index);
+		Handle_TDF_Attribute ChangeValue (const Standard_Integer Index);
 		%feature("compactdefaultargs") Array1;
 		%feature("autodoc", "	:rtype: TDF_AttributeArray1
 ") Array1;
@@ -3525,25 +2930,23 @@ class TDF_HAttributeArray1 : public MMgt_TShared {
 };
 
 
-%feature("shadow") TDF_HAttributeArray1::~TDF_HAttributeArray1 %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_HAttributeArray1 {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_HAttributeArray1(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_HAttributeArray1 {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_HAttributeArray1 {
-	Handle_TDF_HAttributeArray1 GetHandle() {
-	return *(Handle_TDF_HAttributeArray1*) &$self;
-	}
-};
+%pythonappend Handle_TDF_HAttributeArray1::Handle_TDF_HAttributeArray1 %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_HAttributeArray1;
 class Handle_TDF_HAttributeArray1 : public Handle_MMgt_TShared {
@@ -3563,26 +2966,12 @@ class Handle_TDF_HAttributeArray1 : public Handle_MMgt_TShared {
     return (TDF_HAttributeArray1*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_HAttributeArray1::~Handle_TDF_HAttributeArray1 %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_HAttributeArray1 {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_IDFilter;
 class TDF_IDFilter {
 	public:
 		%feature("compactdefaultargs") TDF_IDFilter;
-		%feature("autodoc", "	* Creates an ID/attribute filter based on an ID list. The default mode is 'ignore all but...'.  This filter has 2 working mode: keep and ignore.  Ignore/Exclusive mode: all IDs are ignored except these set to be kept, using Keep(). Of course, it is possible set an kept ID to be ignored using Ignore().  Keep/Inclusive mode: all IDs are kept except these set to be ignored, using Ignore(). Of course, it is possible set an ignored ID to be kept using Keep().
+		%feature("autodoc", "	* Creates an ID/attribute filter based on an ID list. The default mode is 'ignore all but...'. //! This filter has 2 working mode: keep and ignore. //! Ignore/Exclusive mode: all IDs are ignored except these set to be kept, using Keep(). Of course, it is possible set an kept ID to be ignored using Ignore(). //! Keep/Inclusive mode: all IDs are kept except these set to be ignored, using Ignore(). Of course, it is possible set an ignored ID to be kept using Keep().
 
 	:param ignoreMode: default value is Standard_True
 	:type ignoreMode: bool
@@ -3694,20 +3083,6 @@ class TDF_IDFilter {
         };
 
 
-%feature("shadow") TDF_IDFilter::~TDF_IDFilter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_IDFilter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_IDList;
 class TDF_IDList {
 	public:
@@ -3715,6 +3090,12 @@ class TDF_IDList {
 		%feature("autodoc", "	:rtype: None
 ") TDF_IDList;
 		 TDF_IDList ();
+		%feature("compactdefaultargs") TDF_IDList;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_IDList &
+	:rtype: None
+") TDF_IDList;
+		 TDF_IDList (const TDF_IDList & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_IDList &
@@ -3832,20 +3213,6 @@ class TDF_IDList {
 };
 
 
-%feature("shadow") TDF_IDList::~TDF_IDList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_IDList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_IDMap;
 class TDF_IDMap : public TCollection_BasicMap {
 	public:
@@ -3855,6 +3222,12 @@ class TDF_IDMap : public TCollection_BasicMap {
 	:rtype: None
 ") TDF_IDMap;
 		 TDF_IDMap (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TDF_IDMap;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_IDMap &
+	:rtype: None
+") TDF_IDMap;
+		 TDF_IDMap (const TDF_IDMap & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_IDMap &
@@ -3898,20 +3271,6 @@ class TDF_IDMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_IDMap::~TDF_IDMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_IDMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_IndexedMapNodeOfAttributeIndexedMap;
 class TDF_IndexedMapNodeOfAttributeIndexedMap : public TCollection_MapNode {
 	public:
@@ -3930,7 +3289,7 @@ class TDF_IndexedMapNodeOfAttributeIndexedMap : public TCollection_MapNode {
 		%feature("compactdefaultargs") Key1;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key1;
-		Handle_TDF_Attribute & Key1 ();
+		Handle_TDF_Attribute Key1 ();
 
             %feature("autodoc","1");
             %extend {
@@ -3951,25 +3310,23 @@ class TDF_IndexedMapNodeOfAttributeIndexedMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_IndexedMapNodeOfAttributeIndexedMap::~TDF_IndexedMapNodeOfAttributeIndexedMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_IndexedMapNodeOfAttributeIndexedMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_IndexedMapNodeOfAttributeIndexedMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_IndexedMapNodeOfAttributeIndexedMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_IndexedMapNodeOfAttributeIndexedMap {
-	Handle_TDF_IndexedMapNodeOfAttributeIndexedMap GetHandle() {
-	return *(Handle_TDF_IndexedMapNodeOfAttributeIndexedMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_IndexedMapNodeOfAttributeIndexedMap::Handle_TDF_IndexedMapNodeOfAttributeIndexedMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_IndexedMapNodeOfAttributeIndexedMap;
 class Handle_TDF_IndexedMapNodeOfAttributeIndexedMap : public Handle_TCollection_MapNode {
@@ -3987,20 +3344,6 @@ class Handle_TDF_IndexedMapNodeOfAttributeIndexedMap : public Handle_TCollection
 %extend Handle_TDF_IndexedMapNodeOfAttributeIndexedMap {
     TDF_IndexedMapNodeOfAttributeIndexedMap* GetObject() {
     return (TDF_IndexedMapNodeOfAttributeIndexedMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_IndexedMapNodeOfAttributeIndexedMap::~Handle_TDF_IndexedMapNodeOfAttributeIndexedMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_IndexedMapNodeOfAttributeIndexedMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4043,25 +3386,23 @@ class TDF_IndexedMapNodeOfLabelIndexedMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_IndexedMapNodeOfLabelIndexedMap::~TDF_IndexedMapNodeOfLabelIndexedMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_IndexedMapNodeOfLabelIndexedMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_IndexedMapNodeOfLabelIndexedMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_IndexedMapNodeOfLabelIndexedMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_IndexedMapNodeOfLabelIndexedMap {
-	Handle_TDF_IndexedMapNodeOfLabelIndexedMap GetHandle() {
-	return *(Handle_TDF_IndexedMapNodeOfLabelIndexedMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_IndexedMapNodeOfLabelIndexedMap::Handle_TDF_IndexedMapNodeOfLabelIndexedMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_IndexedMapNodeOfLabelIndexedMap;
 class Handle_TDF_IndexedMapNodeOfLabelIndexedMap : public Handle_TCollection_MapNode {
@@ -4079,20 +3420,6 @@ class Handle_TDF_IndexedMapNodeOfLabelIndexedMap : public Handle_TCollection_Map
 %extend Handle_TDF_IndexedMapNodeOfLabelIndexedMap {
     TDF_IndexedMapNodeOfLabelIndexedMap* GetObject() {
     return (TDF_IndexedMapNodeOfLabelIndexedMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_IndexedMapNodeOfLabelIndexedMap::~Handle_TDF_IndexedMapNodeOfLabelIndexedMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_IndexedMapNodeOfLabelIndexedMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -4244,7 +3571,7 @@ class TDF_Label {
 ") ResumeAttribute;
 		void ResumeAttribute (const Handle_TDF_Attribute & anAttribute);
 		%feature("compactdefaultargs") FindAttribute;
-		%feature("autodoc", "	* Finds an attribute of the current label, according to <anID>. If anAttribute is not a valid one, false is returned. The method returns True if found, False otherwise.  A removed attribute cannot be found.
+		%feature("autodoc", "	* Finds an attribute of the current label, according to <anID>. If anAttribute is not a valid one, false is returned. //! The method returns True if found, False otherwise. //! A removed attribute cannot be found.
 
 	:param anID:
 	:type anID: Standard_GUID &
@@ -4254,7 +3581,7 @@ class TDF_Label {
 ") FindAttribute;
 		Standard_Boolean FindAttribute (const Standard_GUID & anID,Handle_TDF_Attribute & anAttribute);
 		%feature("compactdefaultargs") FindAttribute;
-		%feature("autodoc", "	* Finds an attribute of the current label, according to <anID> and <aTransaction>. This attribute has/had to be a valid one for the given transaction index . So, this attribute is not necessary a valid one.  The method returns True if found, False otherwise.  A removed attribute cannot be found nor a backuped attribute of a removed one.
+		%feature("autodoc", "	* Finds an attribute of the current label, according to <anID> and <aTransaction>. This attribute has/had to be a valid one for the given transaction index . So, this attribute is not necessary a valid one. //! The method returns True if found, False otherwise. //! A removed attribute cannot be found nor a backuped attribute of a removed one.
 
 	:param anID:
 	:type anID: Standard_GUID &
@@ -4344,7 +3671,7 @@ class TDF_Label {
 ") Transaction;
 		Standard_Integer Transaction ();
 		%feature("compactdefaultargs") HasLowerNode;
-		%feature("autodoc", "	* Returns true if node address of <self> is lower than <otherLabel> one. Used to quickly sort labels (not on entry criterion). -C++: inline
+		%feature("autodoc", "	* Returns true if node address of <self> is lower than <otherLabel> one. Used to quickly sort labels (not on entry criterion). //! -C++: inline
 
 	:param otherLabel:
 	:type otherLabel: TDF_Label &
@@ -4352,7 +3679,7 @@ class TDF_Label {
 ") HasLowerNode;
 		Standard_Boolean HasLowerNode (const TDF_Label & otherLabel);
 		%feature("compactdefaultargs") HasGreaterNode;
-		%feature("autodoc", "	* Returns true if node address of <self> is greater than <otherLabel> one. Used to quickly sort labels (not on entry criterion). -C++: inline
+		%feature("autodoc", "	* Returns true if node address of <self> is greater than <otherLabel> one. Used to quickly sort labels (not on entry criterion). //! -C++: inline
 
 	:param otherLabel:
 	:type otherLabel: TDF_Label &
@@ -4390,20 +3717,6 @@ class TDF_Label {
         };
 
 
-%feature("shadow") TDF_Label::~TDF_Label %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_Label {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelDataMap;
 class TDF_LabelDataMap : public TCollection_BasicMap {
 	public:
@@ -4482,20 +3795,6 @@ class TDF_LabelDataMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_LabelDataMap::~TDF_LabelDataMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelDataMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelDoubleMap;
 class TDF_LabelDoubleMap : public TCollection_BasicMap {
 	public:
@@ -4582,20 +3881,6 @@ class TDF_LabelDoubleMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_LabelDoubleMap::~TDF_LabelDoubleMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelDoubleMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelIndexedMap;
 class TDF_LabelIndexedMap : public TCollection_BasicMap {
 	public:
@@ -4605,6 +3890,12 @@ class TDF_LabelIndexedMap : public TCollection_BasicMap {
 	:rtype: None
 ") TDF_LabelIndexedMap;
 		 TDF_LabelIndexedMap (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TDF_LabelIndexedMap;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_LabelIndexedMap &
+	:rtype: None
+") TDF_LabelIndexedMap;
+		 TDF_LabelIndexedMap (const TDF_LabelIndexedMap & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_LabelIndexedMap &
@@ -4666,20 +3957,6 @@ class TDF_LabelIndexedMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_LabelIndexedMap::~TDF_LabelIndexedMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelIndexedMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelIntegerMap;
 class TDF_LabelIntegerMap : public TCollection_BasicMap {
 	public:
@@ -4758,112 +4035,6 @@ class TDF_LabelIntegerMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_LabelIntegerMap::~TDF_LabelIntegerMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelIntegerMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TDF_LabelLabelMap;
-class TDF_LabelLabelMap : public TCollection_BasicMap {
-	public:
-		%feature("compactdefaultargs") TDF_LabelLabelMap;
-		%feature("autodoc", "	:param NbBuckets: default value is 1
-	:type NbBuckets: int
-	:rtype: None
-") TDF_LabelLabelMap;
-		 TDF_LabelLabelMap (const Standard_Integer NbBuckets = 1);
-		%feature("compactdefaultargs") Assign;
-		%feature("autodoc", "	:param Other:
-	:type Other: TDF_LabelLabelMap &
-	:rtype: TDF_LabelLabelMap
-") Assign;
-		TDF_LabelLabelMap & Assign (const TDF_LabelLabelMap & Other);
-		%feature("compactdefaultargs") operator =;
-		%feature("autodoc", "	:param Other:
-	:type Other: TDF_LabelLabelMap &
-	:rtype: TDF_LabelLabelMap
-") operator=;
-		TDF_LabelLabelMap & operator = (const TDF_LabelLabelMap & Other);
-		%feature("compactdefaultargs") ReSize;
-		%feature("autodoc", "	:param NbBuckets:
-	:type NbBuckets: int
-	:rtype: None
-") ReSize;
-		void ReSize (const Standard_Integer NbBuckets);
-		%feature("compactdefaultargs") Clear;
-		%feature("autodoc", "	:rtype: None
-") Clear;
-		void Clear ();
-		%feature("compactdefaultargs") Bind;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:param I:
-	:type I: TDF_Label &
-	:rtype: bool
-") Bind;
-		Standard_Boolean Bind (const TDF_Label & K,const TDF_Label & I);
-		%feature("compactdefaultargs") IsBound;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:rtype: bool
-") IsBound;
-		Standard_Boolean IsBound (const TDF_Label & K);
-		%feature("compactdefaultargs") UnBind;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:rtype: bool
-") UnBind;
-		Standard_Boolean UnBind (const TDF_Label & K);
-		%feature("compactdefaultargs") Find;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:rtype: TDF_Label
-") Find;
-		const TDF_Label & Find (const TDF_Label & K);
-		%feature("compactdefaultargs") ChangeFind;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:rtype: TDF_Label
-") ChangeFind;
-		TDF_Label & ChangeFind (const TDF_Label & K);
-		%feature("compactdefaultargs") Find1;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:rtype: Standard_Address
-") Find1;
-		Standard_Address Find1 (const TDF_Label & K);
-		%feature("compactdefaultargs") ChangeFind1;
-		%feature("autodoc", "	:param K:
-	:type K: TDF_Label &
-	:rtype: Standard_Address
-") ChangeFind1;
-		Standard_Address ChangeFind1 (const TDF_Label & K);
-};
-
-
-%feature("shadow") TDF_LabelLabelMap::~TDF_LabelLabelMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelLabelMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelList;
 class TDF_LabelList {
 	public:
@@ -4871,6 +4042,12 @@ class TDF_LabelList {
 		%feature("autodoc", "	:rtype: None
 ") TDF_LabelList;
 		 TDF_LabelList ();
+		%feature("compactdefaultargs") TDF_LabelList;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_LabelList &
+	:rtype: None
+") TDF_LabelList;
+		 TDF_LabelList (const TDF_LabelList & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_LabelList &
@@ -4988,20 +4165,6 @@ class TDF_LabelList {
 };
 
 
-%feature("shadow") TDF_LabelList::~TDF_LabelList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelMap;
 class TDF_LabelMap : public TCollection_BasicMap {
 	public:
@@ -5011,6 +4174,12 @@ class TDF_LabelMap : public TCollection_BasicMap {
 	:rtype: None
 ") TDF_LabelMap;
 		 TDF_LabelMap (const Standard_Integer NbBuckets = 1);
+		%feature("compactdefaultargs") TDF_LabelMap;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_LabelMap &
+	:rtype: None
+") TDF_LabelMap;
+		 TDF_LabelMap (const TDF_LabelMap & Other);
 		%feature("compactdefaultargs") Assign;
 		%feature("autodoc", "	:param Other:
 	:type Other: TDF_LabelMap &
@@ -5054,59 +4223,6 @@ class TDF_LabelMap : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") TDF_LabelMap::~TDF_LabelMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-class TDF_LabelMapHasher {
-	public:
-		%feature("compactdefaultargs") HashCode;
-		%feature("autodoc", "	* Returns a HasCode value for the Key <K> in the range 0..Upper.
-
-	:param aLab:
-	:type aLab: TDF_Label &
-	:param Upper:
-	:type Upper: int
-	:rtype: int
-") HashCode;
-		static Standard_Integer HashCode (const TDF_Label & aLab,const Standard_Integer Upper);
-		%feature("compactdefaultargs") IsEqual;
-		%feature("autodoc", "	* Returns True when the two keys are the same. Two same keys must have the same hashcode, the contrary is not necessary.
-
-	:param aLab1:
-	:type aLab1: TDF_Label &
-	:param aLab2:
-	:type aLab2: TDF_Label &
-	:rtype: bool
-") IsEqual;
-		static Standard_Boolean IsEqual (const TDF_Label & aLab1,const TDF_Label & aLab2);
-};
-
-
-%feature("shadow") TDF_LabelMapHasher::~TDF_LabelMapHasher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelMapHasher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_LabelSequence;
 class TDF_LabelSequence : public TCollection_BaseSequence {
 	public:
@@ -5114,6 +4230,12 @@ class TDF_LabelSequence : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") TDF_LabelSequence;
 		 TDF_LabelSequence ();
+		%feature("compactdefaultargs") TDF_LabelSequence;
+		%feature("autodoc", "	:param Other:
+	:type Other: TDF_LabelSequence &
+	:rtype: None
+") TDF_LabelSequence;
+		 TDF_LabelSequence (const TDF_LabelSequence & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -5239,20 +4361,6 @@ class TDF_LabelSequence : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TDF_LabelSequence::~TDF_LabelSequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_LabelSequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ListIteratorOfAttributeDeltaList;
 class TDF_ListIteratorOfAttributeDeltaList {
 	public:
@@ -5283,24 +4391,10 @@ class TDF_ListIteratorOfAttributeDeltaList {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_AttributeDelta
 ") Value;
-		Handle_TDF_AttributeDelta & Value ();
+		Handle_TDF_AttributeDelta Value ();
 };
 
 
-%feature("shadow") TDF_ListIteratorOfAttributeDeltaList::~TDF_ListIteratorOfAttributeDeltaList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ListIteratorOfAttributeDeltaList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ListIteratorOfAttributeList;
 class TDF_ListIteratorOfAttributeList {
 	public:
@@ -5331,24 +4425,10 @@ class TDF_ListIteratorOfAttributeList {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Value;
-		Handle_TDF_Attribute & Value ();
+		Handle_TDF_Attribute Value ();
 };
 
 
-%feature("shadow") TDF_ListIteratorOfAttributeList::~TDF_ListIteratorOfAttributeList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ListIteratorOfAttributeList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ListIteratorOfDeltaList;
 class TDF_ListIteratorOfDeltaList {
 	public:
@@ -5379,24 +4459,10 @@ class TDF_ListIteratorOfDeltaList {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Delta
 ") Value;
-		Handle_TDF_Delta & Value ();
+		Handle_TDF_Delta Value ();
 };
 
 
-%feature("shadow") TDF_ListIteratorOfDeltaList::~TDF_ListIteratorOfDeltaList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ListIteratorOfDeltaList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ListIteratorOfIDList;
 class TDF_ListIteratorOfIDList {
 	public:
@@ -5431,20 +4497,6 @@ class TDF_ListIteratorOfIDList {
 };
 
 
-%feature("shadow") TDF_ListIteratorOfIDList::~TDF_ListIteratorOfIDList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ListIteratorOfIDList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ListIteratorOfLabelList;
 class TDF_ListIteratorOfLabelList {
 	public:
@@ -5479,20 +4531,6 @@ class TDF_ListIteratorOfLabelList {
 };
 
 
-%feature("shadow") TDF_ListIteratorOfLabelList::~TDF_ListIteratorOfLabelList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_ListIteratorOfLabelList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_ListNodeOfAttributeDeltaList;
 class TDF_ListNodeOfAttributeDeltaList : public TCollection_MapNode {
 	public:
@@ -5507,29 +4545,27 @@ class TDF_ListNodeOfAttributeDeltaList : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_AttributeDelta
 ") Value;
-		Handle_TDF_AttributeDelta & Value ();
+		Handle_TDF_AttributeDelta Value ();
 };
 
 
-%feature("shadow") TDF_ListNodeOfAttributeDeltaList::~TDF_ListNodeOfAttributeDeltaList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TDF_ListNodeOfAttributeDeltaList {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_ListNodeOfAttributeDeltaList(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TDF_ListNodeOfAttributeDeltaList::Handle_TDF_ListNodeOfAttributeDeltaList %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TDF_ListNodeOfAttributeDeltaList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_ListNodeOfAttributeDeltaList {
-	Handle_TDF_ListNodeOfAttributeDeltaList GetHandle() {
-	return *(Handle_TDF_ListNodeOfAttributeDeltaList*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TDF_ListNodeOfAttributeDeltaList;
 class Handle_TDF_ListNodeOfAttributeDeltaList : public Handle_TCollection_MapNode {
@@ -5549,20 +4585,6 @@ class Handle_TDF_ListNodeOfAttributeDeltaList : public Handle_TCollection_MapNod
     return (TDF_ListNodeOfAttributeDeltaList*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_ListNodeOfAttributeDeltaList::~Handle_TDF_ListNodeOfAttributeDeltaList %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_ListNodeOfAttributeDeltaList {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_ListNodeOfAttributeList;
 class TDF_ListNodeOfAttributeList : public TCollection_MapNode {
@@ -5578,29 +4600,27 @@ class TDF_ListNodeOfAttributeList : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Value;
-		Handle_TDF_Attribute & Value ();
+		Handle_TDF_Attribute Value ();
 };
 
 
-%feature("shadow") TDF_ListNodeOfAttributeList::~TDF_ListNodeOfAttributeList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TDF_ListNodeOfAttributeList {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_ListNodeOfAttributeList(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TDF_ListNodeOfAttributeList::Handle_TDF_ListNodeOfAttributeList %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TDF_ListNodeOfAttributeList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_ListNodeOfAttributeList {
-	Handle_TDF_ListNodeOfAttributeList GetHandle() {
-	return *(Handle_TDF_ListNodeOfAttributeList*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TDF_ListNodeOfAttributeList;
 class Handle_TDF_ListNodeOfAttributeList : public Handle_TCollection_MapNode {
@@ -5620,20 +4640,6 @@ class Handle_TDF_ListNodeOfAttributeList : public Handle_TCollection_MapNode {
     return (TDF_ListNodeOfAttributeList*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_ListNodeOfAttributeList::~Handle_TDF_ListNodeOfAttributeList %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_ListNodeOfAttributeList {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_ListNodeOfDeltaList;
 class TDF_ListNodeOfDeltaList : public TCollection_MapNode {
@@ -5649,29 +4655,27 @@ class TDF_ListNodeOfDeltaList : public TCollection_MapNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Delta
 ") Value;
-		Handle_TDF_Delta & Value ();
+		Handle_TDF_Delta Value ();
 };
 
 
-%feature("shadow") TDF_ListNodeOfDeltaList::~TDF_ListNodeOfDeltaList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TDF_ListNodeOfDeltaList {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_ListNodeOfDeltaList(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TDF_ListNodeOfDeltaList::Handle_TDF_ListNodeOfDeltaList %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TDF_ListNodeOfDeltaList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_ListNodeOfDeltaList {
-	Handle_TDF_ListNodeOfDeltaList GetHandle() {
-	return *(Handle_TDF_ListNodeOfDeltaList*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TDF_ListNodeOfDeltaList;
 class Handle_TDF_ListNodeOfDeltaList : public Handle_TCollection_MapNode {
@@ -5689,20 +4693,6 @@ class Handle_TDF_ListNodeOfDeltaList : public Handle_TCollection_MapNode {
 %extend Handle_TDF_ListNodeOfDeltaList {
     TDF_ListNodeOfDeltaList* GetObject() {
     return (TDF_ListNodeOfDeltaList*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_ListNodeOfDeltaList::~Handle_TDF_ListNodeOfDeltaList %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_ListNodeOfDeltaList {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5724,25 +4714,23 @@ class TDF_ListNodeOfIDList : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_ListNodeOfIDList::~TDF_ListNodeOfIDList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_ListNodeOfIDList {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_ListNodeOfIDList(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_ListNodeOfIDList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_ListNodeOfIDList {
-	Handle_TDF_ListNodeOfIDList GetHandle() {
-	return *(Handle_TDF_ListNodeOfIDList*) &$self;
-	}
-};
+%pythonappend Handle_TDF_ListNodeOfIDList::Handle_TDF_ListNodeOfIDList %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_ListNodeOfIDList;
 class Handle_TDF_ListNodeOfIDList : public Handle_TCollection_MapNode {
@@ -5760,20 +4748,6 @@ class Handle_TDF_ListNodeOfIDList : public Handle_TCollection_MapNode {
 %extend Handle_TDF_ListNodeOfIDList {
     TDF_ListNodeOfIDList* GetObject() {
     return (TDF_ListNodeOfIDList*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_ListNodeOfIDList::~Handle_TDF_ListNodeOfIDList %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_ListNodeOfIDList {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5795,25 +4769,23 @@ class TDF_ListNodeOfLabelList : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_ListNodeOfLabelList::~TDF_ListNodeOfLabelList %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_ListNodeOfLabelList {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_ListNodeOfLabelList(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_ListNodeOfLabelList {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_ListNodeOfLabelList {
-	Handle_TDF_ListNodeOfLabelList GetHandle() {
-	return *(Handle_TDF_ListNodeOfLabelList*) &$self;
-	}
-};
+%pythonappend Handle_TDF_ListNodeOfLabelList::Handle_TDF_ListNodeOfLabelList %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_ListNodeOfLabelList;
 class Handle_TDF_ListNodeOfLabelList : public Handle_TCollection_MapNode {
@@ -5831,20 +4803,6 @@ class Handle_TDF_ListNodeOfLabelList : public Handle_TCollection_MapNode {
 %extend Handle_TDF_ListNodeOfLabelList {
     TDF_ListNodeOfLabelList* GetObject() {
     return (TDF_ListNodeOfLabelList*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_ListNodeOfLabelList::~Handle_TDF_ListNodeOfLabelList %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_ListNodeOfLabelList {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -5870,24 +4828,10 @@ class TDF_MapIteratorOfAttributeMap : public TCollection_BasicMapIterator {
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key;
-		const Handle_TDF_Attribute & Key ();
+		Handle_TDF_Attribute Key ();
 };
 
 
-%feature("shadow") TDF_MapIteratorOfAttributeMap::~TDF_MapIteratorOfAttributeMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_MapIteratorOfAttributeMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_MapIteratorOfIDMap;
 class TDF_MapIteratorOfIDMap : public TCollection_BasicMapIterator {
 	public:
@@ -5914,20 +4858,6 @@ class TDF_MapIteratorOfIDMap : public TCollection_BasicMapIterator {
 };
 
 
-%feature("shadow") TDF_MapIteratorOfIDMap::~TDF_MapIteratorOfIDMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_MapIteratorOfIDMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_MapIteratorOfLabelMap;
 class TDF_MapIteratorOfLabelMap : public TCollection_BasicMapIterator {
 	public:
@@ -5954,20 +4884,6 @@ class TDF_MapIteratorOfLabelMap : public TCollection_BasicMapIterator {
 };
 
 
-%feature("shadow") TDF_MapIteratorOfLabelMap::~TDF_MapIteratorOfLabelMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_MapIteratorOfLabelMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_RelocationTable;
 class TDF_RelocationTable : public MMgt_TShared {
 	public:
@@ -5980,7 +4896,7 @@ class TDF_RelocationTable : public MMgt_TShared {
 ") TDF_RelocationTable;
 		 TDF_RelocationTable (const Standard_Boolean selfRelocate = Standard_False);
 		%feature("compactdefaultargs") SelfRelocate;
-		%feature("autodoc", "	* Sets <mySelfRelocate> to <selfRelocate>.  This flag affects the HasRelocation method behavior like this:  <mySelfRelocate> == False:  If no relocation object is found in the map, a null object is returned  <mySelfRelocate> == True:  If no relocation object is found in the map, the method assumes the source object is relocation value; so the source object is returned as target object.
+		%feature("autodoc", "	* Sets <mySelfRelocate> to <selfRelocate>. //! This flag affects the HasRelocation method behavior like this: //! <mySelfRelocate> == False: //! If no relocation object is found in the map, a null object is returned //! <mySelfRelocate> == True: //! If no relocation object is found in the map, the method assumes the source object is relocation value; so the source object is returned as target object.
 
 	:param selfRelocate:
 	:type selfRelocate: bool
@@ -6016,7 +4932,7 @@ class TDF_RelocationTable : public MMgt_TShared {
 ") SetRelocation;
 		void SetRelocation (const TDF_Label & aSourceLabel,const TDF_Label & aTargetLabel);
 		%feature("compactdefaultargs") HasRelocation;
-		%feature("autodoc", "	* Finds the relocation value of <aSourceLabel> and returns it into <aTargetLabel>.  (See above SelfRelocate method for more explanation about the method behavior)
+		%feature("autodoc", "	* Finds the relocation value of <aSourceLabel> and returns it into <aTargetLabel>. //! (See above SelfRelocate method for more explanation about the method behavior)
 
 	:param aSourceLabel:
 	:type aSourceLabel: TDF_Label &
@@ -6036,7 +4952,7 @@ class TDF_RelocationTable : public MMgt_TShared {
 ") SetRelocation;
 		void SetRelocation (const Handle_TDF_Attribute & aSourceAttribute,const Handle_TDF_Attribute & aTargetAttribute);
 		%feature("compactdefaultargs") HasRelocation;
-		%feature("autodoc", "	* Finds the relocation value of <aSourceAttribute> and returns it into <aTargetAttribute>.  (See above SelfRelocate method for more explanation about the method behavior)
+		%feature("autodoc", "	* Finds the relocation value of <aSourceAttribute> and returns it into <aTargetAttribute>. //! (See above SelfRelocate method for more explanation about the method behavior)
 
 	:param aSourceAttribute:
 	:type aSourceAttribute: Handle_TDF_Attribute &
@@ -6056,7 +4972,7 @@ class TDF_RelocationTable : public MMgt_TShared {
 ") SetTransientRelocation;
 		void SetTransientRelocation (const Handle_Standard_Transient & aSourceTransient,const Handle_Standard_Transient & aTargetTransient);
 		%feature("compactdefaultargs") HasTransientRelocation;
-		%feature("autodoc", "	* Finds the relocation value of <aSourceTransient> and returns it into <aTargetTransient>.  (See above SelfRelocate method for more explanation about the method behavior)
+		%feature("autodoc", "	* Finds the relocation value of <aSourceTransient> and returns it into <aTargetTransient>. //! (See above SelfRelocate method for more explanation about the method behavior)
 
 	:param aSourceTransient:
 	:type aSourceTransient: Handle_Standard_Transient &
@@ -6122,25 +5038,23 @@ class TDF_RelocationTable : public MMgt_TShared {
 };
 
 
-%feature("shadow") TDF_RelocationTable::~TDF_RelocationTable %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_RelocationTable {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_RelocationTable(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_RelocationTable {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_RelocationTable {
-	Handle_TDF_RelocationTable GetHandle() {
-	return *(Handle_TDF_RelocationTable*) &$self;
-	}
-};
+%pythonappend Handle_TDF_RelocationTable::Handle_TDF_RelocationTable %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_RelocationTable;
 class Handle_TDF_RelocationTable : public Handle_MMgt_TShared {
@@ -6160,20 +5074,6 @@ class Handle_TDF_RelocationTable : public Handle_MMgt_TShared {
     return (TDF_RelocationTable*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_RelocationTable::~Handle_TDF_RelocationTable %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_RelocationTable {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_SequenceNodeOfAttributeSequence;
 class TDF_SequenceNodeOfAttributeSequence : public TCollection_SeqNode {
@@ -6191,29 +5091,27 @@ class TDF_SequenceNodeOfAttributeSequence : public TCollection_SeqNode {
 		%feature("compactdefaultargs") Value;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Value;
-		Handle_TDF_Attribute & Value ();
+		Handle_TDF_Attribute Value ();
 };
 
 
-%feature("shadow") TDF_SequenceNodeOfAttributeSequence::~TDF_SequenceNodeOfAttributeSequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TDF_SequenceNodeOfAttributeSequence {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_SequenceNodeOfAttributeSequence(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TDF_SequenceNodeOfAttributeSequence::Handle_TDF_SequenceNodeOfAttributeSequence %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TDF_SequenceNodeOfAttributeSequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_SequenceNodeOfAttributeSequence {
-	Handle_TDF_SequenceNodeOfAttributeSequence GetHandle() {
-	return *(Handle_TDF_SequenceNodeOfAttributeSequence*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TDF_SequenceNodeOfAttributeSequence;
 class Handle_TDF_SequenceNodeOfAttributeSequence : public Handle_TCollection_SeqNode {
@@ -6231,20 +5129,6 @@ class Handle_TDF_SequenceNodeOfAttributeSequence : public Handle_TCollection_Seq
 %extend Handle_TDF_SequenceNodeOfAttributeSequence {
     TDF_SequenceNodeOfAttributeSequence* GetObject() {
     return (TDF_SequenceNodeOfAttributeSequence*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_SequenceNodeOfAttributeSequence::~Handle_TDF_SequenceNodeOfAttributeSequence %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_SequenceNodeOfAttributeSequence {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6268,25 +5152,23 @@ class TDF_SequenceNodeOfLabelSequence : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") TDF_SequenceNodeOfLabelSequence::~TDF_SequenceNodeOfLabelSequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_SequenceNodeOfLabelSequence {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_SequenceNodeOfLabelSequence(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_SequenceNodeOfLabelSequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_SequenceNodeOfLabelSequence {
-	Handle_TDF_SequenceNodeOfLabelSequence GetHandle() {
-	return *(Handle_TDF_SequenceNodeOfLabelSequence*) &$self;
-	}
-};
+%pythonappend Handle_TDF_SequenceNodeOfLabelSequence::Handle_TDF_SequenceNodeOfLabelSequence %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_SequenceNodeOfLabelSequence;
 class Handle_TDF_SequenceNodeOfLabelSequence : public Handle_TCollection_SeqNode {
@@ -6306,20 +5188,6 @@ class Handle_TDF_SequenceNodeOfLabelSequence : public Handle_TCollection_SeqNode
     return (TDF_SequenceNodeOfLabelSequence*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_SequenceNodeOfLabelSequence::~Handle_TDF_SequenceNodeOfLabelSequence %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_SequenceNodeOfLabelSequence {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_StdMapNodeOfAttributeMap;
 class TDF_StdMapNodeOfAttributeMap : public TCollection_MapNode {
@@ -6335,29 +5203,27 @@ class TDF_StdMapNodeOfAttributeMap : public TCollection_MapNode {
 		%feature("compactdefaultargs") Key;
 		%feature("autodoc", "	:rtype: Handle_TDF_Attribute
 ") Key;
-		Handle_TDF_Attribute & Key ();
+		Handle_TDF_Attribute Key ();
 };
 
 
-%feature("shadow") TDF_StdMapNodeOfAttributeMap::~TDF_StdMapNodeOfAttributeMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
+%extend TDF_StdMapNodeOfAttributeMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_StdMapNodeOfAttributeMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
+
+%pythonappend Handle_TDF_StdMapNodeOfAttributeMap::Handle_TDF_StdMapNodeOfAttributeMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
 %}
-
-%extend TDF_StdMapNodeOfAttributeMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_StdMapNodeOfAttributeMap {
-	Handle_TDF_StdMapNodeOfAttributeMap GetHandle() {
-	return *(Handle_TDF_StdMapNodeOfAttributeMap*) &$self;
-	}
-};
 
 %nodefaultctor Handle_TDF_StdMapNodeOfAttributeMap;
 class Handle_TDF_StdMapNodeOfAttributeMap : public Handle_TCollection_MapNode {
@@ -6375,20 +5241,6 @@ class Handle_TDF_StdMapNodeOfAttributeMap : public Handle_TCollection_MapNode {
 %extend Handle_TDF_StdMapNodeOfAttributeMap {
     TDF_StdMapNodeOfAttributeMap* GetObject() {
     return (TDF_StdMapNodeOfAttributeMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_StdMapNodeOfAttributeMap::~Handle_TDF_StdMapNodeOfAttributeMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_StdMapNodeOfAttributeMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6410,25 +5262,23 @@ class TDF_StdMapNodeOfIDMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_StdMapNodeOfIDMap::~TDF_StdMapNodeOfIDMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_StdMapNodeOfIDMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_StdMapNodeOfIDMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_StdMapNodeOfIDMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_StdMapNodeOfIDMap {
-	Handle_TDF_StdMapNodeOfIDMap GetHandle() {
-	return *(Handle_TDF_StdMapNodeOfIDMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_StdMapNodeOfIDMap::Handle_TDF_StdMapNodeOfIDMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_StdMapNodeOfIDMap;
 class Handle_TDF_StdMapNodeOfIDMap : public Handle_TCollection_MapNode {
@@ -6446,20 +5296,6 @@ class Handle_TDF_StdMapNodeOfIDMap : public Handle_TCollection_MapNode {
 %extend Handle_TDF_StdMapNodeOfIDMap {
     TDF_StdMapNodeOfIDMap* GetObject() {
     return (TDF_StdMapNodeOfIDMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_StdMapNodeOfIDMap::~Handle_TDF_StdMapNodeOfIDMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_StdMapNodeOfIDMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6481,25 +5317,23 @@ class TDF_StdMapNodeOfLabelMap : public TCollection_MapNode {
 };
 
 
-%feature("shadow") TDF_StdMapNodeOfLabelMap::~TDF_StdMapNodeOfLabelMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_StdMapNodeOfLabelMap {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_StdMapNodeOfLabelMap(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_StdMapNodeOfLabelMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_StdMapNodeOfLabelMap {
-	Handle_TDF_StdMapNodeOfLabelMap GetHandle() {
-	return *(Handle_TDF_StdMapNodeOfLabelMap*) &$self;
-	}
-};
+%pythonappend Handle_TDF_StdMapNodeOfLabelMap::Handle_TDF_StdMapNodeOfLabelMap %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_StdMapNodeOfLabelMap;
 class Handle_TDF_StdMapNodeOfLabelMap : public Handle_TCollection_MapNode {
@@ -6517,20 +5351,6 @@ class Handle_TDF_StdMapNodeOfLabelMap : public Handle_TCollection_MapNode {
 %extend Handle_TDF_StdMapNodeOfLabelMap {
     TDF_StdMapNodeOfLabelMap* GetObject() {
     return (TDF_StdMapNodeOfLabelMap*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_StdMapNodeOfLabelMap::~Handle_TDF_StdMapNodeOfLabelMap %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_StdMapNodeOfLabelMap {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6581,7 +5401,7 @@ class TDF_Tool {
 ") IsSelfContained;
 		static Standard_Boolean IsSelfContained (const TDF_Label & aLabel,const TDF_IDFilter & aFilter);
 		%feature("compactdefaultargs") OutReferers;
-		%feature("autodoc", "	* Returns in <theAtts> the attributes having out references.  Caution: <theAtts> is not cleared before use!
+		%feature("autodoc", "	* Returns in <theAtts> the attributes having out references. //! Caution: <theAtts> is not cleared before use!
 
 	:param theLabel:
 	:type theLabel: TDF_Label &
@@ -6629,7 +5449,7 @@ class TDF_Tool {
 ") OutReferences;
 		static void OutReferences (const TDF_Label & aLabel,const TDF_IDFilter & aFilterForReferers,const TDF_IDFilter & aFilterForReferences,TDF_AttributeMap & atts);
 		%feature("compactdefaultargs") RelocateLabel;
-		%feature("autodoc", "	* Returns the label having the same sub-entry as <aLabel> but located as descendant as <toRoot> instead of <fromRoot>.  Exemple :  aLabel = 0:3:24:7:2:7 fromRoot = 0:3:24 toRoot = 0:5 returned label = 0:5:7:2:7
+		%feature("autodoc", "	* Returns the label having the same sub-entry as <aLabel> but located as descendant as <toRoot> instead of <fromRoot>. //! Exemple : //! aLabel = 0:3:24:7:2:7 fromRoot = 0:3:24 toRoot = 0:5 returned label = 0:5:7:2:7
 
 	:param aSourceLabel:
 	:type aSourceLabel: TDF_Label &
@@ -6783,20 +5603,6 @@ class TDF_Tool {
 };
 
 
-%feature("shadow") TDF_Tool::~TDF_Tool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_Tool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_Transaction;
 class TDF_Transaction {
 	public:
@@ -6827,7 +5633,7 @@ class TDF_Transaction {
 ") Initialize;
 		void Initialize (const Handle_TDF_Data & aDF);
 		%feature("compactdefaultargs") Open;
-		%feature("autodoc", "	* If not yet done, opens a new transaction on <myDF>. Returns the index of the just opened transaction.  It raises DomainError if the transaction is already open, and NullObject if there is no current Data framework.
+		%feature("autodoc", "	* If not yet done, opens a new transaction on <myDF>. Returns the index of the just opened transaction. //! It raises DomainError if the transaction is already open, and NullObject if there is no current Data framework.
 
 	:rtype: int
 ") Open;
@@ -6873,20 +5679,6 @@ class TDF_Transaction {
 };
 
 
-%feature("shadow") TDF_Transaction::~TDF_Transaction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TDF_Transaction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TDF_DeltaOnAddition;
 class TDF_DeltaOnAddition : public TDF_AttributeDelta {
 	public:
@@ -6907,25 +5699,23 @@ class TDF_DeltaOnAddition : public TDF_AttributeDelta {
 };
 
 
-%feature("shadow") TDF_DeltaOnAddition::~TDF_DeltaOnAddition %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DeltaOnAddition {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DeltaOnAddition(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DeltaOnAddition {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DeltaOnAddition {
-	Handle_TDF_DeltaOnAddition GetHandle() {
-	return *(Handle_TDF_DeltaOnAddition*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DeltaOnAddition::Handle_TDF_DeltaOnAddition %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DeltaOnAddition;
 class Handle_TDF_DeltaOnAddition : public Handle_TDF_AttributeDelta {
@@ -6943,20 +5733,6 @@ class Handle_TDF_DeltaOnAddition : public Handle_TDF_AttributeDelta {
 %extend Handle_TDF_DeltaOnAddition {
     TDF_DeltaOnAddition* GetObject() {
     return (TDF_DeltaOnAddition*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DeltaOnAddition::~Handle_TDF_DeltaOnAddition %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DeltaOnAddition {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -6980,25 +5756,23 @@ class TDF_DeltaOnForget : public TDF_AttributeDelta {
 };
 
 
-%feature("shadow") TDF_DeltaOnForget::~TDF_DeltaOnForget %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DeltaOnForget {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DeltaOnForget(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DeltaOnForget {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DeltaOnForget {
-	Handle_TDF_DeltaOnForget GetHandle() {
-	return *(Handle_TDF_DeltaOnForget*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DeltaOnForget::Handle_TDF_DeltaOnForget %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DeltaOnForget;
 class Handle_TDF_DeltaOnForget : public Handle_TDF_AttributeDelta {
@@ -7018,20 +5792,6 @@ class Handle_TDF_DeltaOnForget : public Handle_TDF_AttributeDelta {
     return (TDF_DeltaOnForget*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_DeltaOnForget::~Handle_TDF_DeltaOnForget %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DeltaOnForget {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_DeltaOnModification;
 class TDF_DeltaOnModification : public TDF_AttributeDelta {
@@ -7045,25 +5805,23 @@ class TDF_DeltaOnModification : public TDF_AttributeDelta {
 };
 
 
-%feature("shadow") TDF_DeltaOnModification::~TDF_DeltaOnModification %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DeltaOnModification {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DeltaOnModification(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DeltaOnModification {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DeltaOnModification {
-	Handle_TDF_DeltaOnModification GetHandle() {
-	return *(Handle_TDF_DeltaOnModification*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DeltaOnModification::Handle_TDF_DeltaOnModification %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DeltaOnModification;
 class Handle_TDF_DeltaOnModification : public Handle_TDF_AttributeDelta {
@@ -7083,20 +5841,6 @@ class Handle_TDF_DeltaOnModification : public Handle_TDF_AttributeDelta {
     return (TDF_DeltaOnModification*)$self->Access();
     }
 };
-%feature("shadow") Handle_TDF_DeltaOnModification::~Handle_TDF_DeltaOnModification %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DeltaOnModification {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TDF_DeltaOnRemoval;
 class TDF_DeltaOnRemoval : public TDF_AttributeDelta {
@@ -7104,25 +5848,23 @@ class TDF_DeltaOnRemoval : public TDF_AttributeDelta {
 };
 
 
-%feature("shadow") TDF_DeltaOnRemoval::~TDF_DeltaOnRemoval %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DeltaOnRemoval {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DeltaOnRemoval(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DeltaOnRemoval {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DeltaOnRemoval {
-	Handle_TDF_DeltaOnRemoval GetHandle() {
-	return *(Handle_TDF_DeltaOnRemoval*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DeltaOnRemoval::Handle_TDF_DeltaOnRemoval %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DeltaOnRemoval;
 class Handle_TDF_DeltaOnRemoval : public Handle_TDF_AttributeDelta {
@@ -7140,20 +5882,6 @@ class Handle_TDF_DeltaOnRemoval : public Handle_TDF_AttributeDelta {
 %extend Handle_TDF_DeltaOnRemoval {
     TDF_DeltaOnRemoval* GetObject() {
     return (TDF_DeltaOnRemoval*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DeltaOnRemoval::~Handle_TDF_DeltaOnRemoval %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DeltaOnRemoval {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7177,25 +5905,23 @@ class TDF_DeltaOnResume : public TDF_AttributeDelta {
 };
 
 
-%feature("shadow") TDF_DeltaOnResume::~TDF_DeltaOnResume %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DeltaOnResume {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DeltaOnResume(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DeltaOnResume {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DeltaOnResume {
-	Handle_TDF_DeltaOnResume GetHandle() {
-	return *(Handle_TDF_DeltaOnResume*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DeltaOnResume::Handle_TDF_DeltaOnResume %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DeltaOnResume;
 class Handle_TDF_DeltaOnResume : public Handle_TDF_AttributeDelta {
@@ -7213,20 +5939,6 @@ class Handle_TDF_DeltaOnResume : public Handle_TDF_AttributeDelta {
 %extend Handle_TDF_DeltaOnResume {
     TDF_DeltaOnResume* GetObject() {
     return (TDF_DeltaOnResume*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DeltaOnResume::~Handle_TDF_DeltaOnResume %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DeltaOnResume {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7298,25 +6010,23 @@ class TDF_Reference : public TDF_Attribute {
 };
 
 
-%feature("shadow") TDF_Reference::~TDF_Reference %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_Reference {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_Reference(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_Reference {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_Reference {
-	Handle_TDF_Reference GetHandle() {
-	return *(Handle_TDF_Reference*) &$self;
-	}
-};
+%pythonappend Handle_TDF_Reference::Handle_TDF_Reference %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_Reference;
 class Handle_TDF_Reference : public Handle_TDF_Attribute {
@@ -7334,20 +6044,6 @@ class Handle_TDF_Reference : public Handle_TDF_Attribute {
 %extend Handle_TDF_Reference {
     TDF_Reference* GetObject() {
     return (TDF_Reference*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_Reference::~Handle_TDF_Reference %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_Reference {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7425,25 +6121,23 @@ class TDF_TagSource : public TDF_Attribute {
 };
 
 
-%feature("shadow") TDF_TagSource::~TDF_TagSource %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_TagSource {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_TagSource(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_TagSource {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_TagSource {
-	Handle_TDF_TagSource GetHandle() {
-	return *(Handle_TDF_TagSource*) &$self;
-	}
-};
+%pythonappend Handle_TDF_TagSource::Handle_TDF_TagSource %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_TagSource;
 class Handle_TDF_TagSource : public Handle_TDF_Attribute {
@@ -7461,20 +6155,6 @@ class Handle_TDF_TagSource : public Handle_TDF_Attribute {
 %extend Handle_TDF_TagSource {
     TDF_TagSource* GetObject() {
     return (TDF_TagSource*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_TagSource::~Handle_TDF_TagSource %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_TagSource {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7498,25 +6178,23 @@ class TDF_DefaultDeltaOnModification : public TDF_DeltaOnModification {
 };
 
 
-%feature("shadow") TDF_DefaultDeltaOnModification::~TDF_DefaultDeltaOnModification %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DefaultDeltaOnModification {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DefaultDeltaOnModification(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DefaultDeltaOnModification {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DefaultDeltaOnModification {
-	Handle_TDF_DefaultDeltaOnModification GetHandle() {
-	return *(Handle_TDF_DefaultDeltaOnModification*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DefaultDeltaOnModification::Handle_TDF_DefaultDeltaOnModification %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DefaultDeltaOnModification;
 class Handle_TDF_DefaultDeltaOnModification : public Handle_TDF_DeltaOnModification {
@@ -7534,20 +6212,6 @@ class Handle_TDF_DefaultDeltaOnModification : public Handle_TDF_DeltaOnModificat
 %extend Handle_TDF_DefaultDeltaOnModification {
     TDF_DefaultDeltaOnModification* GetObject() {
     return (TDF_DefaultDeltaOnModification*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DefaultDeltaOnModification::~Handle_TDF_DefaultDeltaOnModification %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DefaultDeltaOnModification {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -7571,25 +6235,23 @@ class TDF_DefaultDeltaOnRemoval : public TDF_DeltaOnRemoval {
 };
 
 
-%feature("shadow") TDF_DefaultDeltaOnRemoval::~TDF_DefaultDeltaOnRemoval %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TDF_DefaultDeltaOnRemoval {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TDF_DefaultDeltaOnRemoval(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TDF_DefaultDeltaOnRemoval {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TDF_DefaultDeltaOnRemoval {
-	Handle_TDF_DefaultDeltaOnRemoval GetHandle() {
-	return *(Handle_TDF_DefaultDeltaOnRemoval*) &$self;
-	}
-};
+%pythonappend Handle_TDF_DefaultDeltaOnRemoval::Handle_TDF_DefaultDeltaOnRemoval %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TDF_DefaultDeltaOnRemoval;
 class Handle_TDF_DefaultDeltaOnRemoval : public Handle_TDF_DeltaOnRemoval {
@@ -7607,20 +6269,6 @@ class Handle_TDF_DefaultDeltaOnRemoval : public Handle_TDF_DeltaOnRemoval {
 %extend Handle_TDF_DefaultDeltaOnRemoval {
     TDF_DefaultDeltaOnRemoval* GetObject() {
     return (TDF_DefaultDeltaOnRemoval*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TDF_DefaultDeltaOnRemoval::~Handle_TDF_DefaultDeltaOnRemoval %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TDF_DefaultDeltaOnRemoval {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

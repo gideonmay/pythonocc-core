@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include GccAna_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -302,20 +318,6 @@ class GccAna_Circ2d2TanOn {
 };
 
 
-%feature("shadow") GccAna_Circ2d2TanOn::~GccAna_Circ2d2TanOn %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Circ2d2TanOn {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Circ2d2TanRad;
 class GccAna_Circ2d2TanRad {
 	public:
@@ -482,20 +484,6 @@ class GccAna_Circ2d2TanRad {
 };
 
 
-%feature("shadow") GccAna_Circ2d2TanRad::~GccAna_Circ2d2TanRad %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Circ2d2TanRad {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Circ2d3Tan;
 class GccAna_Circ2d3Tan {
 	public:
@@ -652,7 +640,7 @@ class GccAna_Circ2d3Tan {
 ") NbSolutions;
 		Standard_Integer NbSolutions ();
 		%feature("compactdefaultargs") ThisSolution;
-		%feature("autodoc", "	* Returns the solution number Index and raises OutOfRange 	 exception if Index is greater than the number of 	 solutions. Be careful: the Index is only a way to get all the solutions, but is not associated to those outside the context of the algorithm-object. Raises OutOfRange if Index is greater than the number of solutions. It raises NotDone if the algorithm failed.
+		%feature("autodoc", "	* Returns the solution number Index and raises OutOfRange exception if Index is greater than the number of solutions. Be careful: the Index is only a way to get all the solutions, but is not associated to those outside the context of the algorithm-object. Raises OutOfRange if Index is greater than the number of solutions. It raises NotDone if the algorithm failed.
 
 	:param Index:
 	:type Index: int
@@ -742,20 +730,6 @@ class GccAna_Circ2d3Tan {
 };
 
 
-%feature("shadow") GccAna_Circ2d3Tan::~GccAna_Circ2d3Tan %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Circ2d3Tan {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Circ2dBisec;
 class GccAna_Circ2dBisec {
 	public:
@@ -792,20 +766,6 @@ class GccAna_Circ2dBisec {
 };
 
 
-%feature("shadow") GccAna_Circ2dBisec::~GccAna_Circ2dBisec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Circ2dBisec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Circ2dTanCen;
 class GccAna_Circ2dTanCen {
 	public:
@@ -896,20 +856,6 @@ class GccAna_Circ2dTanCen {
 };
 
 
-%feature("shadow") GccAna_Circ2dTanCen::~GccAna_Circ2dTanCen %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Circ2dTanCen {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Circ2dTanOnRad;
 class GccAna_Circ2dTanOnRad {
 	public:
@@ -1010,7 +956,7 @@ class GccAna_Circ2dTanOnRad {
 ") NbSolutions;
 		Standard_Integer NbSolutions ();
 		%feature("compactdefaultargs") ThisSolution;
-		%feature("autodoc", "	* Returns the solution number Index and raises OutOfRange 	exception if Index is greater than the number of solutions. Be careful: the Index is only a way to get all the solutions, but is not associated to theses outside the context of the algorithm-object. Raises NotDone if the construction algorithm didn't succeed. It raises OutOfRange if Index is greater than the number of solutions
+		%feature("autodoc", "	* Returns the solution number Index and raises OutOfRange exception if Index is greater than the number of solutions. Be careful: the Index is only a way to get all the solutions, but is not associated to theses outside the context of the algorithm-object. Raises NotDone if the construction algorithm didn't succeed. It raises OutOfRange if Index is greater than the number of solutions
 
 	:param Index:
 	:type Index: int
@@ -1064,20 +1010,6 @@ class GccAna_Circ2dTanOnRad {
 };
 
 
-%feature("shadow") GccAna_Circ2dTanOnRad::~GccAna_Circ2dTanOnRad %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Circ2dTanOnRad {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_CircLin2dBisec;
 class GccAna_CircLin2dBisec {
 	public:
@@ -1104,7 +1036,7 @@ class GccAna_CircLin2dBisec {
 ") NbSolutions;
 		Standard_Integer NbSolutions ();
 		%feature("compactdefaultargs") ThisSolution;
-		%feature("autodoc", "	* Returns the solution number Index and raises OutOfRange  exception if Index is greater than the number of solutions Exceptions Standard_OutOfRange if Index is less than zero or greater than the number of solutions computed by this algorithm.
+		%feature("autodoc", "	* Returns the solution number Index and raises OutOfRange exception if Index is greater than the number of solutions Exceptions Standard_OutOfRange if Index is less than zero or greater than the number of solutions computed by this algorithm.
 
 	:param Index:
 	:type Index: int
@@ -1114,20 +1046,6 @@ class GccAna_CircLin2dBisec {
 };
 
 
-%feature("shadow") GccAna_CircLin2dBisec::~GccAna_CircLin2dBisec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_CircLin2dBisec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_CircPnt2dBisec;
 class GccAna_CircPnt2dBisec {
 	public:
@@ -1176,20 +1094,6 @@ class GccAna_CircPnt2dBisec {
 };
 
 
-%feature("shadow") GccAna_CircPnt2dBisec::~GccAna_CircPnt2dBisec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_CircPnt2dBisec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Lin2d2Tan;
 class GccAna_Lin2d2Tan {
 	public:
@@ -1292,20 +1196,6 @@ class GccAna_Lin2d2Tan {
 };
 
 
-%feature("shadow") GccAna_Lin2d2Tan::~GccAna_Lin2d2Tan %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Lin2d2Tan {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Lin2dBisec;
 class GccAna_Lin2dBisec {
 	public:
@@ -1332,7 +1222,7 @@ class GccAna_Lin2dBisec {
 ") NbSolutions;
 		Standard_Integer NbSolutions ();
 		%feature("compactdefaultargs") ThisSolution;
-		%feature("autodoc", "	* //!Returns the solution number Index . The first solution is the inside one and the second is the outside one. For the first solution the direction is D1+D2 (D1 is the direction of the first argument and D2 the direction of the second argument). For the second solution the direction is D1-D2. Raises NotDone if the construction algorithm didn't succeed. It raises OutOfRange if Index is greater than the number of solutions.
+		%feature("autodoc", "	* Returns the solution number Index . The first solution is the inside one and the second is the outside one. For the first solution the direction is D1+D2 (D1 is the direction of the first argument and D2 the direction of the second argument). For the second solution the direction is D1-D2. Raises NotDone if the construction algorithm didn't succeed. It raises OutOfRange if Index is greater than the number of solutions.
 
 	:param Index:
 	:type Index: int
@@ -1370,20 +1260,6 @@ class GccAna_Lin2dBisec {
 };
 
 
-%feature("shadow") GccAna_Lin2dBisec::~GccAna_Lin2dBisec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Lin2dBisec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Lin2dTanObl;
 class GccAna_Lin2dTanObl {
 	public:
@@ -1472,20 +1348,6 @@ class GccAna_Lin2dTanObl {
 };
 
 
-%feature("shadow") GccAna_Lin2dTanObl::~GccAna_Lin2dTanObl %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Lin2dTanObl {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Lin2dTanPar;
 class GccAna_Lin2dTanPar {
 	public:
@@ -1556,20 +1418,6 @@ class GccAna_Lin2dTanPar {
 };
 
 
-%feature("shadow") GccAna_Lin2dTanPar::~GccAna_Lin2dTanPar %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Lin2dTanPar {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Lin2dTanPer;
 class GccAna_Lin2dTanPer {
 	public:
@@ -1674,20 +1522,6 @@ class GccAna_Lin2dTanPer {
 };
 
 
-%feature("shadow") GccAna_Lin2dTanPer::~GccAna_Lin2dTanPer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Lin2dTanPer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_LinPnt2dBisec;
 class GccAna_LinPnt2dBisec {
 	public:
@@ -1716,20 +1550,6 @@ class GccAna_LinPnt2dBisec {
 };
 
 
-%feature("shadow") GccAna_LinPnt2dBisec::~GccAna_LinPnt2dBisec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_LinPnt2dBisec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor GccAna_Pnt2dBisec;
 class GccAna_Pnt2dBisec {
 	public:
@@ -1764,17 +1584,3 @@ class GccAna_Pnt2dBisec {
 };
 
 
-%feature("shadow") GccAna_Pnt2dBisec::~GccAna_Pnt2dBisec %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend GccAna_Pnt2dBisec {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

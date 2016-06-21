@@ -32,12 +32,27 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include TCollection_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef TCollection_SeqNode * TCollection_SeqNodePtr;
 typedef TCollection_MapNode * TCollection_MapNodePtr;
-typedef TCollection_AVLBaseNode * TCollection_AVLBaseNodePtr;
 /* end typedefs declaration */
 
 /* public enums */
@@ -62,206 +77,6 @@ class TCollection {
 };
 
 
-%feature("shadow") TCollection::~TCollection %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TCollection_AVLBaseNode;
-class TCollection_AVLBaseNode : public MMgt_TShared {
-	public:
-		%feature("compactdefaultargs") TCollection_AVLBaseNode;
-		%feature("autodoc", "	:param L:
-	:type L: TCollection_AVLBaseNodePtr &
-	:param R:
-	:type R: TCollection_AVLBaseNodePtr &
-	:rtype: None
-") TCollection_AVLBaseNode;
-		 TCollection_AVLBaseNode (const TCollection_AVLBaseNodePtr & L,const TCollection_AVLBaseNodePtr & R);
-		%feature("compactdefaultargs") SetChild;
-		%feature("autodoc", "	:param theNode:
-	:type theNode: TCollection_AVLBaseNodePtr &
-	:param theSide:
-	:type theSide: TCollection_Side
-	:rtype: None
-") SetChild;
-		void SetChild (const TCollection_AVLBaseNodePtr & theNode,const TCollection_Side theSide);
-		%feature("compactdefaultargs") Height;
-		%feature("autodoc", "	:param ANode:
-	:type ANode: TCollection_AVLBaseNodePtr &
-	:rtype: int
-") Height;
-		static Standard_Integer Height (const TCollection_AVLBaseNodePtr & ANode);
-		%feature("compactdefaultargs") RecursiveExtent;
-		%feature("autodoc", "	:param ANode:
-	:type ANode: TCollection_AVLBaseNodePtr &
-	:rtype: int
-") RecursiveExtent;
-		static Standard_Integer RecursiveExtent (const TCollection_AVLBaseNodePtr & ANode);
-		%feature("compactdefaultargs") RecursiveTotalExtent;
-		%feature("autodoc", "	:param ANode:
-	:type ANode: TCollection_AVLBaseNodePtr &
-	:rtype: int
-") RecursiveTotalExtent;
-		static Standard_Integer RecursiveTotalExtent (const TCollection_AVLBaseNodePtr & ANode);
-		%feature("compactdefaultargs") Right;
-		%feature("autodoc", "	:rtype: TCollection_AVLBaseNodePtr
-") Right;
-		TCollection_AVLBaseNodePtr & Right ();
-		%feature("compactdefaultargs") Left;
-		%feature("autodoc", "	:rtype: TCollection_AVLBaseNodePtr
-") Left;
-		TCollection_AVLBaseNodePtr & Left ();
-
-            %feature("autodoc","1");
-            %extend {
-                Standard_Integer GetCount() {
-                return (Standard_Integer) $self->Count();
-                }
-            };
-            %feature("autodoc","1");
-            %extend {
-                void SetCount(Standard_Integer value ) {
-                $self->Count()=value;
-                }
-            };
-            };
-
-
-%feature("shadow") TCollection_AVLBaseNode::~TCollection_AVLBaseNode %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_AVLBaseNode {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TCollection_AVLBaseNode {
-	Handle_TCollection_AVLBaseNode GetHandle() {
-	return *(Handle_TCollection_AVLBaseNode*) &$self;
-	}
-};
-
-%nodefaultctor Handle_TCollection_AVLBaseNode;
-class Handle_TCollection_AVLBaseNode : public Handle_MMgt_TShared {
-
-    public:
-        // constructors
-        Handle_TCollection_AVLBaseNode();
-        Handle_TCollection_AVLBaseNode(const Handle_TCollection_AVLBaseNode &aHandle);
-        Handle_TCollection_AVLBaseNode(const TCollection_AVLBaseNode *anItem);
-        void Nullify();
-        Standard_Boolean IsNull() const;
-        static const Handle_TCollection_AVLBaseNode DownCast(const Handle_Standard_Transient &AnObject);
-
-};
-%extend Handle_TCollection_AVLBaseNode {
-    TCollection_AVLBaseNode* GetObject() {
-    return (TCollection_AVLBaseNode*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TCollection_AVLBaseNode::~Handle_TCollection_AVLBaseNode %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TCollection_AVLBaseNode {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
-
-%nodefaultctor TCollection_Array1Descriptor;
-class TCollection_Array1Descriptor {
-	public:
-		%feature("compactdefaultargs") Upper;
-		%feature("autodoc", "	:rtype: int
-") Upper;
-		Standard_Integer Upper ();
-		%feature("compactdefaultargs") Lower;
-		%feature("autodoc", "	:rtype: int
-") Lower;
-		Standard_Integer Lower ();
-		%feature("compactdefaultargs") Address;
-		%feature("autodoc", "	:rtype: Standard_Address
-") Address;
-		Standard_Address Address ();
-};
-
-
-%feature("shadow") TCollection_Array1Descriptor::~TCollection_Array1Descriptor %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_Array1Descriptor {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%nodefaultctor TCollection_Array2Descriptor;
-class TCollection_Array2Descriptor {
-	public:
-		%feature("compactdefaultargs") UpperRow;
-		%feature("autodoc", "	:rtype: int
-") UpperRow;
-		Standard_Integer UpperRow ();
-		%feature("compactdefaultargs") LowerRow;
-		%feature("autodoc", "	:rtype: int
-") LowerRow;
-		Standard_Integer LowerRow ();
-		%feature("compactdefaultargs") UpperCol;
-		%feature("autodoc", "	:rtype: int
-") UpperCol;
-		Standard_Integer UpperCol ();
-		%feature("compactdefaultargs") LowerCol;
-		%feature("autodoc", "	:rtype: int
-") LowerCol;
-		Standard_Integer LowerCol ();
-		%feature("compactdefaultargs") Address;
-		%feature("autodoc", "	:rtype: Standard_Address
-") Address;
-		Standard_Address Address ();
-};
-
-
-%feature("shadow") TCollection_Array2Descriptor::~TCollection_Array2Descriptor %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_Array2Descriptor {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_AsciiString;
 class TCollection_AsciiString {
 	public:
@@ -362,7 +177,7 @@ class TCollection_AsciiString {
 ") TCollection_AsciiString;
 		 TCollection_AsciiString (const TCollection_AsciiString & astring,const TCollection_AsciiString & message);
 		%feature("compactdefaultargs") TCollection_AsciiString;
-		%feature("autodoc", "	* Creation by converting an extended string to an ascii string. If replaceNonAscii is non-null charecter, it will be used in place of any non-ascii character found in the source string. Otherwise, raises OutOfRange exception if at least one character in the source string is not in the 'Ascii range'.
+		%feature("autodoc", "	* Creation by converting an extended string to an ascii string. If replaceNonAscii is non-null charecter, it will be used in place of any non-ascii character found in the source string. Otherwise, creates UTF-8 unicode string.
 
 	:param astring:
 	:type astring: TCollection_ExtendedString &
@@ -1049,7 +864,7 @@ class TCollection_AsciiString {
 	:type whichone: int
 	:rtype: TCollection_AsciiString
 ") Token;
-		TCollection_AsciiString Token (const char * separators = '\t',const Standard_Integer whichone = 1);
+		TCollection_AsciiString Token (const char * separators = "\t",const Standard_Integer whichone = 1);
 		%feature("compactdefaultargs") Trunc;
 		%feature("autodoc", "	* Truncates <self> to <ahowmany> characters. Example: me = 'Hello Dolly' -> Trunc(3) -> me = 'Hel'
 
@@ -1111,20 +926,6 @@ class TCollection_AsciiString {
 };
 
 
-%feature("shadow") TCollection_AsciiString::~TCollection_AsciiString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_AsciiString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_BaseSequence;
 class TCollection_BaseSequence {
 	public:
@@ -1159,20 +960,6 @@ class TCollection_BaseSequence {
 };
 
 
-%feature("shadow") TCollection_BaseSequence::~TCollection_BaseSequence %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_BaseSequence {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_BasicMap;
 class TCollection_BasicMap {
 	public:
@@ -1205,20 +992,6 @@ class TCollection_BasicMap {
         };
 
 
-%feature("shadow") TCollection_BasicMap::~TCollection_BasicMap %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_BasicMap {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_BasicMapIterator;
 class TCollection_BasicMapIterator {
 	public:
@@ -1243,20 +1016,6 @@ class TCollection_BasicMapIterator {
 };
 
 
-%feature("shadow") TCollection_BasicMapIterator::~TCollection_BasicMapIterator %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_BasicMapIterator {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_ExtendedString;
 class TCollection_ExtendedString {
 	public:
@@ -1267,7 +1026,7 @@ class TCollection_ExtendedString {
 ") TCollection_ExtendedString;
 		 TCollection_ExtendedString ();
 		%feature("compactdefaultargs") TCollection_ExtendedString;
-		%feature("autodoc", "	* Creation by converting a CString to an extended string.
+		%feature("autodoc", "	* Creation by converting a CString to an extended string. If <isMultiByte> is true then the string is treated as having UTF-8 coding. If it is not a UTF-8 then <isMultiByte> is ignored and each character is copied to ExtCharacter.
 
 	:param astring:
 	:type astring: char *
@@ -1335,7 +1094,7 @@ class TCollection_ExtendedString {
 ") TCollection_ExtendedString;
 		 TCollection_ExtendedString (const TCollection_ExtendedString & astring);
 		%feature("compactdefaultargs") TCollection_ExtendedString;
-		%feature("autodoc", "	* Creation by converting a normal Ascii string to an extended string.
+		%feature("autodoc", "	* Creation by converting an Ascii string to an extended string. The string is treated as having UTF-8 coding. If it is not a UTF-8 then each character is copied to ExtCharacter.
 
 	:param astring:
 	:type astring: TCollection_AsciiString &
@@ -1721,20 +1480,6 @@ class TCollection_ExtendedString {
 };
 
 
-%feature("shadow") TCollection_ExtendedString::~TCollection_ExtendedString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_ExtendedString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_HAsciiString;
 class TCollection_HAsciiString : public MMgt_TShared {
 	public:
@@ -2239,7 +1984,7 @@ class TCollection_HAsciiString : public MMgt_TShared {
 	:type whichone: int
 	:rtype: Handle_TCollection_HAsciiString
 ") Token;
-		Handle_TCollection_HAsciiString Token (const char * separators = '\t',const Standard_Integer whichone = 1);
+		Handle_TCollection_HAsciiString Token (const char * separators = "\t",const Standard_Integer whichone = 1);
 		%feature("compactdefaultargs") Trunc;
 		%feature("autodoc", "	* Truncates <self> to <ahowmany> characters. Example: me = 'Hello Dolly' -> Trunc(3) -> me = 'Hel'
 
@@ -2274,19 +2019,7 @@ class TCollection_HAsciiString : public MMgt_TShared {
 	:rtype: TCollection_AsciiString
 ") String;
 		const TCollection_AsciiString & String ();
-		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TCollection_HAsciiString
-") ShallowCopy;
-		Handle_TCollection_HAsciiString ShallowCopy ();
-
-        %feature("autodoc", "1");
-        %extend{
-            std::string ShallowDumpToString() {
-            std::stringstream s;
-            self->ShallowDump(s);
-            return s.str();}
-        };
-        		%feature("compactdefaultargs") IsSameState;
+		%feature("compactdefaultargs") IsSameState;
 		%feature("autodoc", "	:param other:
 	:type other: Handle_TCollection_HAsciiString &
 	:rtype: bool
@@ -2295,25 +2028,23 @@ class TCollection_HAsciiString : public MMgt_TShared {
 };
 
 
-%feature("shadow") TCollection_HAsciiString::~TCollection_HAsciiString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TCollection_HAsciiString {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TCollection_HAsciiString(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TCollection_HAsciiString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TCollection_HAsciiString {
-	Handle_TCollection_HAsciiString GetHandle() {
-	return *(Handle_TCollection_HAsciiString*) &$self;
-	}
-};
+%pythonappend Handle_TCollection_HAsciiString::Handle_TCollection_HAsciiString %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TCollection_HAsciiString;
 class Handle_TCollection_HAsciiString : public Handle_MMgt_TShared {
@@ -2331,20 +2062,6 @@ class Handle_TCollection_HAsciiString : public Handle_MMgt_TShared {
 %extend Handle_TCollection_HAsciiString {
     TCollection_HAsciiString* GetObject() {
     return (TCollection_HAsciiString*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TCollection_HAsciiString::~Handle_TCollection_HAsciiString %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TCollection_HAsciiString {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2609,18 +2326,6 @@ class TCollection_HExtendedString : public MMgt_TShared {
             self->Print(s);
             return s.str();}
         };
-        		%feature("compactdefaultargs") ShallowCopy;
-		%feature("autodoc", "	:rtype: Handle_TCollection_HExtendedString
-") ShallowCopy;
-		Handle_TCollection_HExtendedString ShallowCopy ();
-
-        %feature("autodoc", "1");
-        %extend{
-            std::string ShallowDumpToString() {
-            std::stringstream s;
-            self->ShallowDump(s);
-            return s.str();}
-        };
         		%feature("compactdefaultargs") IsSameState;
 		%feature("autodoc", "	:param other:
 	:type other: Handle_TCollection_HExtendedString &
@@ -2630,25 +2335,23 @@ class TCollection_HExtendedString : public MMgt_TShared {
 };
 
 
-%feature("shadow") TCollection_HExtendedString::~TCollection_HExtendedString %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TCollection_HExtendedString {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TCollection_HExtendedString(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TCollection_HExtendedString {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TCollection_HExtendedString {
-	Handle_TCollection_HExtendedString GetHandle() {
-	return *(Handle_TCollection_HExtendedString*) &$self;
-	}
-};
+%pythonappend Handle_TCollection_HExtendedString::Handle_TCollection_HExtendedString %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TCollection_HExtendedString;
 class Handle_TCollection_HExtendedString : public Handle_MMgt_TShared {
@@ -2668,20 +2371,6 @@ class Handle_TCollection_HExtendedString : public Handle_MMgt_TShared {
     return (TCollection_HExtendedString*)$self->Access();
     }
 };
-%feature("shadow") Handle_TCollection_HExtendedString::~Handle_TCollection_HExtendedString %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TCollection_HExtendedString {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor TCollection_MapNode;
 class TCollection_MapNode : public MMgt_TShared {
@@ -2699,25 +2388,23 @@ class TCollection_MapNode : public MMgt_TShared {
 };
 
 
-%feature("shadow") TCollection_MapNode::~TCollection_MapNode %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TCollection_MapNode {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TCollection_MapNode(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TCollection_MapNode {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TCollection_MapNode {
-	Handle_TCollection_MapNode GetHandle() {
-	return *(Handle_TCollection_MapNode*) &$self;
-	}
-};
+%pythonappend Handle_TCollection_MapNode::Handle_TCollection_MapNode %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TCollection_MapNode;
 class Handle_TCollection_MapNode : public Handle_MMgt_TShared {
@@ -2735,20 +2422,6 @@ class Handle_TCollection_MapNode : public Handle_MMgt_TShared {
 %extend Handle_TCollection_MapNode {
     TCollection_MapNode* GetObject() {
     return (TCollection_MapNode*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TCollection_MapNode::~Handle_TCollection_MapNode %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TCollection_MapNode {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2781,20 +2454,6 @@ class TCollection_PrivCompareOfInteger {
 };
 
 
-%feature("shadow") TCollection_PrivCompareOfInteger::~TCollection_PrivCompareOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_PrivCompareOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class TCollection_PrivCompareOfReal {
 	public:
 		%feature("compactdefaultargs") IsLower;
@@ -2824,20 +2483,6 @@ class TCollection_PrivCompareOfReal {
 };
 
 
-%feature("shadow") TCollection_PrivCompareOfReal::~TCollection_PrivCompareOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_PrivCompareOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_SeqNode;
 class TCollection_SeqNode : public MMgt_TShared {
 	public:
@@ -2860,25 +2505,23 @@ class TCollection_SeqNode : public MMgt_TShared {
 };
 
 
-%feature("shadow") TCollection_SeqNode::~TCollection_SeqNode %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend TCollection_SeqNode {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_TCollection_SeqNode(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend TCollection_SeqNode {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend TCollection_SeqNode {
-	Handle_TCollection_SeqNode GetHandle() {
-	return *(Handle_TCollection_SeqNode*) &$self;
-	}
-};
+%pythonappend Handle_TCollection_SeqNode::Handle_TCollection_SeqNode %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_TCollection_SeqNode;
 class Handle_TCollection_SeqNode : public Handle_MMgt_TShared {
@@ -2896,20 +2539,6 @@ class Handle_TCollection_SeqNode : public Handle_MMgt_TShared {
 %extend Handle_TCollection_SeqNode {
     TCollection_SeqNode* GetObject() {
     return (TCollection_SeqNode*)$self->Access();
-    }
-};
-%feature("shadow") Handle_TCollection_SeqNode::~Handle_TCollection_SeqNode %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_TCollection_SeqNode {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -2943,20 +2572,6 @@ class TCollection_CompareOfInteger : public TCollection_PrivCompareOfInteger {
 };
 
 
-%feature("shadow") TCollection_CompareOfInteger::~TCollection_CompareOfInteger %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_CompareOfInteger {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TCollection_CompareOfReal;
 class TCollection_CompareOfReal : public TCollection_PrivCompareOfReal {
 	public:
@@ -2987,17 +2602,3 @@ class TCollection_CompareOfReal : public TCollection_PrivCompareOfReal {
 };
 
 
-%feature("shadow") TCollection_CompareOfReal::~TCollection_CompareOfReal %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TCollection_CompareOfReal {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

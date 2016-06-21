@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include TopClass_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class TopClass_Intersection3d {
 	public:
 		%feature("compactdefaultargs") Perform;
-		%feature("autodoc", "	* Perform the intersection between the segment L(0) ... L(Prm) and the Face <Face>.  Only the point with the smallest parameter on the line is returned.  The Tolerance <Tol> is used to determine if the first point of the segment is near the face. In that case, the parameter of the intersection point on the line can be a negative value (greater than -Tol).
+		%feature("autodoc", "	* Perform the intersection between the segment L(0) ... L(Prm) and the Face <Face>. //! Only the point with the smallest parameter on the line is returned. //! The Tolerance <Tol> is used to determine if the first point of the segment is near the face. In that case, the parameter of the intersection point on the line can be a negative value (greater than -Tol).
 
 	:param L:
 	:type L: gp_Lin
@@ -84,20 +100,6 @@ class TopClass_Intersection3d {
 };
 
 
-%feature("shadow") TopClass_Intersection3d::~TopClass_Intersection3d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopClass_Intersection3d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopClass_SolidExplorer;
 class TopClass_SolidExplorer {
 	public:
@@ -122,7 +124,7 @@ class TopClass_SolidExplorer {
 ") Segment;
 		virtual void Segment (const gp_Pnt & P,gp_Lin & L,Standard_Real &OutValue);
 		%feature("compactdefaultargs") OtherSegment;
-		%feature("autodoc", "	* Returns in <L>, <Par> a segment having at least one intersection with the shape boundary to compute intersections.  The First Call to this method returns a line which point to a point of the first face of the shape. The Second Call provide a line to the second face and so on.  if the method is called N times on a shape with F faces (N>F) the line point to other points on the face 1,2,3 ... N
+		%feature("autodoc", "	* Returns in <L>, <Par> a segment having at least one intersection with the shape boundary to compute intersections. //! The First Call to this method returns a line which point to a point of the first face of the shape. The Second Call provide a line to the second face and so on. //! if the method is called N times on a shape with F faces (N>F) the line point to other points on the face 1,2,3 ... N
 
 	:param P:
 	:type P: gp_Pnt
@@ -198,17 +200,3 @@ class TopClass_SolidExplorer {
 };
 
 
-%feature("shadow") TopClass_SolidExplorer::~TopClass_SolidExplorer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopClass_SolidExplorer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

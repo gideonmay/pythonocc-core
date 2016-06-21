@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include RWStl_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -44,7 +60,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 class RWStl {
 	public:
 		%feature("compactdefaultargs") WriteBinary;
-		%feature("autodoc", "	* write the meshing in a file following the  binary format of an STL file.  Returns false if the cannot be opened;
+		%feature("autodoc", "	* write the meshing in a file following the binary format of an STL file. Returns false if the cannot be opened;
 
 	:param aMesh:
 	:type aMesh: Handle_StlMesh_Mesh &
@@ -56,7 +72,7 @@ class RWStl {
 ") WriteBinary;
 		static Standard_Boolean WriteBinary (const Handle_StlMesh_Mesh & aMesh,const OSD_Path & aPath,const Handle_Message_ProgressIndicator & aProgInd = NULL);
 		%feature("compactdefaultargs") WriteAscii;
-		%feature("autodoc", "	* write the meshing in a file following the  Ascii format of an STL file.  Returns false if the cannot be opened;
+		%feature("autodoc", "	* write the meshing in a file following the Ascii format of an STL file. Returns false if the cannot be opened;
 
 	:param aMesh:
 	:type aMesh: Handle_StlMesh_Mesh &
@@ -68,7 +84,7 @@ class RWStl {
 ") WriteAscii;
 		static Standard_Boolean WriteAscii (const Handle_StlMesh_Mesh & aMesh,const OSD_Path & aPath,const Handle_Message_ProgressIndicator & aProgInd = NULL);
 		%feature("compactdefaultargs") ReadFile;
-		%feature("autodoc", "	* This method will chwck if the file is a binary  file or an AsciiFile testing the 5 first  characters of the file wich are :'solid' in an  ascii file. If we do not find that word we assume  that it is a binary file.
+		%feature("autodoc", "	* This method will chwck if the file is a binary file or an AsciiFile testing the 5 first characters of the file wich are :'solid' in an ascii file. If we do not find that word we assume that it is a binary file.
 
 	:param aPath:
 	:type aPath: OSD_Path &
@@ -100,17 +116,3 @@ class RWStl {
 };
 
 
-%feature("shadow") RWStl::~RWStl %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend RWStl {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

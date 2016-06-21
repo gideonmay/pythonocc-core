@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Intf_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -51,7 +67,7 @@ enum Intf_PIType {
 class Intf {
 	public:
 		%feature("compactdefaultargs") PlaneEquation;
-		%feature("autodoc", "	* Computes the interference between two polygons in 2d. Result : points of intersections and zones of tangence. Computes the interference between two polygon in 3d. Section points, common perpendicular and projections. Computes the interference between a polygon or a straight line and a polyhedron. Points of intersection and zones of tangence. Compute the interference between two polyhedron. Points of intersection , polylines of intersection and zones of tangence. Give the plane equation of the triangle <P1> <P2> <P3>.
+		%feature("autodoc", "	* Computes the interference between two polygons in 2d. Result : points of intersections and zones of tangence. Computes the interference between a polygon or a straight line and a polyhedron. Points of intersection and zones of tangence. Give the plane equation of the triangle <P1> <P2> <P3>.
 
 	:param P1:
 	:type P1: gp_Pnt
@@ -83,20 +99,6 @@ class Intf {
 };
 
 
-%feature("shadow") Intf::~Intf %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_Array1OfLin;
 class Intf_Array1OfLin {
 	public:
@@ -179,20 +181,6 @@ class Intf_Array1OfLin {
 };
 
 
-%feature("shadow") Intf_Array1OfLin::~Intf_Array1OfLin %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_Array1OfLin {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_Interference;
 class Intf_Interference {
 	public:
@@ -277,20 +265,6 @@ class Intf_Interference {
 };
 
 
-%feature("shadow") Intf_Interference::~Intf_Interference %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_Interference {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_Polygon2d;
 class Intf_Polygon2d {
 	public:
@@ -333,20 +307,6 @@ class Intf_Polygon2d {
 };
 
 
-%feature("shadow") Intf_Polygon2d::~Intf_Polygon2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_Polygon2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class Intf_SectionLine {
 	public:
 		%feature("compactdefaultargs") NumberOfPoints;
@@ -474,20 +434,6 @@ class Intf_SectionLine {
 };
 
 
-%feature("shadow") Intf_SectionLine::~Intf_SectionLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_SectionLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class Intf_SectionPoint {
 	public:
 		%feature("compactdefaultargs") Pnt;
@@ -673,20 +619,6 @@ class Intf_SectionPoint {
 };
 
 
-%feature("shadow") Intf_SectionPoint::~Intf_SectionPoint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_SectionPoint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_SeqOfSectionLine;
 class Intf_SeqOfSectionLine : public TCollection_BaseSequence {
 	public:
@@ -694,6 +626,12 @@ class Intf_SeqOfSectionLine : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Intf_SeqOfSectionLine;
 		 Intf_SeqOfSectionLine ();
+		%feature("compactdefaultargs") Intf_SeqOfSectionLine;
+		%feature("autodoc", "	:param Other:
+	:type Other: Intf_SeqOfSectionLine &
+	:rtype: None
+") Intf_SeqOfSectionLine;
+		 Intf_SeqOfSectionLine (const Intf_SeqOfSectionLine & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -819,20 +757,6 @@ class Intf_SeqOfSectionLine : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Intf_SeqOfSectionLine::~Intf_SeqOfSectionLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_SeqOfSectionLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_SeqOfSectionPoint;
 class Intf_SeqOfSectionPoint : public TCollection_BaseSequence {
 	public:
@@ -840,6 +764,12 @@ class Intf_SeqOfSectionPoint : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Intf_SeqOfSectionPoint;
 		 Intf_SeqOfSectionPoint ();
+		%feature("compactdefaultargs") Intf_SeqOfSectionPoint;
+		%feature("autodoc", "	:param Other:
+	:type Other: Intf_SeqOfSectionPoint &
+	:rtype: None
+") Intf_SeqOfSectionPoint;
+		 Intf_SeqOfSectionPoint (const Intf_SeqOfSectionPoint & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -965,20 +895,6 @@ class Intf_SeqOfSectionPoint : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Intf_SeqOfSectionPoint::~Intf_SeqOfSectionPoint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_SeqOfSectionPoint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_SeqOfTangentZone;
 class Intf_SeqOfTangentZone : public TCollection_BaseSequence {
 	public:
@@ -986,6 +902,12 @@ class Intf_SeqOfTangentZone : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Intf_SeqOfTangentZone;
 		 Intf_SeqOfTangentZone ();
+		%feature("compactdefaultargs") Intf_SeqOfTangentZone;
+		%feature("autodoc", "	:param Other:
+	:type Other: Intf_SeqOfTangentZone &
+	:rtype: None
+") Intf_SeqOfTangentZone;
+		 Intf_SeqOfTangentZone (const Intf_SeqOfTangentZone & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -1111,20 +1033,6 @@ class Intf_SeqOfTangentZone : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Intf_SeqOfTangentZone::~Intf_SeqOfTangentZone %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_SeqOfTangentZone {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_SequenceNodeOfSeqOfSectionLine;
 class Intf_SequenceNodeOfSeqOfSectionLine : public TCollection_SeqNode {
 	public:
@@ -1145,25 +1053,23 @@ class Intf_SequenceNodeOfSeqOfSectionLine : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") Intf_SequenceNodeOfSeqOfSectionLine::~Intf_SequenceNodeOfSeqOfSectionLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Intf_SequenceNodeOfSeqOfSectionLine {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Intf_SequenceNodeOfSeqOfSectionLine(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Intf_SequenceNodeOfSeqOfSectionLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Intf_SequenceNodeOfSeqOfSectionLine {
-	Handle_Intf_SequenceNodeOfSeqOfSectionLine GetHandle() {
-	return *(Handle_Intf_SequenceNodeOfSeqOfSectionLine*) &$self;
-	}
-};
+%pythonappend Handle_Intf_SequenceNodeOfSeqOfSectionLine::Handle_Intf_SequenceNodeOfSeqOfSectionLine %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Intf_SequenceNodeOfSeqOfSectionLine;
 class Handle_Intf_SequenceNodeOfSeqOfSectionLine : public Handle_TCollection_SeqNode {
@@ -1181,20 +1087,6 @@ class Handle_Intf_SequenceNodeOfSeqOfSectionLine : public Handle_TCollection_Seq
 %extend Handle_Intf_SequenceNodeOfSeqOfSectionLine {
     Intf_SequenceNodeOfSeqOfSectionLine* GetObject() {
     return (Intf_SequenceNodeOfSeqOfSectionLine*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Intf_SequenceNodeOfSeqOfSectionLine::~Handle_Intf_SequenceNodeOfSeqOfSectionLine %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Intf_SequenceNodeOfSeqOfSectionLine {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1218,25 +1110,23 @@ class Intf_SequenceNodeOfSeqOfSectionPoint : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") Intf_SequenceNodeOfSeqOfSectionPoint::~Intf_SequenceNodeOfSeqOfSectionPoint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Intf_SequenceNodeOfSeqOfSectionPoint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Intf_SequenceNodeOfSeqOfSectionPoint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Intf_SequenceNodeOfSeqOfSectionPoint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Intf_SequenceNodeOfSeqOfSectionPoint {
-	Handle_Intf_SequenceNodeOfSeqOfSectionPoint GetHandle() {
-	return *(Handle_Intf_SequenceNodeOfSeqOfSectionPoint*) &$self;
-	}
-};
+%pythonappend Handle_Intf_SequenceNodeOfSeqOfSectionPoint::Handle_Intf_SequenceNodeOfSeqOfSectionPoint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Intf_SequenceNodeOfSeqOfSectionPoint;
 class Handle_Intf_SequenceNodeOfSeqOfSectionPoint : public Handle_TCollection_SeqNode {
@@ -1254,20 +1144,6 @@ class Handle_Intf_SequenceNodeOfSeqOfSectionPoint : public Handle_TCollection_Se
 %extend Handle_Intf_SequenceNodeOfSeqOfSectionPoint {
     Intf_SequenceNodeOfSeqOfSectionPoint* GetObject() {
     return (Intf_SequenceNodeOfSeqOfSectionPoint*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Intf_SequenceNodeOfSeqOfSectionPoint::~Handle_Intf_SequenceNodeOfSeqOfSectionPoint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Intf_SequenceNodeOfSeqOfSectionPoint {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1291,25 +1167,23 @@ class Intf_SequenceNodeOfSeqOfTangentZone : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") Intf_SequenceNodeOfSeqOfTangentZone::~Intf_SequenceNodeOfSeqOfTangentZone %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Intf_SequenceNodeOfSeqOfTangentZone {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Intf_SequenceNodeOfSeqOfTangentZone(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Intf_SequenceNodeOfSeqOfTangentZone {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Intf_SequenceNodeOfSeqOfTangentZone {
-	Handle_Intf_SequenceNodeOfSeqOfTangentZone GetHandle() {
-	return *(Handle_Intf_SequenceNodeOfSeqOfTangentZone*) &$self;
-	}
-};
+%pythonappend Handle_Intf_SequenceNodeOfSeqOfTangentZone::Handle_Intf_SequenceNodeOfSeqOfTangentZone %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Intf_SequenceNodeOfSeqOfTangentZone;
 class Handle_Intf_SequenceNodeOfSeqOfTangentZone : public Handle_TCollection_SeqNode {
@@ -1327,20 +1201,6 @@ class Handle_Intf_SequenceNodeOfSeqOfTangentZone : public Handle_TCollection_Seq
 %extend Handle_Intf_SequenceNodeOfSeqOfTangentZone {
     Intf_SequenceNodeOfSeqOfTangentZone* GetObject() {
     return (Intf_SequenceNodeOfSeqOfTangentZone*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Intf_SequenceNodeOfSeqOfTangentZone::~Handle_Intf_SequenceNodeOfSeqOfTangentZone %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Intf_SequenceNodeOfSeqOfTangentZone {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1529,20 +1389,6 @@ class Intf_TangentZone {
 };
 
 
-%feature("shadow") Intf_TangentZone::~Intf_TangentZone %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_TangentZone {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_Tool;
 class Intf_Tool {
 	public:
@@ -1629,20 +1475,6 @@ class Intf_Tool {
 };
 
 
-%feature("shadow") Intf_Tool::~Intf_Tool %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_Tool {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Intf_InterferencePolygon2d;
 class Intf_InterferencePolygon2d : public Intf_Interference {
 	public:
@@ -1699,17 +1531,3 @@ class Intf_InterferencePolygon2d : public Intf_Interference {
 };
 
 
-%feature("shadow") Intf_InterferencePolygon2d::~Intf_InterferencePolygon2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Intf_InterferencePolygon2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

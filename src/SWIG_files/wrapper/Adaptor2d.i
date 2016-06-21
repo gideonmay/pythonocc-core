@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Adaptor2d_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 typedef Adaptor2d_Curve2d * Adaptor2d_Curve2dPtr;
@@ -68,7 +84,7 @@ class Adaptor2d_Curve2d {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -172,7 +188,7 @@ class Adaptor2d_Curve2d {
 ") DN;
 		virtual gp_Vec2d DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -236,20 +252,6 @@ class Adaptor2d_Curve2d {
 };
 
 
-%feature("shadow") Adaptor2d_Curve2d::~Adaptor2d_Curve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor2d_Curve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Adaptor2d_HCurve2d;
 class Adaptor2d_HCurve2d : public MMgt_TShared {
 	public:
@@ -424,25 +426,23 @@ class Adaptor2d_HCurve2d : public MMgt_TShared {
 };
 
 
-%feature("shadow") Adaptor2d_HCurve2d::~Adaptor2d_HCurve2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor2d_HCurve2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor2d_HCurve2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor2d_HCurve2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor2d_HCurve2d {
-	Handle_Adaptor2d_HCurve2d GetHandle() {
-	return *(Handle_Adaptor2d_HCurve2d*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor2d_HCurve2d::Handle_Adaptor2d_HCurve2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor2d_HCurve2d;
 class Handle_Adaptor2d_HCurve2d : public Handle_MMgt_TShared {
@@ -460,20 +460,6 @@ class Handle_Adaptor2d_HCurve2d : public Handle_MMgt_TShared {
 %extend Handle_Adaptor2d_HCurve2d {
     Adaptor2d_HCurve2d* GetObject() {
     return (Adaptor2d_HCurve2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor2d_HCurve2d::~Handle_Adaptor2d_HCurve2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor2d_HCurve2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -507,25 +493,23 @@ class Adaptor2d_HLine2d : public Adaptor2d_HCurve2d {
 };
 
 
-%feature("shadow") Adaptor2d_HLine2d::~Adaptor2d_HLine2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Adaptor2d_HLine2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Adaptor2d_HLine2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Adaptor2d_HLine2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Adaptor2d_HLine2d {
-	Handle_Adaptor2d_HLine2d GetHandle() {
-	return *(Handle_Adaptor2d_HLine2d*) &$self;
-	}
-};
+%pythonappend Handle_Adaptor2d_HLine2d::Handle_Adaptor2d_HLine2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Adaptor2d_HLine2d;
 class Handle_Adaptor2d_HLine2d : public Handle_Adaptor2d_HCurve2d {
@@ -543,20 +527,6 @@ class Handle_Adaptor2d_HLine2d : public Handle_Adaptor2d_HCurve2d {
 %extend Handle_Adaptor2d_HLine2d {
     Adaptor2d_HLine2d* GetObject() {
     return (Adaptor2d_HLine2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Adaptor2d_HLine2d::~Handle_Adaptor2d_HLine2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Adaptor2d_HLine2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -616,7 +586,7 @@ class Adaptor2d_Line2d : public Adaptor2d_Curve2d {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -764,17 +734,3 @@ class Adaptor2d_Line2d : public Adaptor2d_Curve2d {
 };
 
 
-%feature("shadow") Adaptor2d_Line2d::~Adaptor2d_Line2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Adaptor2d_Line2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

@@ -25,6 +25,12 @@ from OCC.TopExp import TopExp_Explorer
 from OCC.TopAbs import TopAbs_FACE
 import OCC
 import os
+try:  # python2
+    import urlparse
+    import urllib
+except ImportError:  # python3
+    import urllib.parse as urlparse
+    import urllib.request as urllib
 
 # <script type="text/javascript" src="@x3dom-full.jsPath@/x3dom-full.js"></script>
     
@@ -150,12 +156,19 @@ BODY = """
 """
 
 
+def path2url(path):
+    """
+    Converts a file path into a file URL
+    """
+    return urlparse.urljoin('file:', urllib.pathname2url(path))
+
+
 class HTMLHeader(object):
     def __init__(self, background_color='#000000'):
         self._background_color = background_color
 
     def get_str(self):
-        x3dom_build_location = os.sep.join([OCC.__path__[0], 'Display', 'WebGl', 'js'])
+        x3dom_build_location = path2url(os.sep.join([OCC.__path__[0], 'Display', 'WebGl', 'js']))
         header_str = HEADER.replace('@background-color@', '%s' % self._background_color)
         header_str = header_str.replace('@jspath@', '%s' % x3dom_build_location)
         header_str = header_str.replace('@VERSION@', OCC.VERSION)
@@ -209,13 +222,12 @@ class X3DExporter(object):
     def write_to_file(self, filename):
         # write header
         f = open(filename, "w")
-        f.write("""
-        <?xml version="1.0" encoding="UTF-8"?>
-        <X3D profile="Immersive" version="3.2" xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="http://www.web3d.org/specifications/x3d-3.2.xsd">
-        <head>
-            <meta name="generator" content="pythonOCC (www.pythonocc.org)"/>
-        </head>
-        <Scene>
+        f.write("""<?xml version="1.0" encoding="UTF-8"?>
+<X3D profile="Immersive" version="3.2" xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="http://www.web3d.org/specifications/x3d-3.2.xsd">
+<head>
+    <meta name="generator" content="pythonOCC (www.pythonocc.org)"/>
+</head>
+<Scene>
         """)
         f.write('<Group onclick="handleGroupClick(event)">\n')
         shape_id = 0
@@ -239,8 +251,8 @@ class X3DExporter(object):
             f.write("</Shape>\n")
             shape_id += 1
         f.write("</Group>\n")
-        f.write('</Scene>\n</x3d>\n')
-
+        f.write('</Scene>\n</X3D>\n')
+        f.close()
 
 def test_X3DExporter():
     from OCC.BRepPrimAPI import BRepPrimAPI_MakeBox

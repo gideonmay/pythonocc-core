@@ -20,9 +20,9 @@ project(PYTHONOCC)
 # set pythonOCC version
 set(PYTHONOCC_VERSION_MAJOR 0)
 set(PYTHONOCC_VERSION_MINOR 16)
-set(PYTHONOCC_VERSION_PATCH 3)
+set(PYTHONOCC_VERSION_PATCH 5)
 #  Empty for official releases, set to -dev, -rc1, etc for development releases
-set(PYTHONOCC_VERSION_DEVEL -dev)
+set(PYTHONOCC_VERSION_DEVEL)
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -119,12 +119,12 @@ set(PYTHONOCC_INSTALL_DIRECTORY ${python_lib}/OCC CACHE PATH "pythonOCC install 
 
 # List of OCE shared libraries to link with
 # TODO: this should be build from the module list
-set(OCE_MODEL_LIBRARIES TKernel TKMath TKAdvTools TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo
+set(OCE_MODEL_LIBRARIES TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo
     TKTopAlgo TKPrim TKBO TKHLR TKMesh TKShHealing TKXMesh TKBool TKFillet TKFeat TKOffset)
 set(OCE_VISUALIZATION_LIBRARIES TKService TKV3d TKMeshVS TKOpenGl)
 set(OCE_DATAEXCHANGE_LIBRARIES TKSTL TKXSBase TKSTEPBase TKIGES TKSTEPAttr TKSTEP209
     TKSTEP TKVRML)
-set(OCE_OCAF_LIBRARIES TKLCAF TKXCAF TKXDESTEP TKXDEIGES)
+set(OCE_OCAF_LIBRARIES TKLCAF TKXCAF TKXDESTEP TKXDEIGES TKXSBase TKV3d)
 
 ######################################################
 # Configure Build settings according to the platform #
@@ -177,9 +177,9 @@ endif(${python_version_major} MATCHES "3")
 if(WIN32)
   if(MSVC) # The compiler used is MSVC
     message(STATUS "Found MSVC compiler: ${MSVC} ${MSVC_VERSION}")
-    set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/)
+    set(LIBRARY_OUTPUT_PATH bin/)
   elseif (BORLAND) # The compiler used is BORLAND
-    set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/win${BIT}/bin/${CMAKE_BUILD_TYPE})
+    set(LIBRARY_OUTPUT_PATH win${BIT}/bin/${CMAKE_BUILD_TYPE})
   else()
     set(LIBRARY_OUTPUT_PATH win${BIT}/bin/${CMAKE_BUILD_TYPE})
   endif()

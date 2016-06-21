@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include TopTrans_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -144,20 +160,6 @@ class TopTrans_Array2OfOrientation {
 };
 
 
-%feature("shadow") TopTrans_Array2OfOrientation::~TopTrans_Array2OfOrientation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopTrans_Array2OfOrientation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopTrans_CurveTransition;
 class TopTrans_CurveTransition {
 	public:
@@ -220,20 +222,6 @@ class TopTrans_CurveTransition {
 };
 
 
-%feature("shadow") TopTrans_CurveTransition::~TopTrans_CurveTransition %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopTrans_CurveTransition {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor TopTrans_SurfaceTransition;
 class TopTrans_SurfaceTransition {
 	public:
@@ -272,7 +260,7 @@ class TopTrans_SurfaceTransition {
 ") Reset;
 		void Reset (const gp_Dir & Tgt,const gp_Dir & Norm);
 		%feature("compactdefaultargs") Compare;
-		%feature("autodoc", "	* Add a face element to the boundary.  - S defines topological orientation for the face : S FORWARD means: along the intersection curve on the reference surface, transition states while crossing the face are OUT,IN. S REVERSED means states are IN,OUT. S INTERNAL means states are IN,IN.  - O defines curve's position on face : O FORWARD means the face is before the intersection O REVERSED means the face is AFTER O INTERNAL means the curve intersection is in the face. PREQUESITORY : Norm oriented OUTSIDE 'geometric matter'
+		%feature("autodoc", "	* Add a face element to the boundary. //! - S defines topological orientation for the face : S FORWARD means: along the intersection curve on the reference surface, transition states while crossing the face are OUT,IN. S REVERSED means states are IN,OUT. S INTERNAL means states are IN,IN. //! - O defines curve's position on face : O FORWARD means the face is before the intersection O REVERSED means the face is AFTER O INTERNAL means the curve intersection is in the face. PREQUESITORY : Norm oriented OUTSIDE 'geometric matter'
 
 	:param Tole:
 	:type Tole: float
@@ -334,17 +322,3 @@ class TopTrans_SurfaceTransition {
 };
 
 
-%feature("shadow") TopTrans_SurfaceTransition::~TopTrans_SurfaceTransition %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend TopTrans_SurfaceTransition {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

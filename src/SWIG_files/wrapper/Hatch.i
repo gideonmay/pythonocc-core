@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Hatch_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -80,7 +96,7 @@ class Hatch_Hatcher {
 ") AddLine;
 		void AddLine (const gp_Lin2d & L,const Hatch_LineForm T = Hatch_ANYLINE);
 		%feature("compactdefaultargs") AddLine;
-		%feature("autodoc", "	* Add an infinite line on direction <D> at distance <Dist> from the origin to be trimmed. <Dist> may be negative.  If O is the origin of the 2D plane, and V the vector perpendicular to D (in the direct direction).  A point P is on the line if :  OP dot V = Dist The parameter of P on the line is  OP dot D
+		%feature("autodoc", "	* Add an infinite line on direction <D> at distance <Dist> from the origin to be trimmed. <Dist> may be negative. //! If O is the origin of the 2D plane, and V the vector perpendicular to D (in the direct direction). //! A point P is on the line if : OP dot V = Dist The parameter of P on the line is OP dot D
 
 	:param D:
 	:type D: gp_Dir2d
@@ -252,20 +268,6 @@ class Hatch_Hatcher {
 };
 
 
-%feature("shadow") Hatch_Hatcher::~Hatch_Hatcher %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Hatch_Hatcher {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Hatch_Line;
 class Hatch_Line {
 	public:
@@ -300,20 +302,6 @@ class Hatch_Line {
 };
 
 
-%feature("shadow") Hatch_Line::~Hatch_Line %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Hatch_Line {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Hatch_Parameter;
 class Hatch_Parameter {
 	public:
@@ -336,20 +324,6 @@ class Hatch_Parameter {
 };
 
 
-%feature("shadow") Hatch_Parameter::~Hatch_Parameter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Hatch_Parameter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Hatch_SequenceNodeOfSequenceOfLine;
 class Hatch_SequenceNodeOfSequenceOfLine : public TCollection_SeqNode {
 	public:
@@ -370,25 +344,23 @@ class Hatch_SequenceNodeOfSequenceOfLine : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") Hatch_SequenceNodeOfSequenceOfLine::~Hatch_SequenceNodeOfSequenceOfLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Hatch_SequenceNodeOfSequenceOfLine {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Hatch_SequenceNodeOfSequenceOfLine(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Hatch_SequenceNodeOfSequenceOfLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Hatch_SequenceNodeOfSequenceOfLine {
-	Handle_Hatch_SequenceNodeOfSequenceOfLine GetHandle() {
-	return *(Handle_Hatch_SequenceNodeOfSequenceOfLine*) &$self;
-	}
-};
+%pythonappend Handle_Hatch_SequenceNodeOfSequenceOfLine::Handle_Hatch_SequenceNodeOfSequenceOfLine %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Hatch_SequenceNodeOfSequenceOfLine;
 class Handle_Hatch_SequenceNodeOfSequenceOfLine : public Handle_TCollection_SeqNode {
@@ -406,20 +378,6 @@ class Handle_Hatch_SequenceNodeOfSequenceOfLine : public Handle_TCollection_SeqN
 %extend Handle_Hatch_SequenceNodeOfSequenceOfLine {
     Hatch_SequenceNodeOfSequenceOfLine* GetObject() {
     return (Hatch_SequenceNodeOfSequenceOfLine*)$self->Access();
-    }
-};
-%feature("shadow") Handle_Hatch_SequenceNodeOfSequenceOfLine::~Handle_Hatch_SequenceNodeOfSequenceOfLine %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Hatch_SequenceNodeOfSequenceOfLine {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -443,25 +401,23 @@ class Hatch_SequenceNodeOfSequenceOfParameter : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") Hatch_SequenceNodeOfSequenceOfParameter::~Hatch_SequenceNodeOfSequenceOfParameter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Hatch_SequenceNodeOfSequenceOfParameter {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Hatch_SequenceNodeOfSequenceOfParameter(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Hatch_SequenceNodeOfSequenceOfParameter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Hatch_SequenceNodeOfSequenceOfParameter {
-	Handle_Hatch_SequenceNodeOfSequenceOfParameter GetHandle() {
-	return *(Handle_Hatch_SequenceNodeOfSequenceOfParameter*) &$self;
-	}
-};
+%pythonappend Handle_Hatch_SequenceNodeOfSequenceOfParameter::Handle_Hatch_SequenceNodeOfSequenceOfParameter %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Hatch_SequenceNodeOfSequenceOfParameter;
 class Handle_Hatch_SequenceNodeOfSequenceOfParameter : public Handle_TCollection_SeqNode {
@@ -481,20 +437,6 @@ class Handle_Hatch_SequenceNodeOfSequenceOfParameter : public Handle_TCollection
     return (Hatch_SequenceNodeOfSequenceOfParameter*)$self->Access();
     }
 };
-%feature("shadow") Handle_Hatch_SequenceNodeOfSequenceOfParameter::~Handle_Hatch_SequenceNodeOfSequenceOfParameter %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Hatch_SequenceNodeOfSequenceOfParameter {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Hatch_SequenceOfLine;
 class Hatch_SequenceOfLine : public TCollection_BaseSequence {
@@ -503,6 +445,12 @@ class Hatch_SequenceOfLine : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Hatch_SequenceOfLine;
 		 Hatch_SequenceOfLine ();
+		%feature("compactdefaultargs") Hatch_SequenceOfLine;
+		%feature("autodoc", "	:param Other:
+	:type Other: Hatch_SequenceOfLine &
+	:rtype: None
+") Hatch_SequenceOfLine;
+		 Hatch_SequenceOfLine (const Hatch_SequenceOfLine & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -628,20 +576,6 @@ class Hatch_SequenceOfLine : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Hatch_SequenceOfLine::~Hatch_SequenceOfLine %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Hatch_SequenceOfLine {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Hatch_SequenceOfParameter;
 class Hatch_SequenceOfParameter : public TCollection_BaseSequence {
 	public:
@@ -649,6 +583,12 @@ class Hatch_SequenceOfParameter : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Hatch_SequenceOfParameter;
 		 Hatch_SequenceOfParameter ();
+		%feature("compactdefaultargs") Hatch_SequenceOfParameter;
+		%feature("autodoc", "	:param Other:
+	:type Other: Hatch_SequenceOfParameter &
+	:rtype: None
+") Hatch_SequenceOfParameter;
+		 Hatch_SequenceOfParameter (const Hatch_SequenceOfParameter & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -774,17 +714,3 @@ class Hatch_SequenceOfParameter : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Hatch_SequenceOfParameter::~Hatch_SequenceOfParameter %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Hatch_SequenceOfParameter {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

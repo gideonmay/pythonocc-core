@@ -1,3 +1,48 @@
+=========================
+Version 0.16.5 - May 2016
+
+This release requires oce-0.16.0 or oce-0.16.1
+
+* Exception handling fix
+
+* pyqt 4 and 5 fixes
+
+* OCCViewer fixes (py3k, DisplayVector)
+
+* New examples : minimal distance, boolean operations,
+fillet operations, splinecage, topology_traverse
+
+* New modules made available from TKCAF, TKSTEP and TKSTEPBase
+
+===========================
+Version 0.16.4 - April 2016
+
+This release requires oce-0.16.0 or oce-0.16.1
+
+* New memeory management system : previous pythonocc released
+suffered from memory issues (leaks). The release introduces a
+much better way to deal with the OCE handles
+
+* wx and pyqt5 fixes
+
+* minor fixes to the webgl renderers
+
+=============================
+Version 0.16.3 - January 2016
+
+This release requires oce-0.16.0 or oce-0.16.1
+
+* New examples: visualization_overpaint_viewerer,
+visualization_graphic3d_custom_opengl.py, matplotlib_box,
+parallel_slicer, topology_glue
+
+* PyQt5 support
+
+* Improvements and fixes to the Tesselator class:
+Computation of edges, Interface to Vertices, Normals, and Triangles
+
+* minor portability fixes/improvements.
+
 ==========================
 Version 0.16.2 - July 2015
 

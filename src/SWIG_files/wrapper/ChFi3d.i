@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include ChFi3d_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -112,20 +128,6 @@ class ChFi3d {
 };
 
 
-%feature("shadow") ChFi3d::~ChFi3d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ChFi3d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ChFi3d_Builder;
 class ChFi3d_Builder {
 	public:
@@ -174,7 +176,7 @@ class ChFi3d_Builder {
 ") Contains;
 		Standard_Integer Contains (const TopoDS_Edge & E);
 		%feature("compactdefaultargs") Contains;
-		%feature("autodoc", "	* gives the number of the contour containing E or 0 if E does not belong to any contour. //!	 Sets in IndexInSpine the index of E in the contour if it's found
+		%feature("autodoc", "	* gives the number of the contour containing E or 0 if E does not belong to any contour. Sets in IndexInSpine the index of E in the contour if it's found
 
 	:param E:
 	:type E: TopoDS_Edge &
@@ -396,20 +398,6 @@ class ChFi3d_Builder {
 };
 
 
-%feature("shadow") ChFi3d_Builder::~ChFi3d_Builder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ChFi3d_Builder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ChFi3d_SearchSing;
 class ChFi3d_SearchSing : public math_FunctionWithDerivative {
 	public:
@@ -456,20 +444,6 @@ class ChFi3d_SearchSing : public math_FunctionWithDerivative {
 };
 
 
-%feature("shadow") ChFi3d_SearchSing::~ChFi3d_SearchSing %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ChFi3d_SearchSing {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ChFi3d_ChBuilder;
 class ChFi3d_ChBuilder : public ChFi3d_Builder {
 	public:
@@ -1050,20 +1024,6 @@ class ChFi3d_ChBuilder : public ChFi3d_Builder {
 };
 
 
-%feature("shadow") ChFi3d_ChBuilder::~ChFi3d_ChBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ChFi3d_ChBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor ChFi3d_FilBuilder;
 class ChFi3d_FilBuilder : public ChFi3d_Builder {
 	public:
@@ -1280,17 +1240,3 @@ class ChFi3d_FilBuilder : public ChFi3d_Builder {
 };
 
 
-%feature("shadow") ChFi3d_FilBuilder::~ChFi3d_FilBuilder %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend ChFi3d_FilBuilder {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

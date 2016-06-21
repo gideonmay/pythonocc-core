@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BRepTools_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -348,20 +364,6 @@ class BRepTools {
 };
 
 
-%feature("shadow") BRepTools::~BRepTools %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_DataMapIteratorOfMapOfVertexPnt2d;
 class BRepTools_DataMapIteratorOfMapOfVertexPnt2d : public TCollection_BasicMapIterator {
 	public:
@@ -392,20 +394,6 @@ class BRepTools_DataMapIteratorOfMapOfVertexPnt2d : public TCollection_BasicMapI
 };
 
 
-%feature("shadow") BRepTools_DataMapIteratorOfMapOfVertexPnt2d::~BRepTools_DataMapIteratorOfMapOfVertexPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_DataMapIteratorOfMapOfVertexPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_DataMapNodeOfMapOfVertexPnt2d;
 class BRepTools_DataMapNodeOfMapOfVertexPnt2d : public TCollection_MapNode {
 	public:
@@ -430,25 +418,23 @@ class BRepTools_DataMapNodeOfMapOfVertexPnt2d : public TCollection_MapNode {
 };
 
 
-%feature("shadow") BRepTools_DataMapNodeOfMapOfVertexPnt2d::~BRepTools_DataMapNodeOfMapOfVertexPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepTools_DataMapNodeOfMapOfVertexPnt2d {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepTools_DataMapNodeOfMapOfVertexPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepTools_DataMapNodeOfMapOfVertexPnt2d {
-	Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d GetHandle() {
-	return *(Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d*) &$self;
-	}
-};
+%pythonappend Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d::Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d;
 class Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d : public Handle_TCollection_MapNode {
@@ -466,20 +452,6 @@ class Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d : public Handle_TCollection
 %extend Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d {
     BRepTools_DataMapNodeOfMapOfVertexPnt2d* GetObject() {
     return (BRepTools_DataMapNodeOfMapOfVertexPnt2d*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d::~Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepTools_DataMapNodeOfMapOfVertexPnt2d {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -561,20 +533,6 @@ class BRepTools_MapOfVertexPnt2d : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BRepTools_MapOfVertexPnt2d::~BRepTools_MapOfVertexPnt2d %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_MapOfVertexPnt2d {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_Modification;
 class BRepTools_Modification : public MMgt_TShared {
 	public:
@@ -675,25 +633,23 @@ class BRepTools_Modification : public MMgt_TShared {
 };
 
 
-%feature("shadow") BRepTools_Modification::~BRepTools_Modification %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepTools_Modification {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepTools_Modification(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepTools_Modification {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepTools_Modification {
-	Handle_BRepTools_Modification GetHandle() {
-	return *(Handle_BRepTools_Modification*) &$self;
-	}
-};
+%pythonappend Handle_BRepTools_Modification::Handle_BRepTools_Modification %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepTools_Modification;
 class Handle_BRepTools_Modification : public Handle_MMgt_TShared {
@@ -711,20 +667,6 @@ class Handle_BRepTools_Modification : public Handle_MMgt_TShared {
 %extend Handle_BRepTools_Modification {
     BRepTools_Modification* GetObject() {
     return (BRepTools_Modification*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepTools_Modification::~Handle_BRepTools_Modification %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepTools_Modification {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -768,9 +710,11 @@ class BRepTools_Modifier {
 
 	:param M:
 	:type M: Handle_BRepTools_Modification &
+	:param aProgress: default value is NULL
+	:type aProgress: Handle_Message_ProgressIndicator &
 	:rtype: None
 ") Perform;
-		void Perform (const Handle_BRepTools_Modification & M);
+		void Perform (const Handle_BRepTools_Modification & M,const Handle_Message_ProgressIndicator & aProgress = NULL);
 		%feature("compactdefaultargs") IsDone;
 		%feature("autodoc", "	* Returns Standard_True if the modification has been computed successfully.
 
@@ -788,20 +732,6 @@ class BRepTools_Modifier {
 };
 
 
-%feature("shadow") BRepTools_Modifier::~BRepTools_Modifier %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_Modifier {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_Quilt;
 class BRepTools_Quilt {
 	public:
@@ -810,7 +740,7 @@ class BRepTools_Quilt {
 ") BRepTools_Quilt;
 		 BRepTools_Quilt ();
 		%feature("compactdefaultargs") Bind;
-		%feature("autodoc", "	* Binds <Enew> to be the new edge instead of <Eold>.  The faces of the added shape containing <Eold> will be copied to substitute <Eold> by <Enew>.  The vertices of <Eold> will be bound to the vertices of <Enew> with the same orientation.  If <Eold> and <Enew> have different orientations the curves are considered to be opposite and the pcurves of <Eold> will be copied and reversed in the new faces.  <Eold> must belong to the next added shape, <Enew> must belong to a Shape added before.
+		%feature("autodoc", "	* Binds <Enew> to be the new edge instead of <Eold>. //! The faces of the added shape containing <Eold> will be copied to substitute <Eold> by <Enew>. //! The vertices of <Eold> will be bound to the vertices of <Enew> with the same orientation. //! If <Eold> and <Enew> have different orientations the curves are considered to be opposite and the pcurves of <Eold> will be copied and reversed in the new faces. //! <Eold> must belong to the next added shape, <Enew> must belong to a Shape added before.
 
 	:param Eold:
 	:type Eold: TopoDS_Edge &
@@ -820,7 +750,7 @@ class BRepTools_Quilt {
 ") Bind;
 		void Bind (const TopoDS_Edge & Eold,const TopoDS_Edge & Enew);
 		%feature("compactdefaultargs") Bind;
-		%feature("autodoc", "	* Binds <VNew> to be a new vertex instead of <Vold>.  The faces of the added shape containing <Vold> will be copied to substitute <Vold> by <Vnew>.
+		%feature("autodoc", "	* Binds <VNew> to be a new vertex instead of <Vold>. //! The faces of the added shape containing <Vold> will be copied to substitute <Vold> by <Vnew>.
 
 	:param Vold:
 	:type Vold: TopoDS_Vertex &
@@ -862,20 +792,6 @@ class BRepTools_Quilt {
 };
 
 
-%feature("shadow") BRepTools_Quilt::~BRepTools_Quilt %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_Quilt {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_ReShape;
 class BRepTools_ReShape : public MMgt_TShared {
 	public:
@@ -942,7 +858,7 @@ class BRepTools_ReShape : public MMgt_TShared {
 ") Status;
 		virtual Standard_Integer Status (const TopoDS_Shape & shape,TopoDS_Shape & newsh,const Standard_Boolean last = Standard_False);
 		%feature("compactdefaultargs") Apply;
-		%feature("autodoc", "	* Applies the substitutions requests to a shape  <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done. ACTUALLY, NOT IMPLEMENTED BELOW TopAbs_FACE  <buildmode> says how to do on a SOLID,SHELL ... if one of its sub-shapes has been changed: 0: at least one Replace or Remove -> COMPOUND, else as such 1: at least one Remove (Replace are ignored) -> COMPOUND 2: Replace and Remove are both ignored If Replace/Remove are ignored or absent, the result as same type as the starting shape
+		%feature("autodoc", "	* Applies the substitutions requests to a shape //! <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done. ACTUALLY, NOT IMPLEMENTED BELOW TopAbs_FACE //! <buildmode> says how to do on a SOLID,SHELL ... if one of its sub-shapes has been changed: 0: at least one Replace or Remove -> COMPOUND, else as such 1: at least one Remove (Replace are ignored) -> COMPOUND 2: Replace and Remove are both ignored If Replace/Remove are ignored or absent, the result as same type as the starting shape
 
 	:param shape:
 	:type shape: TopoDS_Shape &
@@ -954,7 +870,7 @@ class BRepTools_ReShape : public MMgt_TShared {
 ") Apply;
 		virtual TopoDS_Shape Apply (const TopoDS_Shape & shape,const TopAbs_ShapeEnum until,const Standard_Integer buildmode);
 		%feature("compactdefaultargs") Apply;
-		%feature("autodoc", "	* Applies the substitutions requests to a shape.  <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done.  NOTE: each subshape can be replaced by shape of the same type or by shape containing only shapes of that type (for example, TopoDS_Edge can be replaced by TopoDS_Edge, TopoDS_Wire or TopoDS_Compound containing TopoDS_Edges). If incompatible shape type is encountered, it is ignored and flag FAIL1 is set in Status.
+		%feature("autodoc", "	* Applies the substitutions requests to a shape. //! <until> gives the level of type until which requests are taken into account. For subshapes of the type <until> no rebuild and futher exploring are done. //! NOTE: each subshape can be replaced by shape of the same type or by shape containing only shapes of that type (for example, TopoDS_Edge can be replaced by TopoDS_Edge, TopoDS_Wire or TopoDS_Compound containing TopoDS_Edges). If incompatible shape type is encountered, it is ignored and flag FAIL1 is set in Status.
 
 	:param shape:
 	:type shape: TopoDS_Shape &
@@ -992,25 +908,23 @@ class BRepTools_ReShape : public MMgt_TShared {
             };
 
 
-%feature("shadow") BRepTools_ReShape::~BRepTools_ReShape %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepTools_ReShape {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepTools_ReShape(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepTools_ReShape {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepTools_ReShape {
-	Handle_BRepTools_ReShape GetHandle() {
-	return *(Handle_BRepTools_ReShape*) &$self;
-	}
-};
+%pythonappend Handle_BRepTools_ReShape::Handle_BRepTools_ReShape %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepTools_ReShape;
 class Handle_BRepTools_ReShape : public Handle_MMgt_TShared {
@@ -1028,20 +942,6 @@ class Handle_BRepTools_ReShape : public Handle_MMgt_TShared {
 %extend Handle_BRepTools_ReShape {
     BRepTools_ReShape* GetObject() {
     return (BRepTools_ReShape*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepTools_ReShape::~Handle_BRepTools_ReShape %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepTools_ReShape {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1231,20 +1131,6 @@ class BRepTools_ShapeSet : public TopTools_ShapeSet {
         };
 
 
-%feature("shadow") BRepTools_ShapeSet::~BRepTools_ShapeSet %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_ShapeSet {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_Substitution;
 class BRepTools_Substitution {
 	public:
@@ -1259,7 +1145,7 @@ class BRepTools_Substitution {
 ") Clear;
 		void Clear ();
 		%feature("compactdefaultargs") Substitute;
-		%feature("autodoc", "	* <Oldshape> will be replaced by <NewShapes>.  <NewShapes> can be empty , in this case <OldShape> will disparate from its ancestors.  if an item of <NewShapes> is oriented FORWARD. it will be oriented as <OldShape> in its ancestors. else it will be reversed.
+		%feature("autodoc", "	* <Oldshape> will be replaced by <NewShapes>. //! <NewShapes> can be empty , in this case <OldShape> will disparate from its ancestors. //! if an item of <NewShapes> is oriented FORWARD. it will be oriented as <OldShape> in its ancestors. else it will be reversed.
 
 	:param OldShape:
 	:type OldShape: TopoDS_Shape &
@@ -1269,7 +1155,7 @@ class BRepTools_Substitution {
 ") Substitute;
 		void Substitute (const TopoDS_Shape & OldShape,const TopTools_ListOfShape & NewShapes);
 		%feature("compactdefaultargs") Build;
-		%feature("autodoc", "	* Build NewShape from <S> if its subshapes has modified.  The methods <IsCopied> and <Copy> allows you to keep the resul of <Build>
+		%feature("autodoc", "	* Build NewShape from <S> if its subshapes has modified. //! The methods <IsCopied> and <Copy> allows you to keep the resul of <Build>
 
 	:param S:
 	:type S: TopoDS_Shape &
@@ -1295,20 +1181,6 @@ class BRepTools_Substitution {
 };
 
 
-%feature("shadow") BRepTools_Substitution::~BRepTools_Substitution %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_Substitution {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_WireExplorer;
 class BRepTools_WireExplorer {
 	public:
@@ -1393,20 +1265,6 @@ class BRepTools_WireExplorer {
 };
 
 
-%feature("shadow") BRepTools_WireExplorer::~BRepTools_WireExplorer %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BRepTools_WireExplorer {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BRepTools_GTrsfModification;
 class BRepTools_GTrsfModification : public BRepTools_Modification {
 	public:
@@ -1499,7 +1357,7 @@ class BRepTools_GTrsfModification : public BRepTools_Modification {
 ") NewParameter;
 		Standard_Boolean NewParameter (const TopoDS_Vertex & V,const TopoDS_Edge & E,Standard_Real &OutValue,Standard_Real &OutValue);
 		%feature("compactdefaultargs") Continuity;
-		%feature("autodoc", "	* Returns the continuity of <NewE> between <NewF1> and <NewF2>.  <NewE> is the new edge created from <E>. <NewF1> (resp. <NewF2>) is the new face created from <F1> (resp. <F2>).
+		%feature("autodoc", "	* Returns the continuity of <NewE> between <NewF1> and <NewF2>. //! <NewE> is the new edge created from <E>. <NewF1> (resp. <NewF2>) is the new face created from <F1> (resp. <F2>).
 
 	:param E:
 	:type E: TopoDS_Edge &
@@ -1519,25 +1377,23 @@ class BRepTools_GTrsfModification : public BRepTools_Modification {
 };
 
 
-%feature("shadow") BRepTools_GTrsfModification::~BRepTools_GTrsfModification %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepTools_GTrsfModification {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepTools_GTrsfModification(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepTools_GTrsfModification {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepTools_GTrsfModification {
-	Handle_BRepTools_GTrsfModification GetHandle() {
-	return *(Handle_BRepTools_GTrsfModification*) &$self;
-	}
-};
+%pythonappend Handle_BRepTools_GTrsfModification::Handle_BRepTools_GTrsfModification %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepTools_GTrsfModification;
 class Handle_BRepTools_GTrsfModification : public Handle_BRepTools_Modification {
@@ -1555,20 +1411,6 @@ class Handle_BRepTools_GTrsfModification : public Handle_BRepTools_Modification 
 %extend Handle_BRepTools_GTrsfModification {
     BRepTools_GTrsfModification* GetObject() {
     return (BRepTools_GTrsfModification*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepTools_GTrsfModification::~Handle_BRepTools_GTrsfModification %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepTools_GTrsfModification {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1656,7 +1498,7 @@ class BRepTools_NurbsConvertModification : public BRepTools_Modification {
 ") NewParameter;
 		Standard_Boolean NewParameter (const TopoDS_Vertex & V,const TopoDS_Edge & E,Standard_Real &OutValue,Standard_Real &OutValue);
 		%feature("compactdefaultargs") Continuity;
-		%feature("autodoc", "	* Returns the continuity of <NewE> between <NewF1> and <NewF2>.  <NewE> is the new edge created from <E>. <NewF1> (resp. <NewF2>) is the new face created from <F1> (resp. <F2>).
+		%feature("autodoc", "	* Returns the continuity of <NewE> between <NewF1> and <NewF2>. //! <NewE> is the new edge created from <E>. <NewF1> (resp. <NewF2>) is the new face created from <F1> (resp. <F2>).
 
 	:param E:
 	:type E: TopoDS_Edge &
@@ -1676,25 +1518,23 @@ class BRepTools_NurbsConvertModification : public BRepTools_Modification {
 };
 
 
-%feature("shadow") BRepTools_NurbsConvertModification::~BRepTools_NurbsConvertModification %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepTools_NurbsConvertModification {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepTools_NurbsConvertModification(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepTools_NurbsConvertModification {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepTools_NurbsConvertModification {
-	Handle_BRepTools_NurbsConvertModification GetHandle() {
-	return *(Handle_BRepTools_NurbsConvertModification*) &$self;
-	}
-};
+%pythonappend Handle_BRepTools_NurbsConvertModification::Handle_BRepTools_NurbsConvertModification %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepTools_NurbsConvertModification;
 class Handle_BRepTools_NurbsConvertModification : public Handle_BRepTools_Modification {
@@ -1712,20 +1552,6 @@ class Handle_BRepTools_NurbsConvertModification : public Handle_BRepTools_Modifi
 %extend Handle_BRepTools_NurbsConvertModification {
     BRepTools_NurbsConvertModification* GetObject() {
     return (BRepTools_NurbsConvertModification*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepTools_NurbsConvertModification::~Handle_BRepTools_NurbsConvertModification %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepTools_NurbsConvertModification {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1821,7 +1647,7 @@ class BRepTools_TrsfModification : public BRepTools_Modification {
 ") NewParameter;
 		Standard_Boolean NewParameter (const TopoDS_Vertex & V,const TopoDS_Edge & E,Standard_Real &OutValue,Standard_Real &OutValue);
 		%feature("compactdefaultargs") Continuity;
-		%feature("autodoc", "	* Returns the continuity of <NewE> between <NewF1> and <NewF2>.  <NewE> is the new edge created from <E>. <NewF1> (resp. <NewF2>) is the new face created from <F1> (resp. <F2>).
+		%feature("autodoc", "	* Returns the continuity of <NewE> between <NewF1> and <NewF2>. //! <NewE> is the new edge created from <E>. <NewF1> (resp. <NewF2>) is the new face created from <F1> (resp. <F2>).
 
 	:param E:
 	:type E: TopoDS_Edge &
@@ -1841,25 +1667,23 @@ class BRepTools_TrsfModification : public BRepTools_Modification {
 };
 
 
-%feature("shadow") BRepTools_TrsfModification::~BRepTools_TrsfModification %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BRepTools_TrsfModification {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BRepTools_TrsfModification(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BRepTools_TrsfModification {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BRepTools_TrsfModification {
-	Handle_BRepTools_TrsfModification GetHandle() {
-	return *(Handle_BRepTools_TrsfModification*) &$self;
-	}
-};
+%pythonappend Handle_BRepTools_TrsfModification::Handle_BRepTools_TrsfModification %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BRepTools_TrsfModification;
 class Handle_BRepTools_TrsfModification : public Handle_BRepTools_Modification {
@@ -1877,20 +1701,6 @@ class Handle_BRepTools_TrsfModification : public Handle_BRepTools_Modification {
 %extend Handle_BRepTools_TrsfModification {
     BRepTools_TrsfModification* GetObject() {
     return (BRepTools_TrsfModification*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BRepTools_TrsfModification::~Handle_BRepTools_TrsfModification %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BRepTools_TrsfModification {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

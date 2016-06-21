@@ -20,6 +20,7 @@
 import pickle
 import unittest
 import os
+from math import sqrt
 
 from OCC.Standard import Standard_Transient, Handle_Standard_Transient
 from OCC.BRepPrimAPI import BRepPrimAPI_MakeBox
@@ -70,6 +71,12 @@ class TestWrapperFeatures(unittest.TestCase):
         self.assertEqual(t.Value(1), 3)
         self.assertEqual(t.Value(2), 33)
 
+    def test_handle_standard_transient_copy(self):
+        def evil_function(t):
+            handle = Handle_Standard_Transient(t)
+        t = Standard_Transient()
+        evil_function(t)
+
     def test_list(self):
         '''
         Test python lists features
@@ -118,6 +125,29 @@ class TestWrapperFeatures(unittest.TestCase):
             return shape
         returned_shape = get_shape()
         self.assertEqual(returned_shape.IsNull(), False)
+
+    def test_gp_Vec_operators(self):
+        '''
+        Test gp_Vec division by a float number or an integer
+        This test fails on py3k with SWIG versions older than 3.0.8
+        SWIG 3.0.9 fixes this issue.
+        See https://github.com/tpaviot/pythonocc-core/issues/257
+        '''
+        # division by a float
+        v1 = gp_Vec(2., 2., 2.)
+        v2 = v1 / 2.
+        self.assertEqual(v2.Magnitude(), sqrt(3.))
+        # division by an integer
+        v3 = gp_Vec(4, 4, 4)
+        v4 = v3 / 2
+        self.assertEqual((v4.X(), v4.Y(), v4.Z()), (2, 2, 2))
+        # adding two gp_Vec
+        v5 = gp_Vec(1, 2, 3) + gp_Vec(4, 5, 6)
+        self.assertEqual((v5.X(), v5.Y(), v5.Z()), (5, 7, 9))
+        # substracting two gp_Vec
+        v6 = gp_Vec(1, 2, 3) - gp_Vec(6, 5, 4)
+        self.assertEqual((v6.X(), v6.Y(), v6.Z()), (-5, -3, -1))
+
 
     def test_traverse_box_topology(self):
         '''
@@ -241,7 +271,7 @@ class TestWrapperFeatures(unittest.TestCase):
         box_shape = BRepPrimAPI_MakeBox(100, 200, 300).Shape()
         shp_dump = pickle.dumps(box_shape)
         # write to file
-        output = open("./test_io/box_shape_generated.brep", "w")
+        output = open("./test_io/box_shape_generated.brep", "wb")
         output.write(shp_dump)
         output.close()
         assert os.path.isfile("./test_io/box_shape_generated.brep")
@@ -250,7 +280,7 @@ class TestWrapperFeatures(unittest.TestCase):
         '''
         Checks if the pickle python module works for TopoDS_Shapes
         '''
-        shp_dump = open("./test_io/box_shape.brep", "r")
+        shp_dump = open("./test_io/box_shape.brep", "rb")
         box_shape = pickle.load(shp_dump)
         self.assertFalse(box_shape.IsNull())
 
@@ -380,6 +410,19 @@ class TestWrapperFeatures(unittest.TestCase):
         BRep_Builder()
         TopoDS_Builder()
         ShapeAnalysis_Curve()
+
+    def test_handling_exceptions(self):
+        """ asserts that handling of OCC exceptions is handled correctly in pythonocc
+
+        See Also
+        --------
+
+        issue #259 -- Standard errors like Standard_OutOfRange not caught
+
+        """
+        d = gp_Dir(0,0,1)
+        with self.assertRaises(RuntimeError):
+            d.Coord(-1) # Standard_OutOfRange
 
 
 def suite():

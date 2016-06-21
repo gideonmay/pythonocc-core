@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BiTgte_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -57,7 +73,7 @@ class BiTgte_Blend {
 ") BiTgte_Blend;
 		 BiTgte_Blend ();
 		%feature("compactdefaultargs") BiTgte_Blend;
-		%feature("autodoc", "	* <S>: Shape to be rounded <Radius>: radius of the fillet <Tol>: Tol3d used in approximations <NUBS>: if true, generate only NUBS surfaces,  if false, generate analytical surfaces if possible
+		%feature("autodoc", "	* <S>: Shape to be rounded <Radius>: radius of the fillet <Tol>: Tol3d used in approximations <NUBS>: if true, generate only NUBS surfaces, if false, generate analytical surfaces if possible
 
 	:param S:
 	:type S: TopoDS_Shape &
@@ -89,7 +105,7 @@ class BiTgte_Blend {
 ") Clear;
 		void Clear ();
 		%feature("compactdefaultargs") SetFaces;
-		%feature("autodoc", "	* Set two faces of <myShape> on which the Sphere  must roll.
+		%feature("autodoc", "	* Set two faces of <myShape> on which the Sphere must roll.
 
 	:param F1:
 	:type F1: TopoDS_Face &
@@ -255,7 +271,7 @@ class BiTgte_Blend {
 ") NbBranches;
 		Standard_Integer NbBranches ();
 		%feature("compactdefaultargs") IndicesOfBranche;
-		%feature("autodoc", "	* Set in <From>,<To> the indices of the faces of the branche <Index>. i.e: Branche<Index> = Face(From) + Face(From+1) + ..+ Face(To)
+		%feature("autodoc", "	* Set in <From>,<To> the indices of the faces of the branche <Index>. //! i.e: Branche<Index> = Face(From) + Face(From+1) + ..+ Face(To)
 
 	:param Index:
 	:type Index: int
@@ -275,20 +291,6 @@ class BiTgte_Blend {
 };
 
 
-%feature("shadow") BiTgte_Blend::~BiTgte_Blend %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BiTgte_Blend {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BiTgte_CurveOnEdge;
 class BiTgte_CurveOnEdge : public Adaptor3d_Curve {
 	public:
@@ -333,7 +335,7 @@ class BiTgte_CurveOnEdge : public Adaptor3d_Curve {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -437,7 +439,7 @@ class BiTgte_CurveOnEdge : public Adaptor3d_Curve {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -497,20 +499,6 @@ class BiTgte_CurveOnEdge : public Adaptor3d_Curve {
 };
 
 
-%feature("shadow") BiTgte_CurveOnEdge::~BiTgte_CurveOnEdge %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BiTgte_CurveOnEdge {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BiTgte_CurveOnVertex;
 class BiTgte_CurveOnVertex : public Adaptor3d_Curve {
 	public:
@@ -555,7 +543,7 @@ class BiTgte_CurveOnVertex : public Adaptor3d_Curve {
 ") NbIntervals;
 		Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -659,7 +647,7 @@ class BiTgte_CurveOnVertex : public Adaptor3d_Curve {
 ") DN;
 		gp_Vec DN (const Standard_Real U,const Standard_Integer N);
 		%feature("compactdefaultargs") Resolution;
-		%feature("autodoc", "	* Returns the parametric resolution corresponding  to the real space resolution <R3d>.
+		%feature("autodoc", "	* Returns the parametric resolution corresponding to the real space resolution <R3d>.
 
 	:param R3d:
 	:type R3d: float
@@ -719,20 +707,6 @@ class BiTgte_CurveOnVertex : public Adaptor3d_Curve {
 };
 
 
-%feature("shadow") BiTgte_CurveOnVertex::~BiTgte_CurveOnVertex %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BiTgte_CurveOnVertex {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BiTgte_DataMapIteratorOfDataMapOfShapeBox;
 class BiTgte_DataMapIteratorOfDataMapOfShapeBox : public TCollection_BasicMapIterator {
 	public:
@@ -763,20 +737,6 @@ class BiTgte_DataMapIteratorOfDataMapOfShapeBox : public TCollection_BasicMapIte
 };
 
 
-%feature("shadow") BiTgte_DataMapIteratorOfDataMapOfShapeBox::~BiTgte_DataMapIteratorOfDataMapOfShapeBox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BiTgte_DataMapIteratorOfDataMapOfShapeBox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BiTgte_DataMapNodeOfDataMapOfShapeBox;
 class BiTgte_DataMapNodeOfDataMapOfShapeBox : public TCollection_MapNode {
 	public:
@@ -801,25 +761,23 @@ class BiTgte_DataMapNodeOfDataMapOfShapeBox : public TCollection_MapNode {
 };
 
 
-%feature("shadow") BiTgte_DataMapNodeOfDataMapOfShapeBox::~BiTgte_DataMapNodeOfDataMapOfShapeBox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BiTgte_DataMapNodeOfDataMapOfShapeBox {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BiTgte_DataMapNodeOfDataMapOfShapeBox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BiTgte_DataMapNodeOfDataMapOfShapeBox {
-	Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox GetHandle() {
-	return *(Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox*) &$self;
-	}
-};
+%pythonappend Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox::Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox;
 class Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox : public Handle_TCollection_MapNode {
@@ -837,20 +795,6 @@ class Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox : public Handle_TCollection_M
 %extend Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox {
     BiTgte_DataMapNodeOfDataMapOfShapeBox* GetObject() {
     return (BiTgte_DataMapNodeOfDataMapOfShapeBox*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox::~Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BiTgte_DataMapNodeOfDataMapOfShapeBox {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -932,20 +876,6 @@ class BiTgte_DataMapOfShapeBox : public TCollection_BasicMap {
 };
 
 
-%feature("shadow") BiTgte_DataMapOfShapeBox::~BiTgte_DataMapOfShapeBox %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BiTgte_DataMapOfShapeBox {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor BiTgte_HCurveOnEdge;
 class BiTgte_HCurveOnEdge : public Adaptor3d_HCurve {
 	public:
@@ -980,25 +910,23 @@ class BiTgte_HCurveOnEdge : public Adaptor3d_HCurve {
 };
 
 
-%feature("shadow") BiTgte_HCurveOnEdge::~BiTgte_HCurveOnEdge %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BiTgte_HCurveOnEdge {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BiTgte_HCurveOnEdge(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BiTgte_HCurveOnEdge {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BiTgte_HCurveOnEdge {
-	Handle_BiTgte_HCurveOnEdge GetHandle() {
-	return *(Handle_BiTgte_HCurveOnEdge*) &$self;
-	}
-};
+%pythonappend Handle_BiTgte_HCurveOnEdge::Handle_BiTgte_HCurveOnEdge %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BiTgte_HCurveOnEdge;
 class Handle_BiTgte_HCurveOnEdge : public Handle_Adaptor3d_HCurve {
@@ -1016,20 +944,6 @@ class Handle_BiTgte_HCurveOnEdge : public Handle_Adaptor3d_HCurve {
 %extend Handle_BiTgte_HCurveOnEdge {
     BiTgte_HCurveOnEdge* GetObject() {
     return (BiTgte_HCurveOnEdge*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BiTgte_HCurveOnEdge::~Handle_BiTgte_HCurveOnEdge %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BiTgte_HCurveOnEdge {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 
@@ -1067,25 +981,23 @@ class BiTgte_HCurveOnVertex : public Adaptor3d_HCurve {
 };
 
 
-%feature("shadow") BiTgte_HCurveOnVertex::~BiTgte_HCurveOnVertex %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend BiTgte_HCurveOnVertex {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_BiTgte_HCurveOnVertex(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend BiTgte_HCurveOnVertex {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend BiTgte_HCurveOnVertex {
-	Handle_BiTgte_HCurveOnVertex GetHandle() {
-	return *(Handle_BiTgte_HCurveOnVertex*) &$self;
-	}
-};
+%pythonappend Handle_BiTgte_HCurveOnVertex::Handle_BiTgte_HCurveOnVertex %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_BiTgte_HCurveOnVertex;
 class Handle_BiTgte_HCurveOnVertex : public Handle_Adaptor3d_HCurve {
@@ -1103,20 +1015,6 @@ class Handle_BiTgte_HCurveOnVertex : public Handle_Adaptor3d_HCurve {
 %extend Handle_BiTgte_HCurveOnVertex {
     BiTgte_HCurveOnVertex* GetObject() {
     return (BiTgte_HCurveOnVertex*)$self->Access();
-    }
-};
-%feature("shadow") Handle_BiTgte_HCurveOnVertex::~Handle_BiTgte_HCurveOnVertex %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_BiTgte_HCurveOnVertex {
-    void _kill_pointed() {
-        delete $self;
     }
 };
 

@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include Blend_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -200,7 +216,7 @@ class Blend_AppFunction : public math_FunctionSetWithDerivatives {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals() raises 	OutOfRange from Standard
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals() raises OutOfRange from Standard
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -330,20 +346,6 @@ class Blend_AppFunction : public math_FunctionSetWithDerivatives {
 };
 
 
-%feature("shadow") Blend_AppFunction::~Blend_AppFunction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_AppFunction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_CurvPointFuncInv;
 class Blend_CurvPointFuncInv : public math_FunctionSetWithDerivatives {
 	public:
@@ -432,20 +434,6 @@ class Blend_CurvPointFuncInv : public math_FunctionSetWithDerivatives {
 };
 
 
-%feature("shadow") Blend_CurvPointFuncInv::~Blend_CurvPointFuncInv %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_CurvPointFuncInv {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_FuncInv;
 class Blend_FuncInv : public math_FunctionSetWithDerivatives {
 	public:
@@ -536,20 +524,6 @@ class Blend_FuncInv : public math_FunctionSetWithDerivatives {
 };
 
 
-%feature("shadow") Blend_FuncInv::~Blend_FuncInv %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_FuncInv {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_Point;
 class Blend_Point {
 	public:
@@ -1078,20 +1052,6 @@ class Blend_Point {
 };
 
 
-%feature("shadow") Blend_Point::~Blend_Point %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_Point {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_SequenceNodeOfSequenceOfPoint;
 class Blend_SequenceNodeOfSequenceOfPoint : public TCollection_SeqNode {
 	public:
@@ -1112,25 +1072,23 @@ class Blend_SequenceNodeOfSequenceOfPoint : public TCollection_SeqNode {
 };
 
 
-%feature("shadow") Blend_SequenceNodeOfSequenceOfPoint::~Blend_SequenceNodeOfSequenceOfPoint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
+%extend Blend_SequenceNodeOfSequenceOfPoint {
+	%pythoncode {
+		def GetHandle(self):
+		    try:
+		        return self.thisHandle
+		    except:
+		        self.thisHandle = Handle_Blend_SequenceNodeOfSequenceOfPoint(self)
+		        self.thisown = False
+		        return self.thisHandle
+	}
+};
 
-%extend Blend_SequenceNodeOfSequenceOfPoint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
-%extend Blend_SequenceNodeOfSequenceOfPoint {
-	Handle_Blend_SequenceNodeOfSequenceOfPoint GetHandle() {
-	return *(Handle_Blend_SequenceNodeOfSequenceOfPoint*) &$self;
-	}
-};
+%pythonappend Handle_Blend_SequenceNodeOfSequenceOfPoint::Handle_Blend_SequenceNodeOfSequenceOfPoint %{
+    # register the handle in the base object
+    if len(args) > 0:
+        register_handle(self, args[0])
+%}
 
 %nodefaultctor Handle_Blend_SequenceNodeOfSequenceOfPoint;
 class Handle_Blend_SequenceNodeOfSequenceOfPoint : public Handle_TCollection_SeqNode {
@@ -1150,20 +1108,6 @@ class Handle_Blend_SequenceNodeOfSequenceOfPoint : public Handle_TCollection_Seq
     return (Blend_SequenceNodeOfSequenceOfPoint*)$self->Access();
     }
 };
-%feature("shadow") Handle_Blend_SequenceNodeOfSequenceOfPoint::~Handle_Blend_SequenceNodeOfSequenceOfPoint %{
-def __del__(self):
-    try:
-        self.thisown = False
-        GarbageCollector.garbage.collect_object(self)
-    except:
-        pass
-%}
-
-%extend Handle_Blend_SequenceNodeOfSequenceOfPoint {
-    void _kill_pointed() {
-        delete $self;
-    }
-};
 
 %nodefaultctor Blend_SequenceOfPoint;
 class Blend_SequenceOfPoint : public TCollection_BaseSequence {
@@ -1172,6 +1116,12 @@ class Blend_SequenceOfPoint : public TCollection_BaseSequence {
 		%feature("autodoc", "	:rtype: None
 ") Blend_SequenceOfPoint;
 		 Blend_SequenceOfPoint ();
+		%feature("compactdefaultargs") Blend_SequenceOfPoint;
+		%feature("autodoc", "	:param Other:
+	:type Other: Blend_SequenceOfPoint &
+	:rtype: None
+") Blend_SequenceOfPoint;
+		 Blend_SequenceOfPoint (const Blend_SequenceOfPoint & Other);
 		%feature("compactdefaultargs") Clear;
 		%feature("autodoc", "	:rtype: None
 ") Clear;
@@ -1297,20 +1247,6 @@ class Blend_SequenceOfPoint : public TCollection_BaseSequence {
 };
 
 
-%feature("shadow") Blend_SequenceOfPoint::~Blend_SequenceOfPoint %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_SequenceOfPoint {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_SurfCurvFuncInv;
 class Blend_SurfCurvFuncInv : public math_FunctionSetWithDerivatives {
 	public:
@@ -1399,20 +1335,6 @@ class Blend_SurfCurvFuncInv : public math_FunctionSetWithDerivatives {
 };
 
 
-%feature("shadow") Blend_SurfCurvFuncInv::~Blend_SurfCurvFuncInv %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_SurfCurvFuncInv {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_SurfPointFuncInv;
 class Blend_SurfPointFuncInv : public math_FunctionSetWithDerivatives {
 	public:
@@ -1501,20 +1423,6 @@ class Blend_SurfPointFuncInv : public math_FunctionSetWithDerivatives {
 };
 
 
-%feature("shadow") Blend_SurfPointFuncInv::~Blend_SurfPointFuncInv %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_SurfPointFuncInv {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_CSFunction;
 class Blend_CSFunction : public Blend_AppFunction {
 	public:
@@ -1791,20 +1699,6 @@ class Blend_CSFunction : public Blend_AppFunction {
 };
 
 
-%feature("shadow") Blend_CSFunction::~Blend_CSFunction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_CSFunction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_Function;
 class Blend_Function : public Blend_AppFunction {
 	public:
@@ -2085,20 +1979,6 @@ class Blend_Function : public Blend_AppFunction {
 };
 
 
-%feature("shadow") Blend_Function::~Blend_Function %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_Function {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_RstRstFunction;
 class Blend_RstRstFunction : public Blend_AppFunction {
 	public:
@@ -2323,7 +2203,7 @@ class Blend_RstRstFunction : public Blend_AppFunction {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -2433,20 +2313,6 @@ class Blend_RstRstFunction : public Blend_AppFunction {
 };
 
 
-%feature("shadow") Blend_RstRstFunction::~Blend_RstRstFunction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_RstRstFunction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor Blend_SurfRstFunction;
 class Blend_SurfRstFunction : public Blend_AppFunction {
 	public:
@@ -2661,7 +2527,7 @@ class Blend_SurfRstFunction : public Blend_AppFunction {
 ") NbIntervals;
 		virtual Standard_Integer NbIntervals (const GeomAbs_Shape S);
 		%feature("compactdefaultargs") Intervals;
-		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>.  The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
+		%feature("autodoc", "	* Stores in <T> the parameters bounding the intervals of continuity <S>. //! The array must provide enough room to accomodate for the parameters. i.e. T.Length() > NbIntervals()
 
 	:param T:
 	:type T: TColStd_Array1OfReal &
@@ -2771,17 +2637,3 @@ class Blend_SurfRstFunction : public Blend_AppFunction {
 };
 
 
-%feature("shadow") Blend_SurfRstFunction::~Blend_SurfRstFunction %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend Blend_SurfRstFunction {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

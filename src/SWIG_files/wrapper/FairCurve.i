@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include FairCurve_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -243,20 +259,6 @@ class FairCurve_Batten {
         };
 
 
-%feature("shadow") FairCurve_Batten::~FairCurve_Batten %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_Batten {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_BattenLaw;
 class FairCurve_BattenLaw : public math_Function {
 	public:
@@ -309,20 +311,6 @@ class FairCurve_BattenLaw : public math_Function {
 };
 
 
-%feature("shadow") FairCurve_BattenLaw::~FairCurve_BattenLaw %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_BattenLaw {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_DistributionOfEnergy;
 class FairCurve_DistributionOfEnergy : public math_FunctionSet {
 	public:
@@ -347,20 +335,6 @@ class FairCurve_DistributionOfEnergy : public math_FunctionSet {
 };
 
 
-%feature("shadow") FairCurve_DistributionOfEnergy::~FairCurve_DistributionOfEnergy %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_DistributionOfEnergy {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_Energy;
 class FairCurve_Energy : public math_MultipleVarFunctionWithHessian {
 	public:
@@ -381,7 +355,7 @@ class FairCurve_Energy : public math_MultipleVarFunctionWithHessian {
 ") Value;
 		virtual Standard_Boolean Value (const math_Vector & X,Standard_Real &OutValue);
 		%feature("compactdefaultargs") Gradient;
-		%feature("autodoc", "	* //!computes the gradient <G> of the energys for the  variable <X>.  Returns True if the computation was done successfully,  False otherwise.
+		%feature("autodoc", "	* computes the gradient <G> of the energys for the variable <X>. Returns True if the computation was done successfully, False otherwise.
 
 	:param X:
 	:type X: math_Vector &
@@ -429,29 +403,15 @@ class FairCurve_Energy : public math_MultipleVarFunctionWithHessian {
 
 	:rtype: Handle_TColgp_HArray1OfPnt2d
 ") Poles;
-		const Handle_TColgp_HArray1OfPnt2d & Poles ();
+		Handle_TColgp_HArray1OfPnt2d Poles ();
 };
 
 
-%feature("shadow") FairCurve_Energy::~FairCurve_Energy %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_Energy {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_Newton;
 class FairCurve_Newton : public math_NewtonMinimum {
 	public:
 		%feature("compactdefaultargs") FairCurve_Newton;
-		%feature("autodoc", "	* -- Given the starting point StartingPoint,  The tolerance required on the solution is given by  Tolerance. Iteration are stopped if (!WithSingularity) and H(F(Xi)) is not definite positive (if the smaller eigenvalue of H < Convexity) or IsConverged() returns True for 2 successives Iterations. Warning: Obsolete Constructor (because IsConverged can not be redefined with this. )
+		%feature("autodoc", "	* -- Given the starting point StartingPoint, The tolerance required on the solution is given by Tolerance. Iteration are stopped if (!WithSingularity) and H(F(Xi)) is not definite positive (if the smaller eigenvalue of H < Convexity) or IsConverged() returns True for 2 successives Iterations. Warning: Obsolete Constructor (because IsConverged can not be redefined with this. )
 
 	:param F:
 	:type F: math_MultipleVarFunctionWithHessian &
@@ -471,7 +431,7 @@ class FairCurve_Newton : public math_NewtonMinimum {
 ") FairCurve_Newton;
 		 FairCurve_Newton (math_MultipleVarFunctionWithHessian & F,const math_Vector & StartingPoint,const Standard_Real SpatialTolerance = 1.0e-7,const Standard_Real CriteriumTolerance = 1.0e-2,const Standard_Integer NbIterations = 40,const Standard_Real Convexity = 1.0e-6,const Standard_Boolean WithSingularity = Standard_True);
 		%feature("compactdefaultargs") FairCurve_Newton;
-		%feature("autodoc", "	* The tolerance required on the solution is given by  Tolerance. Iteration are stopped if (!WithSingularity) and H(F(Xi)) is not definite positive (if the smaller eigenvalue of H < Convexity)  or IsConverged() returns True for 2 successives Iterations. Warning: This constructor do not computation
+		%feature("autodoc", "	* The tolerance required on the solution is given by Tolerance. Iteration are stopped if (!WithSingularity) and H(F(Xi)) is not definite positive (if the smaller eigenvalue of H < Convexity) or IsConverged() returns True for 2 successives Iterations. Warning: This constructor do not computation
 
 	:param F:
 	:type F: math_MultipleVarFunctionWithHessian &
@@ -497,20 +457,6 @@ class FairCurve_Newton : public math_NewtonMinimum {
 };
 
 
-%feature("shadow") FairCurve_Newton::~FairCurve_Newton %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_Newton {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_DistributionOfJerk;
 class FairCurve_DistributionOfJerk : public FairCurve_DistributionOfEnergy {
 	public:
@@ -543,20 +489,6 @@ class FairCurve_DistributionOfJerk : public FairCurve_DistributionOfEnergy {
 };
 
 
-%feature("shadow") FairCurve_DistributionOfJerk::~FairCurve_DistributionOfJerk %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_DistributionOfJerk {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_DistributionOfSagging;
 class FairCurve_DistributionOfSagging : public FairCurve_DistributionOfEnergy {
 	public:
@@ -589,20 +521,6 @@ class FairCurve_DistributionOfSagging : public FairCurve_DistributionOfEnergy {
 };
 
 
-%feature("shadow") FairCurve_DistributionOfSagging::~FairCurve_DistributionOfSagging %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_DistributionOfSagging {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_DistributionOfTension;
 class FairCurve_DistributionOfTension : public FairCurve_DistributionOfEnergy {
 	public:
@@ -647,20 +565,6 @@ class FairCurve_DistributionOfTension : public FairCurve_DistributionOfEnergy {
 };
 
 
-%feature("shadow") FairCurve_DistributionOfTension::~FairCurve_DistributionOfTension %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_DistributionOfTension {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_EnergyOfBatten;
 class FairCurve_EnergyOfBatten : public FairCurve_Energy {
 	public:
@@ -713,20 +617,6 @@ class FairCurve_EnergyOfBatten : public FairCurve_Energy {
 };
 
 
-%feature("shadow") FairCurve_EnergyOfBatten::~FairCurve_EnergyOfBatten %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_EnergyOfBatten {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_EnergyOfMVC;
 class FairCurve_EnergyOfMVC : public FairCurve_Energy {
 	public:
@@ -785,20 +675,6 @@ class FairCurve_EnergyOfMVC : public FairCurve_Energy {
 };
 
 
-%feature("shadow") FairCurve_EnergyOfMVC::~FairCurve_EnergyOfMVC %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_EnergyOfMVC {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 %nodefaultctor FairCurve_MinimalVariation;
 class FairCurve_MinimalVariation : public FairCurve_Batten {
 	public:
@@ -883,17 +759,3 @@ class FairCurve_MinimalVariation : public FairCurve_Batten {
         };
 
 
-%feature("shadow") FairCurve_MinimalVariation::~FairCurve_MinimalVariation %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend FairCurve_MinimalVariation {
-	void _kill_pointed() {
-		delete $self;
-	}
-};

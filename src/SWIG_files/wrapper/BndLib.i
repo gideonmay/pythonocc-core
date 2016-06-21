@@ -32,7 +32,23 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include BndLib_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */
@@ -372,20 +388,6 @@ class BndLib {
 };
 
 
-%feature("shadow") BndLib::~BndLib %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BndLib {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BndLib_Add2dCurve {
 	public:
 		%feature("compactdefaultargs") Add;
@@ -416,23 +418,37 @@ class BndLib_Add2dCurve {
 	:rtype: void
 ") Add;
 		static void Add (const Adaptor2d_Curve2d & C,const Standard_Real U1,const Standard_Real U2,const Standard_Real Tol,Bnd_Box2d & B);
+		%feature("compactdefaultargs") Add;
+		%feature("autodoc", "	* Adds to the bounding box B the curve C B is then enlarged by the tolerance value Tol. Note: depending on the type of curve, one of the following representations of the curve C is used to include it in the bounding box B: - an exact representation if C is built from a line, a circle or a conic curve, - the poles of the curve if C is built from a Bezier curve or a BSpline curve, - if not, the points of an approximation of the curve C.
+
+	:param C:
+	:type C: Handle_Geom2d_Curve &
+	:param Tol:
+	:type Tol: float
+	:param Box:
+	:type Box: Bnd_Box2d &
+	:rtype: void
+") Add;
+		static void Add (const Handle_Geom2d_Curve & C,const Standard_Real Tol,Bnd_Box2d & Box);
+		%feature("compactdefaultargs") Add;
+		%feature("autodoc", "	* Adds to the bounding box B the part of curve C B is then enlarged by the tolerance value Tol. U1, U2 - the parametric range to comute the bounding box; Note: depending on the type of curve, one of the following representations of the curve C is used to include it in the bounding box B: - an exact representation if C is built from a line, a circle or a conic curve, - the poles of the curve if C is built from a Bezier curve or a BSpline curve, - if not, the points of an approximation of the curve C.
+
+	:param C:
+	:type C: Handle_Geom2d_Curve &
+	:param U1:
+	:type U1: float
+	:param U2:
+	:type U2: float
+	:param Tol:
+	:type Tol: float
+	:param B:
+	:type B: Bnd_Box2d &
+	:rtype: void
+") Add;
+		static void Add (const Handle_Geom2d_Curve & C,const Standard_Real U1,const Standard_Real U2,const Standard_Real Tol,Bnd_Box2d & B);
 };
 
 
-%feature("shadow") BndLib_Add2dCurve::~BndLib_Add2dCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BndLib_Add2dCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BndLib_Add3dCurve {
 	public:
 		%feature("compactdefaultargs") Add;
@@ -466,20 +482,6 @@ class BndLib_Add3dCurve {
 };
 
 
-%feature("shadow") BndLib_Add3dCurve::~BndLib_Add3dCurve %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BndLib_Add3dCurve {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
 class BndLib_AddSurface {
 	public:
 		%feature("compactdefaultargs") Add;
@@ -517,17 +519,3 @@ class BndLib_AddSurface {
 };
 
 
-%feature("shadow") BndLib_AddSurface::~BndLib_AddSurface %{
-def __del__(self):
-	try:
-		self.thisown = False
-		GarbageCollector.garbage.collect_object(self)
-	except:
-		pass
-%}
-
-%extend BndLib_AddSurface {
-	void _kill_pointed() {
-		delete $self;
-	}
-};
