@@ -802,12 +802,6 @@ class BRepFeat_MakeCylindricalHole : public BRepFeat_Builder {
 	:rtype: None
 ") Build;
 		void Build ();
-		%feature("compactdefaultargs") Shape;
-		%feature("autodoc", "	* returns the resulting shape.
-
-	:rtype: TopoDS_Shape
-") Shape;
-		TopoDS_Shape  Shape ();
 };
 
 

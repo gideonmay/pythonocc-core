@@ -158,8 +158,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Graphic3d_BoundBuffer.hxx>
 #include<Graphic3d_BoundBuffer_Handle.hxx>
 #include<Graphic3d_Buffer.hxx>
-#include<Graphic3d_BufferType.hxx>
 #include<Graphic3d_Buffer_Handle.hxx>
+#include<Graphic3d_BufferType.hxx>
 #include<Graphic3d_Camera.hxx>
 #include<Graphic3d_Camera_Handle.hxx>
 #include<Graphic3d_CAspectFillArea.hxx>
@@ -176,8 +176,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Graphic3d_ClipPlane_Handle.hxx>
 #include<Graphic3d_CPick.hxx>
 #include<Graphic3d_CStructure.hxx>
-#include<Graphic3d_CStructurePtr.hxx>
 #include<Graphic3d_CStructure_Handle.hxx>
+#include<Graphic3d_CStructurePtr.hxx>
 #include<Graphic3d_CTexture.hxx>
 #include<Graphic3d_CTransPersStruct.hxx>
 #include<Graphic3d_CUserDraw.hxx>
@@ -285,8 +285,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Aspect_ColorScale.hxx>
 #include<Aspect_Convert.hxx>
 #include<Aspect_Display.hxx>
-#include<Aspect_DisplayConnectionDefinitionError.hxx>
 #include<Aspect_DisplayConnection_Handle.hxx>
+#include<Aspect_DisplayConnectionDefinitionError.hxx>
 #include<Aspect_Drawable.hxx>
 #include<Aspect_DriverDefinitionError.hxx>
 #include<Aspect_Edge.hxx>
@@ -355,8 +355,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Quantity_Coefficient.hxx>
 #include<Quantity_CoefficientOfExpansion.hxx>
 #include<Quantity_Color.hxx>
-#include<Quantity_ColorDefinitionError.hxx>
 #include<Quantity_Color_1.hxx>
+#include<Quantity_ColorDefinitionError.hxx>
 #include<Quantity_Concentration.hxx>
 #include<Quantity_Conductivity.hxx>
 #include<Quantity_Constant.hxx>
@@ -472,8 +472,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Image_Color.hxx>
 #include<Image_Diff.hxx>
 #include<Image_PixMap.hxx>
-#include<Image_PixMapData.hxx>
 #include<Image_PixMap_Handle.hxx>
+#include<Image_PixMapData.hxx>
 #include<TColStd_Array1OfAsciiString.hxx>
 #include<TColStd_Array1OfBoolean.hxx>
 #include<TColStd_Array1OfByte.hxx>

@@ -33,8 +33,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Aspect_ColorScale.hxx>
 #include<Aspect_Convert.hxx>
 #include<Aspect_Display.hxx>
-#include<Aspect_DisplayConnectionDefinitionError.hxx>
 #include<Aspect_DisplayConnection_Handle.hxx>
+#include<Aspect_DisplayConnectionDefinitionError.hxx>
 #include<Aspect_Drawable.hxx>
 #include<Aspect_DriverDefinitionError.hxx>
 #include<Aspect_Edge.hxx>
@@ -104,8 +104,8 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Quantity_Coefficient.hxx>
 #include<Quantity_CoefficientOfExpansion.hxx>
 #include<Quantity_Color.hxx>
-#include<Quantity_ColorDefinitionError.hxx>
 #include<Quantity_Color_1.hxx>
+#include<Quantity_ColorDefinitionError.hxx>
 #include<Quantity_Concentration.hxx>
 #include<Quantity_Conductivity.hxx>
 #include<Quantity_Constant.hxx>

@@ -239,6 +239,11 @@ LIST(APPEND OCE_TOOLKIT_DATAEXCHANGE
         StlAPI
         StlTransfer
         RWStl
+# TKWFOBJ
+        WfObjMesh
+        WfObjAPI
+        WfObjTransfer
+        RWWfObj
 # TKSTEPBase
         StepBasic
         RWStepBasic
