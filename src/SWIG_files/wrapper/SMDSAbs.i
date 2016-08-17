@@ -1,5 +1,5 @@
 /*
-Copyright 2008-2014 Thomas Paviot (tpaviot@gmail.com)
+Copyright 2008-2016 Thomas Paviot (tpaviot@gmail.com)
 
 
 This file is part of pythonOCC.
@@ -28,12 +28,27 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
 %include ../common/CommonIncludes.i
-%include ../common/StandardDefines.i
 %include ../common/ExceptionCatcher.i
 %include ../common/FunctionTransformers.i
 %include ../common/Operators.i
 
+
 %include SMDSAbs_headers.i
+
+
+%pythoncode {
+def register_handle(handle, base_object):
+    """
+    Inserts the handle into the base object to
+    prevent memory corruption in certain cases
+    """
+    try:
+        if base_object.IsKind("Standard_Transient"):
+            base_object.thisHandle = handle
+            base_object.thisown = False
+    except:
+        pass
+};
 
 /* typedefs */
 /* end typedefs declaration */

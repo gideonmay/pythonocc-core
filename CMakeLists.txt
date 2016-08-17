@@ -19,8 +19,8 @@ project(PYTHONOCC)
 
 # set pythonOCC version
 set(PYTHONOCC_VERSION_MAJOR 0)
-set(PYTHONOCC_VERSION_MINOR 16)
-set(PYTHONOCC_VERSION_PATCH 5)
+set(PYTHONOCC_VERSION_MINOR 17)
+set(PYTHONOCC_VERSION_PATCH 0)
 #  Empty for official releases, set to -dev, -rc1, etc for development releases
 set(PYTHONOCC_VERSION_DEVEL)
 
@@ -274,8 +274,33 @@ endif(PYTHONOCC_WRAP_OCAF)
 # Smesh #
 #########
 if(PYTHONOCC_WRAP_SMESH)
-  set(SMESH_INCLUDE_PATH /usr/local/include/smesh CACHE PATH "smesh include path")
-  set(SMESH_LIB_PATH /usr/local/lib CACHE PATH "smesh library path")
+  ################################
+  # SMESH include and lib location #
+  ################################
+  if(DEFINED SMESH_INCLUDE_PATH)
+    if(NOT DEFINED SMESH_LIB_PATH)
+      message(FATAL_ERROR "SMESH_LIB_PATH must be defined")
+    endif (NOT DEFINED SMESH_LIB_PATH)
+    set(SMESH_INCLUDE_PATH ${SMESH_INCLUDE_PATH} CACHE PATH "SMESH include path")
+    set(SMESH_LIB_PATH ${SMESH_LIB_PATH} CACHE PATH "SMESH lib path")
+  # if SMESH_INCLUDE_PATH is not passed at command line,
+  # find SMESH automatically
+  else(SMESH_INCLUDE_PATH)
+    find_package(SMESH REQUIRED)
+    if(SMESH_FOUND)
+      message(STATUS "SMESH (SMESH) found.")
+      include_directories(${SMESH_INCLUDE_PATH})
+    else()  # set default paths
+      message(STATUS "SMESH Not found, default to /usr/local path.")
+      set(SMESH_INCLUDE_PATH /usr/local/include/smesh CACHE PATH "SMESH include path")
+      set(SMESH_LIB_PATH /usr/local/lib CACHE PATH "SMESH lib path")
+    endif(SMESH_FOUND)
+  endif(DEFINED SMESH_INCLUDE_PATH)
+
+  
+  # set(SMESH_INCLUDE_PATH /usr/local/include/smesh CACHE PATH "smesh include path")
+  # set(SMESH_LIB_PATH /usr/local/lib CACHE PATH "smesh library path")
+  
   include_directories(${SMESH_INCLUDE_PATH})
   set(SMESH_LIBRARIES SMESH)
   link_directories(${SMESH_LIB_PATH})
@@ -296,7 +321,7 @@ if(PYTHONOCC_WRAP_SMESH)
     set(FILE ${SWIG_FILES_PATH}/${SMESH_MODULE}.i)
     set_source_files_properties(${FILE} PROPERTIES CPLUSPLUS ON)
     swig_add_module(${SMESH_MODULE} python ${FILE})
-    swig_link_libraries(${SMESH_MODULE} ${PYTHON_LIBRARIES} ${OCE_MODEL_LIBRARIES} ${SMESH_LIBRARIES} ${OCE_DATAEXCHANGE_LIBRARIES})
+    swig_link_libraries(${SMESH_MODULE} ${PYTHON_LIBRARIES} ${SMESH_LIBRARIES} ${OCE_MODEL_LIBRARIES} ${OCE_OCAF_LIBRARIES} ${OCE_DATAEXCHANGE_LIBRARIES})
   endforeach(SMESH_MODULE)
 endif(PYTHONOCC_WRAP_SMESH)
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2008-2014 Thomas Paviot (tpaviot@gmail.com)
+Copyright 2008-2016 Thomas Paviot (tpaviot@gmail.com)
 
 
 This file is part of pythonOCC.
@@ -66,7 +66,6 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<SMESH_Comment.hxx>
 #include<SMESH_ComputeError.hxx>
 #include<SMESH_Controls.hxx>
-#include<SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx>
 #include<SMESH_DefineArray2.hxx>
 #include<SMESH_DefineIndexedMap.hxx>
 #include<SMESH_DriverDAT.hxx>
@@ -106,6 +105,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TopoDS_ListIteratorOfListOfShape.hxx>
 #include<TopoDS_ListNodeOfListOfShape.hxx>
 #include<TopoDS_ListOfShape.hxx>
+#include<TopoDS_LockedShape.hxx>
 #include<TopoDS_Shape.hxx>
 #include<TopoDS_Shell.hxx>
 #include<TopoDS_Solid.hxx>
@@ -224,11 +224,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TopAbs_ShapeEnum.hxx>
 #include<TopAbs_State.hxx>
 #include<TCollection.hxx>
-#include<TCollection_Array1Descriptor.hxx>
-#include<TCollection_Array2Descriptor.hxx>
 #include<TCollection_AsciiString.hxx>
-#include<TCollection_AVLBaseNode.hxx>
-#include<TCollection_AVLBaseNodePtr.hxx>
 #include<TCollection_BaseSequence.hxx>
 #include<TCollection_BasicMap.hxx>
 #include<TCollection_BasicMapIterator.hxx>
@@ -350,7 +346,6 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TColgp_Array2OfVec2d.hxx>
 #include<TColgp_Array2OfXY.hxx>
 #include<TColgp_Array2OfXYZ.hxx>
-#include<TColgp_DataMapOfIntegerCirc2d.hxx>
 #include<TColgp_HArray1OfCirc2d.hxx>
 #include<TColgp_HArray1OfDir.hxx>
 #include<TColgp_HArray1OfDir2d.hxx>
@@ -454,9 +449,6 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TColStd_HSequenceOfInteger.hxx>
 #include<TColStd_HSequenceOfReal.hxx>
 #include<TColStd_HSequenceOfTransient.hxx>
-#include<TColStd_HSetOfInteger.hxx>
-#include<TColStd_HSetOfReal.hxx>
-#include<TColStd_HSetOfTransient.hxx>
 #include<TColStd_IndexedDataMapNodeOfIndexedDataMapOfTransientTransient.hxx>
 #include<TColStd_IndexedDataMapOfTransientTransient.hxx>
 #include<TColStd_IndexedMapNodeOfIndexedMapOfInteger.hxx>
@@ -469,16 +461,10 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TColStd_ListIteratorOfListOfInteger.hxx>
 #include<TColStd_ListIteratorOfListOfReal.hxx>
 #include<TColStd_ListIteratorOfListOfTransient.hxx>
-#include<TColStd_ListIteratorOfSetListOfSetOfInteger.hxx>
-#include<TColStd_ListIteratorOfSetListOfSetOfReal.hxx>
-#include<TColStd_ListIteratorOfSetListOfSetOfTransient.hxx>
 #include<TColStd_ListNodeOfListOfAsciiString.hxx>
 #include<TColStd_ListNodeOfListOfInteger.hxx>
 #include<TColStd_ListNodeOfListOfReal.hxx>
 #include<TColStd_ListNodeOfListOfTransient.hxx>
-#include<TColStd_ListNodeOfSetListOfSetOfInteger.hxx>
-#include<TColStd_ListNodeOfSetListOfSetOfReal.hxx>
-#include<TColStd_ListNodeOfSetListOfSetOfTransient.hxx>
 #include<TColStd_ListOfAsciiString.hxx>
 #include<TColStd_ListOfInteger.hxx>
 #include<TColStd_ListOfReal.hxx>
@@ -496,12 +482,6 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TColStd_MapRealHasher.hxx>
 #include<TColStd_MapTransientHasher.hxx>
 #include<TColStd_PackedMapOfInteger.hxx>
-#include<TColStd_QueueNodeOfQueueOfInteger.hxx>
-#include<TColStd_QueueNodeOfQueueOfReal.hxx>
-#include<TColStd_QueueNodeOfQueueOfTransient.hxx>
-#include<TColStd_QueueOfInteger.hxx>
-#include<TColStd_QueueOfReal.hxx>
-#include<TColStd_QueueOfTransient.hxx>
 #include<TColStd_SequenceNodeOfSequenceOfAddress.hxx>
 #include<TColStd_SequenceNodeOfSequenceOfAsciiString.hxx>
 #include<TColStd_SequenceNodeOfSequenceOfBoolean.hxx>
@@ -520,34 +500,12 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<TColStd_SequenceOfInteger.hxx>
 #include<TColStd_SequenceOfReal.hxx>
 #include<TColStd_SequenceOfTransient.hxx>
-#include<TColStd_SetIteratorOfSetOfInteger.hxx>
-#include<TColStd_SetIteratorOfSetOfReal.hxx>
-#include<TColStd_SetIteratorOfSetOfTransient.hxx>
-#include<TColStd_SetListOfSetOfInteger.hxx>
-#include<TColStd_SetListOfSetOfReal.hxx>
-#include<TColStd_SetListOfSetOfTransient.hxx>
-#include<TColStd_SetOfInteger.hxx>
-#include<TColStd_SetOfReal.hxx>
-#include<TColStd_SetOfTransient.hxx>
-#include<TColStd_StackIteratorOfStackOfInteger.hxx>
-#include<TColStd_StackIteratorOfStackOfReal.hxx>
-#include<TColStd_StackIteratorOfStackOfTransient.hxx>
-#include<TColStd_StackNodeOfStackOfInteger.hxx>
-#include<TColStd_StackNodeOfStackOfReal.hxx>
-#include<TColStd_StackNodeOfStackOfTransient.hxx>
-#include<TColStd_StackOfInteger.hxx>
-#include<TColStd_StackOfReal.hxx>
-#include<TColStd_StackOfTransient.hxx>
 #include<TColStd_StdMapNodeOfMapOfAsciiString.hxx>
 #include<TColStd_StdMapNodeOfMapOfInteger.hxx>
 #include<TColStd_StdMapNodeOfMapOfReal.hxx>
 #include<TColStd_StdMapNodeOfMapOfTransient.hxx>
 #include<TCollection.hxx>
-#include<TCollection_Array1Descriptor.hxx>
-#include<TCollection_Array2Descriptor.hxx>
 #include<TCollection_AsciiString.hxx>
-#include<TCollection_AVLBaseNode.hxx>
-#include<TCollection_AVLBaseNodePtr.hxx>
 #include<TCollection_BaseSequence.hxx>
 #include<TCollection_BasicMap.hxx>
 #include<TCollection_BasicMapIterator.hxx>
@@ -581,15 +539,12 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Storage_HArrayOfSchema.hxx>
 #include<Storage_HeaderData.hxx>
 #include<Storage_HPArray.hxx>
-#include<Storage_HSeqOfCallBack.hxx>
-#include<Storage_HSeqOfPersistent.hxx>
 #include<Storage_HSeqOfRoot.hxx>
 #include<Storage_IndexedDataMapNodeOfPType.hxx>
 #include<Storage_InternalData.hxx>
 #include<Storage_Macros.hxx>
 #include<Storage_MapOfCallBack.hxx>
 #include<Storage_MapOfPers.hxx>
-#include<Storage_MapPSDHasher.hxx>
 #include<Storage_OpenMode.hxx>
 #include<Storage_PArray.hxx>
 #include<Storage_Position.hxx>
@@ -597,11 +552,7 @@ along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
 #include<Storage_Root.hxx>
 #include<Storage_RootData.hxx>
 #include<Storage_Schema.hxx>
-#include<Storage_SeqOfCallBack.hxx>
-#include<Storage_SeqOfPersistent.hxx>
 #include<Storage_SeqOfRoot.hxx>
-#include<Storage_SequenceNodeOfSeqOfCallBack.hxx>
-#include<Storage_SequenceNodeOfSeqOfPersistent.hxx>
 #include<Storage_SequenceNodeOfSeqOfRoot.hxx>
 #include<Storage_SolveMode.hxx>
 #include<Storage_stCONSTclCOM.hxx>
