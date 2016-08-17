@@ -52,3 +52,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+test/test_io/box_shape_generated.brep
+test/test_io/shape.js
+test/test_io/shape.x3d
+test/test_io/sphere.x3d
+test/test_io/webgl_topods_shape.html
+test/test_io/x3dom_topods_shape.html
