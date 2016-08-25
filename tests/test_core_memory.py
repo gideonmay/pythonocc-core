@@ -54,37 +54,40 @@ class TestMemory(unittest.TestCase):
         self.assertEqual(h.IsNull(), True)
         self.assertEqual(s.GetRefCount(), 0)
 
-    def testPurgeMemory(self):
-        # Check that after the smart_purge, list of collected objects ar empty
-        GarbageCollector.garbage.smart_purge()
-        self.assertEqual(len(GarbageCollector.garbage._handles), 0)
-        # TODO : following line does work
-        # self.assertEqual(len(GarbageCollector.garbage._transients), 0)
-        self.assertEqual(len(GarbageCollector.garbage._misc), 0)
+    # Deprecated GarbageCollector
+    # def testPurgeMemory(self):
+    #     # Check that after the smart_purge, list of collected objects ar empty
+    #     GarbageCollector.garbage.smart_purge()
+    #     self.assertEqual(len(GarbageCollector.garbage._handles), 0)
+    #     # TODO : following line does work
+    #     # self.assertEqual(len(GarbageCollector.garbage._transients), 0)
+    #     self.assertEqual(len(GarbageCollector.garbage._misc), 0)
 
-    def testCollector(self):
-        GarbageCollector.garbage.smart_purge()
-        # Check that pythonOCC objects are collected in the correct garbage
-        s = Standard_Transient()
-        h = Handle_Standard_Transient()
-        P = gp_Pnt(1, 2, 3)
-        del s
-        del h
-        del P
-        self.assertEqual(len(GarbageCollector.garbage._handles), 1)
-        self.assertEqual(len(GarbageCollector.garbage._transients), 1)
-        self.assertEqual(len(GarbageCollector.garbage._misc), 1)
+    # Deprecated GarbageCollector
+    # def testCollector(self):
+    #     GarbageCollector.garbage.smart_purge()
+    #     # Check that pythonOCC objects are collected in the correct garbage
+    #     s = Standard_Transient()
+    #     h = Handle_Standard_Transient()
+    #     P = gp_Pnt(1, 2, 3)
+    #     del s
+    #     del h
+    #     del P
+    #     self.assertEqual(len(GarbageCollector.garbage._handles), 1)
+    #     self.assertEqual(len(GarbageCollector.garbage._transients), 1)
+    #     self.assertEqual(len(GarbageCollector.garbage._misc), 1)
 
-    def testGC(self):
-        GarbageCollector.garbage.smart_purge()
-        h = Handle_Standard_Transient()
-        h2 = h  # adds a reference
-        del h
-        # this object is not collected since there is another reference to it
-        self.assertEqual(len(GarbageCollector.garbage._handles), 0)
-        del h2
-        # now, the handle should be collected
-        self.assertEqual(len(GarbageCollector.garbage._handles), 1)
+    # Deprecated GarbageCollector
+    # def testGC(self):
+    #     GarbageCollector.garbage.smart_purge()
+    #     h = Handle_Standard_Transient()
+    #     h2 = h  # adds a reference
+    #     del h
+    #     # this object is not collected since there is another reference to it
+    #     self.assertEqual(len(GarbageCollector.garbage._handles), 0)
+    #     del h2
+    #     # now, the handle should be collected
+    #     self.assertEqual(len(GarbageCollector.garbage._handles), 1)
 
     # TODO : this one does work
     # def testTransients(self):
