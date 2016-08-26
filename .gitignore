@@ -58,3 +58,7 @@ test/test_io/shape.x3d
 test/test_io/sphere.x3d
 test/test_io/webgl_topods_shape.html
 test/test_io/x3dom_topods_shape.html
+export_dat.dat
+export_stl.stl
+export_unv.unv
+box_shape_generated.brep

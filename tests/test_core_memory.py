@@ -22,9 +22,9 @@ import sys
 
 from OCC.Standard import Standard_Transient, Handle_Standard_Transient
 from OCC.gp import gp_Pnt
-from OCC import GarbageCollector
+# from OCC import GarbageCollector
 
-#GarbageCollector.set_debug()
+# GarbageCollector.set_debug()
 
 
 class TestMemory(unittest.TestCase):
