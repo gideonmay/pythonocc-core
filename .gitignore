@@ -64,3 +64,4 @@ export_stl.stl
 export_unv.unv
 box_shape_generated.brep
 test_ocaf_generated.stp
+.idea
