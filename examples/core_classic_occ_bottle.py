@@ -37,6 +37,7 @@ from OCC.TopExp import TopExp_Explorer
 from OCC.TopAbs import TopAbs_EDGE, TopAbs_FACE
 from OCC.TopTools import TopTools_ListOfShape
 from OCC.Display.SimpleGui import *
+from core_topology_traverse import Topo, dumpTopology
 
 
 def face_is_plane(face):
@@ -153,6 +154,9 @@ while aFaceExplorer.More():
         if aZ > zMax:
             zMax = aZ
             faceToRemove = aFace
+            print("Face to remove : ")
+            dumpTopology(aFace)
+            print("Plane = {}".format(aPlane))
 
     aFaceExplorer.Next()
 
@@ -211,6 +215,8 @@ aBuilder = BRep_Builder()
 aBuilder.MakeCompound(aRes)
 aBuilder.Add(aRes, myBody.Shape())
 aBuilder.Add(aRes, myThreading)
+
+dumpTopology(aRes)
 
 display, start_display, add_menu, add_function_to_menu = init_display()
 display.DisplayColoredShape(aRes)
