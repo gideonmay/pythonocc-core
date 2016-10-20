@@ -200,6 +200,7 @@ def smesh_triangle_mesh(event=None):
     #aMesh.AddHypothesis(aShape, 3)
     #Compute the data
     aMeshGen.Compute(aMesh, aMesh.GetShapeToMesh())
+    aMesh.ExportSTL("mesh.stl", True)
     # Display the data
     display_mesh(aMesh)
 

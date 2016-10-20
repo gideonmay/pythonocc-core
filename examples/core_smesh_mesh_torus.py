@@ -57,6 +57,7 @@ aMesh.AddHypothesis(aShape, 3)
 #Compute the mesh
 aMeshGen.Compute(aMesh, aMesh.GetShapeToMesh())
 
+
 # Display the data
 aDS = SMESH_MeshVSLink(aMesh)
 aMeshVS = MeshVS_Mesh(True)
@@ -70,6 +71,9 @@ aPrsBuilder = MeshVS_MeshPrsBuilder(aMeshVS.GetHandle(),
                                     MeshVS_BP_Mesh)
 aMeshVS.SetDataSource(aDS.GetHandle())
 aMeshVS.AddBuilder(aPrsBuilder.GetHandle(), True)
+
+aMesh.ExportSTL("torus.stl", True)
+
 
 # display both shape and mesh
 context = display.Context

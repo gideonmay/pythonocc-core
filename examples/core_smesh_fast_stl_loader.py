@@ -101,6 +101,7 @@ def get_fast_stl_mesh_from_path(_path):
     msh = meshvs_link_from_mesh(mesh)
     total_loading_time = time.time() - init_time
     print("Loading time: %f" % total_loading_time)
+    mesh.ExportSTL("h.stl", True)
     return msh
 
 # get the file and create the mesh
