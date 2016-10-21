@@ -14,12 +14,15 @@
 ##
 ##You should have received a copy of the GNU Lesser General Public License
 ##along with pythonOCC.  If not, see <http://www.gnu.org/licenses/>.
-from OCC.BRepBndLib import brepbndlib_Add
 
+from functools import wraps
+
+from OCC.BRepBndLib import brepbndlib_Add
+from OCC.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.BRepBuilderAPI import (BRepBuilderAPI_MakeEdge,
                                 BRepBuilderAPI_MakeVertex,
                                 BRepBuilderAPI_MakeWire,
-                                BRepBuilderAPI_MakeFace)
+                                BRepBuilderAPI_MakeFace, BRepBuilderAPI_MakeEdge2d)
 from OCC.BRepFill import BRepFill_Filling
 from OCC.Bnd import Bnd_Box
 from OCC.GeomAbs import GeomAbs_C0
@@ -33,6 +36,11 @@ def make_edge(*args):
     result = edge.Edge()
     return result
 
+def make_edge2d(*args):
+    edge = BRepBuilderAPI_MakeEdge2d(*args)
+    result = edge.Edge()
+    edge.Delete()
+    return result
 
 def make_vertex(*args):
     vert = BRepBuilderAPI_MakeVertex(*args)
@@ -66,6 +74,35 @@ def make_face(*args):
     assert (face.IsDone())
     result = face.Face()
     return result
+
+
+
+class assert_isdone(object):
+    '''
+    raises an assertion error when IsDone() returns false, with the error
+    specified in error_statement
+    '''
+
+    def __init__(self, to_check, error_statement):
+        self.to_check = to_check
+        self.error_statement = error_statement
+
+    def __enter__(self, ):
+        if self.to_check.IsDone():
+            pass
+        else:
+            raise AssertionError(self.error_statement)
+
+    def __exit__(self, type, value, traceback):
+        pass
+
+
+@wraps(BRepPrimAPI_MakeBox)
+def make_box(*args):
+    box = BRepPrimAPI_MakeBox(*args)
+    box.Build()
+    with assert_isdone(box, 'failed to built a cube...'):
+        return box.Shape()
 
 
 def points_to_bspline(pnts):
